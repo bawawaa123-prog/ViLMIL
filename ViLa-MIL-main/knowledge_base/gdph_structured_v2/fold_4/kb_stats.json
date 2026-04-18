@@ -1,0 +1,9 @@
+{
+  "fold": 4,
+  "train_slide_count": 581,
+  "kb_fact_count": 1092,
+  "kb_unique_class_scale": 4,
+  "from_ice": 332,
+  "from_paraffin": 760,
+  "from_imaging": 0
+}
