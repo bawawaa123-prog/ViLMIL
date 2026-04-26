@@ -36,28 +36,8 @@ def initiate_model(args, ckpt_path):
         config.text_prompt = args.text_prompt
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
-        config.enable_dynamic_prompt = bool(getattr(args, 'enable_dynamic_prompt', False))
-        config.prompt_pool = getattr(args, 'prompt_pool', None)
-        config.class_names = getattr(args, 'class_names', None)
-        config.retrieval_topk = int(getattr(args, 'retrieval_topk', 3))
-        config.retrieval_temp = float(getattr(args, 'retrieval_temp', 0.1))
-        config.dynamic_prompt_mix = float(getattr(args, 'dynamic_prompt_mix', 1.0))
-        config.enable_vcp = bool(getattr(args, 'enable_vcp', False))
-        config.vcp_beta = float(getattr(args, 'vcp_beta', 0.1))
-        config.vcp_dropout = float(getattr(args, 'vcp_dropout', 0.1))
-        config.enable_rag_rewrite = bool(getattr(args, 'enable_rag_rewrite', False))
-        config.rag_mode = str(getattr(args, 'rag_mode', 'offline'))
-        config.rag_cache_path = str(getattr(args, 'rag_cache_path', 'results/rag_rewrite_cache.jsonl'))
-        config.rag_topk = int(getattr(args, 'rag_topk', 3))
-        config.rag_ollama_model = str(getattr(args, 'rag_ollama_model', 'qwen2.5:14b-instruct'))
-        config.rag_ollama_url = str(getattr(args, 'rag_ollama_url', 'http://localhost:11434/api/generate'))
-        config.rag_temperature = float(getattr(args, 'rag_temperature', 0.2))
-        config.rag_max_tokens = int(getattr(args, 'rag_max_tokens', 256))
-        config.rag_timeout_sec = int(getattr(args, 'rag_timeout_sec', 60))
-        config.rag_max_retries = int(getattr(args, 'rag_max_retries', 2))
-        config.rag_retry_delay_sec = float(getattr(args, 'rag_retry_delay_sec', 0.5))
-        config.rag_failure_log_path = getattr(args, 'rag_failure_log_path', None)
-        config.rag_fallback = str(getattr(args, 'rag_fallback', 'dynamic'))
+        config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
+        config.text_unfreeze_last_n = int(getattr(args, 'text_unfreeze_last_n', 2))
         model = ViLa_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
 
     else: # args.model_type == 'mil'
@@ -85,8 +65,7 @@ def initiate_model(args, ckpt_path):
     if hasattr(model, "relocate"):
         model.relocate()
     else:
-        model = model.to(torch.device('cuda'))
-        # pass
+        model = model.to(device)
     model.eval()
     return model
 
@@ -123,8 +102,6 @@ def summary(mode, model, loader, args):
 
     slide_ids = loader.dataset.slide_data['slide_id']
     patient_results = {}
-    retrieval_rows = []
-
     if(mode == 'transformer'):
         for batch_idx, (data_s, coord_s, data_l, coord_l, label, batch_slide_ids) in enumerate(loader):
             data_s, coord_s, data_l, coord_l, label = data_s.to(device), coord_s.to(device), data_l.to(device), coord_l.to(device), label.to(device)
@@ -146,23 +123,6 @@ def summary(mode, model, loader, args):
             patient_results.update({slide_id: {'slide_id': np.array(slide_id), 'prob': probs, 'label': label.item()}})
             error = calculate_error(Y_hat, label)
             test_error += error
-
-            if bool(getattr(args, 'save_retrieval_log', False)) and hasattr(model, 'get_last_retrieval_debug'):
-                dbg = model.get_last_retrieval_debug()
-                if dbg is not None:
-                    for scale_name in ['low', 'high']:
-                        for item in dbg.get(scale_name, []):
-                            retrieval_rows.append({
-                                'slide_id': str(slide_id),
-                                'true_label': int(label.item()),
-                                'pred_label': int(Y_hat.item()),
-                                'scale': scale_name,
-                                'class_idx': int(item.get('class_idx', -1)),
-                                'top_indices': '|'.join(map(str, item.get('top_indices', []))),
-                                'top_scores': '|'.join([f"{float(x):.6f}" for x in item.get('top_scores', [])]),
-                                'top_weights': '|'.join([f"{float(x):.6f}" for x in item.get('top_weights', [])]),
-                                'top_texts': ' || '.join([str(x) for x in item.get('top_texts', [])]),
-                            })
 
         # 将列表转换为numpy数组并展平
         all_pred_np = np.concatenate(all_pred)
@@ -196,15 +156,5 @@ def summary(mode, model, loader, args):
         for c in range(args.n_classes):
             results_dict.update({'p_{}'.format(c): all_probs[:,c]})
         df = pd.DataFrame(results_dict)
-
-        if bool(getattr(args, 'save_retrieval_log', False)) and len(retrieval_rows) > 0:
-            retrieval_df = pd.DataFrame(retrieval_rows)
-            log_name = str(getattr(args, 'retrieval_log_name', 'retrieval_log.csv'))
-            save_dir = getattr(args, 'save_dir', None)
-            if save_dir:
-                os.makedirs(save_dir, exist_ok=True)
-                log_path = os.path.join(save_dir, log_name)
-                retrieval_df.to_csv(log_path, index=False)
-                print(f"[DynamicPrompt] retrieval logs saved: {log_path}")
 
         return patient_results, test_error, auc_score, test_f1, df, acc_logger 

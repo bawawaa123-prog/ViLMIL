@@ -1,0 +1,1 @@
+{'task': 'task_adenocarcinoma', 'split': 'test', 'save_dir': './eval_results/EVAL_cleanup_smoke_eval', 'models_dir': '/tmp/vilmil_cleanup_smoke_train/cleanup_smoke_s1', 'model_type': 'ViLa_MIL_BiomedCLIP', 'mode': 'transformer', 'drop_out': False, 'model_size': 'small'}

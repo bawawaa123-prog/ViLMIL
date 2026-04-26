@@ -163,32 +163,7 @@ def train(datasets, cur, args):
         # Finetune scope for BiomedCLIP text tower
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
         config.text_unfreeze_last_n = int(getattr(args, 'text_unfreeze_last_n', 2))
-        # Retrieval-augmented dynamic prompt settings
-        config.enable_dynamic_prompt = bool(getattr(args, 'enable_dynamic_prompt', False))
-        config.prompt_pool = getattr(args, 'prompt_pool', None)
-        config.class_names = getattr(args, 'class_names', None)
-        config.retrieval_topk = int(getattr(args, 'retrieval_topk', 3))
-        config.retrieval_temp = float(getattr(args, 'retrieval_temp', 0.1))
-        config.dynamic_prompt_mix = float(getattr(args, 'dynamic_prompt_mix', 1.0))
-        # Visual-conditioned prompt refinement (VCP)
-        config.enable_vcp = bool(getattr(args, 'enable_vcp', False))
-        config.vcp_beta = float(getattr(args, 'vcp_beta', 0.1))
-        config.vcp_dropout = float(getattr(args, 'vcp_dropout', 0.1))
-        # RAG + LLM rewrite settings
-        config.enable_rag_rewrite = bool(getattr(args, 'enable_rag_rewrite', False))
-        config.rag_mode = str(getattr(args, 'rag_mode', 'offline'))
-        config.rag_cache_path = str(getattr(args, 'rag_cache_path', 'results/rag_rewrite_cache.jsonl'))
-        config.rag_topk = int(getattr(args, 'rag_topk', 3))
-        config.rag_ollama_model = str(getattr(args, 'rag_ollama_model', 'qwen2.5:14b-instruct'))
-        config.rag_ollama_url = str(getattr(args, 'rag_ollama_url', 'http://localhost:11434/api/generate'))
-        config.rag_temperature = float(getattr(args, 'rag_temperature', 0.2))
-        config.rag_max_tokens = int(getattr(args, 'rag_max_tokens', 256))
-        config.rag_timeout_sec = int(getattr(args, 'rag_timeout_sec', 60))
-        config.rag_max_retries = int(getattr(args, 'rag_max_retries', 2))
-        config.rag_retry_delay_sec = float(getattr(args, 'rag_retry_delay_sec', 0.5))
-        config.rag_failure_log_path = getattr(args, 'rag_failure_log_path', None)
-        config.rag_fallback = str(getattr(args, 'rag_fallback', 'dynamic'))
-        
+
         model = ViLa_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
     
     elif args.model_type == 'ViLa_MIL':
@@ -213,7 +188,7 @@ def train(datasets, cur, args):
     if hasattr(model, "relocate"):
         model.relocate()
     else:
-        model = model.to(torch.device('cuda:0'))
+        model = model.to(device)
     print('Done!')
     print_network(model)
 
@@ -278,16 +253,8 @@ def train(datasets, cur, args):
 
     print('\nSetup EarlyStopping...', end=' ')
     if args.early_stopping:
-        # 固定使用 patience=10。stop_epoch 由门控策略控制：
-        # - from_start: 从第1个epoch起即可触发早停
-        # - after_rag_start: 到达 rag_start_epoch 后才允许触发早停
-        gate_mode = str(getattr(args, 'early_stopping_gate', 'from_start'))
-        if gate_mode == 'after_rag_start':
-            stop_epoch = int(getattr(args, 'rag_start_epoch', 0)) + 1
-        else:
-            stop_epoch = 0
-        early_stopping = EarlyStopping(patience=10, stop_epoch=stop_epoch, verbose=True)
-        print(f"[EarlyStopping] gate={gate_mode}, min_trigger_epoch={stop_epoch}", end=' ')
+        early_stopping = EarlyStopping(patience=10, stop_epoch=0, verbose=True)
+        print(f"[EarlyStopping] min_trigger_epoch=0", end=' ')
     else:
         early_stopping = None
     print('Done!')
@@ -300,27 +267,6 @@ def train(datasets, cur, args):
         print(f"\n{'='*80}")
         print(f"🔄 FOLD {cur+1} - EPOCH {epoch+1}/{args.max_epochs}")
         print(f"{'='*80}")
-
-        if args.model_type == 'ViLa_MIL_BiomedCLIP' and hasattr(model, 'set_dynamic_prompt_runtime'):
-            warmup_epochs = int(getattr(args, 'dynamic_prompt_warmup_epochs', 0))
-            should_enable_dynamic = bool(getattr(args, 'enable_dynamic_prompt', False)) and (epoch >= warmup_epochs)
-            model.set_dynamic_prompt_runtime(should_enable_dynamic)
-            mode_name = 'dynamic-retrieval' if should_enable_dynamic else 'static-prompt-warmup'
-            print(f"[DynamicPrompt] epoch={epoch+1} mode={mode_name} warmup_epochs={warmup_epochs}")
-
-        if args.model_type == 'ViLa_MIL_BiomedCLIP' and hasattr(model, 'set_vcp_runtime'):
-            vcp_start_epoch = int(getattr(args, 'vcp_start_epoch', 0))
-            should_enable_vcp = bool(getattr(args, 'enable_vcp', False)) and (epoch >= vcp_start_epoch)
-            model.set_vcp_runtime(should_enable_vcp)
-            vcp_mode = 'enabled' if should_enable_vcp else 'disabled'
-            print(f"[VCP] epoch={epoch+1} mode={vcp_mode} start_epoch={vcp_start_epoch}")
-
-        if args.model_type == 'ViLa_MIL_BiomedCLIP' and hasattr(model, 'set_rag_runtime'):
-            rag_start_epoch = int(getattr(args, 'rag_start_epoch', 0))
-            should_enable_rag = bool(getattr(args, 'enable_rag_rewrite', False)) and (epoch >= rag_start_epoch)
-            model.set_rag_runtime(should_enable_rag)
-            rag_mode = 'enabled' if should_enable_rag else 'disabled'
-            print(f"[RAG] epoch={epoch+1} mode={rag_mode} start_epoch={rag_start_epoch}")
         
         # 训练阶段
         train_loss, train_error, train_auc, train_f1 = train_loop(args, epoch, model, train_loader, optimizer, args.n_classes, writer, loss_fn, cur)
@@ -589,4 +535,3 @@ def summary(mode, model, loader, n_classes):
     print(f'   -> 评估耗时: {duration:.2f} 秒 ({duration/60:.2f} 分钟)')
 
     return patient_results, test_error, auc_score, acc_logger, f1
-

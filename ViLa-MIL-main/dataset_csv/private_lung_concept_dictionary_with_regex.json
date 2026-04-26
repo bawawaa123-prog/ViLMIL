@@ -1,0 +1,521 @@
+{
+  "metadata": {
+    "created_at": "2026-04-26T08:18:06.907864",
+    "input_file": "嘉豪GDPH本中心队列文本数据补充20260414(1).xlsx",
+    "num_records": 968,
+    "label_counts": {
+      "Adenocarcinoma": 637,
+      "NonAdenocarcinoma": 331
+    },
+    "label_mapping": {
+      "NonAdenocarcinoma": 0,
+      "Adenocarcinoma": 1
+    },
+    "notes": [
+      "The Chinese reports were used to mine and standardize pathology concepts.",
+      "Stage-2 model prompts are English because BiomedCLIP text encoders are English biomedical encoders.",
+      "Do not feed paraffin or frozen reports as test-time model inputs; use this file as a fixed concept pool or regenerate concepts from train splits only.",
+      "Radiology concepts are extracted separately and should remain optional, not required for public datasets."
+    ]
+  },
+  "pathology_concepts": [
+    {
+      "concept_id": "adeno_lepidic",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "贴壁样/贴壁状生长",
+      "concept_en": "lepidic growth pattern",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with lepidic growth pattern.",
+      "high_prompt": "A high magnification histopathology image showing lepidic tumor cells growing along alveolar septa.",
+      "patterns": [
+        "贴壁样",
+        "贴壁状",
+        "贴壁",
+        "沿肺泡壁"
+      ]
+    },
+    {
+      "concept_id": "adeno_acinar",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "腺泡状生长",
+      "concept_en": "acinar growth pattern",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with acinar gland-forming architecture.",
+      "high_prompt": "A high magnification histopathology image showing tumor cells forming glandular lumina.",
+      "patterns": [
+        "腺泡状",
+        "腺泡",
+        "腺管状",
+        "腺管",
+        "腺样结构"
+      ]
+    },
+    {
+      "concept_id": "adeno_micropapillary",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "微乳头状生长",
+      "concept_en": "micropapillary pattern",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with micropapillary clusters.",
+      "high_prompt": "A high magnification histopathology image showing small floating clusters of adenocarcinoma cells without fibrovascular cores.",
+      "patterns": [
+        "微乳头状",
+        "微乳头"
+      ]
+    },
+    {
+      "concept_id": "adeno_papillary",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "乳头状生长",
+      "concept_en": "papillary architecture",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with papillary architecture.",
+      "high_prompt": "A high magnification histopathology image showing tumor cells lining fibrovascular cores.",
+      "patterns": [
+        "(?<!微)乳头状",
+        "(?<!微)乳头"
+      ]
+    },
+    {
+      "concept_id": "adeno_solid",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "实性生长",
+      "concept_en": "solid growth pattern",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with solid growth pattern.",
+      "high_prompt": "A high magnification histopathology image showing solid sheets of adenocarcinoma cells with nuclear atypia.",
+      "patterns": [
+        "实性[（(]",
+        "实性生长",
+        "呈实性",
+        "实性成分"
+      ]
+    },
+    {
+      "concept_id": "adeno_mucinous",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "黏液/粘液性特征",
+      "concept_en": "mucinous features",
+      "category": "pathology_morphology",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing mucinous lung adenocarcinoma with extracellular mucin pools.",
+      "high_prompt": "A high magnification histopathology image showing adenocarcinoma cells with mucin production and mucinous cytoplasm.",
+      "patterns": [
+        "黏液",
+        "粘液",
+        "胶样",
+        "黏液性",
+        "粘液性"
+      ]
+    },
+    {
+      "concept_id": "adeno_cribriform",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "筛状结构",
+      "concept_en": "cribriform pattern",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing lung adenocarcinoma with cribriform architecture.",
+      "high_prompt": "A high magnification histopathology image showing back-to-back glandular spaces in cribriform adenocarcinoma.",
+      "patterns": [
+        "筛状"
+      ]
+    },
+    {
+      "concept_id": "adeno_ais_mia",
+      "class_name": "Adenocarcinoma",
+      "concept_zh": "AIS/MIA/浸润前或微浸润病变",
+      "concept_en": "preinvasive or minimally invasive adenocarcinoma spectrum",
+      "category": "pathology_diagnosis_related",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing a preinvasive or minimally invasive lung adenocarcinoma spectrum lesion.",
+      "high_prompt": "A high magnification histopathology image showing atypical glandular epithelial cells in an early adenocarcinoma spectrum lesion.",
+      "patterns": [
+        "\\bAIS\\b",
+        "\\bMIA\\b",
+        "原位腺癌",
+        "微浸润",
+        "不典型腺瘤样增生",
+        "\\bAAH\\b",
+        "浸润前病变"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_squamous",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "鳞状细胞癌/鳞状分化",
+      "concept_en": "squamous cell carcinoma morphology",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing squamous cell carcinoma arranged in tumor nests.",
+      "high_prompt": "A high magnification histopathology image showing malignant squamous cells with eosinophilic cytoplasm.",
+      "patterns": [
+        "鳞状细胞癌",
+        "鳞癌",
+        "鳞状分化",
+        "鳞状上皮癌"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_keratinization",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "角化/角化珠",
+      "concept_en": "keratinization",
+      "category": "pathology_morphology",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing squamous cell carcinoma with keratinizing tumor nests.",
+      "high_prompt": "A high magnification histopathology image showing squamous cell carcinoma with keratinization and keratin pearls.",
+      "patterns": [
+        "角化珠",
+        "角化",
+        "角化物"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_intercellular_bridges",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "细胞间桥",
+      "concept_en": "intercellular bridges",
+      "category": "pathology_morphology",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing squamous cell carcinoma nests.",
+      "high_prompt": "A high magnification histopathology image showing squamous cell carcinoma with intercellular bridges.",
+      "patterns": [
+        "细胞间桥"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_small_cell",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "小细胞癌形态",
+      "concept_en": "small cell carcinoma morphology",
+      "category": "pathology_morphology",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing small cell carcinoma with diffuse sheets of tumor cells.",
+      "high_prompt": "A high magnification histopathology image showing small cell carcinoma with nuclear molding and scant cytoplasm.",
+      "patterns": [
+        "(?<!非)小细胞癌",
+        "(?<!非)小细胞肺癌",
+        "小细胞神经内分泌癌",
+        "小蓝细胞"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_neuroendocrine",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "神经内分泌形态",
+      "concept_en": "neuroendocrine morphology",
+      "category": "pathology_morphology",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing neuroendocrine tumor architecture.",
+      "high_prompt": "A high magnification histopathology image showing neuroendocrine tumor cells with salt-and-pepper chromatin.",
+      "patterns": [
+        "神经内分泌",
+        "类癌",
+        "大细胞神经内分泌",
+        "LCNEC",
+        "神经内分泌癌"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_large_cell",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "大细胞癌",
+      "concept_en": "large cell carcinoma morphology",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing large cell carcinoma without glandular differentiation.",
+      "high_prompt": "A high magnification histopathology image showing large malignant epithelial cells without gland formation or keratinization.",
+      "patterns": [
+        "大细胞癌",
+        "大细胞肺癌"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_sarcomatoid",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "肉瘤样/梭形细胞",
+      "concept_en": "sarcomatoid or spindle cell morphology",
+      "category": "pathology_morphology",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing sarcomatoid carcinoma with spindle cell morphology.",
+      "high_prompt": "A high magnification histopathology image showing spindle-shaped malignant tumor cells.",
+      "patterns": [
+        "肉瘤样",
+        "梭形细胞",
+        "多形性癌",
+        "癌肉瘤"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_hamartoma",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "错构瘤/软骨瘤型错构瘤",
+      "concept_en": "pulmonary hamartoma",
+      "category": "benign_nonadeno",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing pulmonary hamartoma with cartilage and benign mesenchymal components.",
+      "high_prompt": "A high magnification histopathology image showing benign cartilage and respiratory epithelium in pulmonary hamartoma.",
+      "patterns": [
+        "错构瘤",
+        "软骨瘤型错构瘤",
+        "软骨瘤"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_inflammatory",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "炎症/肉芽肿/机化性肺炎",
+      "concept_en": "inflammatory or granulomatous lung lesion",
+      "category": "benign_nonadeno",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing inflammatory or granulomatous lung lesion without malignant glandular structures.",
+      "high_prompt": "A high magnification histopathology image showing inflammatory cells, granulomas, or fibrosis without adenocarcinoma morphology.",
+      "patterns": [
+        "炎症",
+        "慢性炎",
+        "肉芽肿",
+        "机化性肺炎",
+        "感染",
+        "结核",
+        "炎性假瘤",
+        "纤维化",
+        "坏死性肉芽肿"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_metastatic",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "转移性肿瘤",
+      "concept_en": "metastatic tumor in lung",
+      "category": "nonadeno_other",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing metastatic tumor in the lung without primary lung adenocarcinoma morphology.",
+      "high_prompt": "A high magnification histopathology image showing metastatic malignant tumor cells distinct from primary lung adenocarcinoma.",
+      "patterns": [
+        "转移癌",
+        "转移性",
+        "肺转移",
+        "转移瘤"
+      ]
+    },
+    {
+      "concept_id": "nonadeno_lymphoma",
+      "class_name": "NonAdenocarcinoma",
+      "concept_zh": "淋巴瘤/淋巴组织增殖",
+      "concept_en": "lymphoid neoplasm or lymphoproliferative lesion",
+      "category": "nonadeno_other",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing a lymphoid neoplasm in lung tissue.",
+      "high_prompt": "A high magnification histopathology image showing dense atypical lymphoid cell infiltration.",
+      "patterns": [
+        "淋巴瘤",
+        "淋巴组织增殖",
+        "MALT"
+      ]
+    },
+    {
+      "concept_id": "aux_stas_present",
+      "class_name": "Auxiliary",
+      "concept_zh": "STAS/气腔播散",
+      "concept_en": "spread through air spaces",
+      "category": "auxiliary_prognostic",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing tumor spread through air spaces.",
+      "high_prompt": "A high magnification histopathology image showing detached tumor clusters spreading through air spaces.",
+      "patterns": [
+        "可见气道播散",
+        "可见肿瘤气腔播散",
+        "气腔播散",
+        "\\bSTAS\\b"
+      ]
+    },
+    {
+      "concept_id": "aux_vascular_invasion",
+      "class_name": "Auxiliary",
+      "concept_zh": "脉管癌栓/脉管侵犯",
+      "concept_en": "vascular invasion",
+      "category": "auxiliary_prognostic",
+      "scale": "high",
+      "low_prompt": "A low magnification histopathology image showing vascular invasion by tumor.",
+      "high_prompt": "A high magnification histopathology image showing tumor emboli within vascular spaces.",
+      "patterns": [
+        "脉管癌栓",
+        "脉管内癌栓",
+        "脉管侵犯",
+        "血管癌栓"
+      ]
+    },
+    {
+      "concept_id": "aux_pleural_invasion",
+      "class_name": "Auxiliary",
+      "concept_zh": "胸膜侵犯",
+      "concept_en": "visceral pleural invasion",
+      "category": "auxiliary_prognostic",
+      "scale": "low",
+      "low_prompt": "A low magnification histopathology image showing visceral pleural invasion by tumor.",
+      "high_prompt": "A high magnification histopathology image showing tumor cells invading pleural tissue.",
+      "patterns": [
+        "侵犯脏层胸膜",
+        "累及脏层胸膜",
+        "胸膜侵犯",
+        "PL1",
+        "PL2",
+        "PL3"
+      ]
+    }
+  ],
+  "radiology_concepts": [
+    {
+      "concept_id": "rad_ground_glass",
+      "concept_zh": "磨玻璃影/磨玻璃结节",
+      "concept_en": "ground-glass opacity or ground-glass nodule",
+      "prompt": "Radiology describes a ground-glass pulmonary nodule or ground-glass opacity.",
+      "patterns": [
+        "磨玻璃",
+        "GGO",
+        "ground[- ]glass"
+      ]
+    },
+    {
+      "concept_id": "rad_part_solid",
+      "concept_zh": "部分实性/混合磨玻璃结节",
+      "concept_en": "part-solid nodule",
+      "prompt": "Radiology describes a part-solid pulmonary nodule.",
+      "patterns": [
+        "部分实性",
+        "混合磨玻璃",
+        "亚实性",
+        "半实性"
+      ]
+    },
+    {
+      "concept_id": "rad_solid_nodule",
+      "concept_zh": "实性结节/实性肿块",
+      "concept_en": "solid pulmonary nodule or mass",
+      "prompt": "Radiology describes a solid pulmonary nodule or mass.",
+      "patterns": [
+        "实性结节",
+        "实性肿块",
+        "实性占位",
+        "实性病灶"
+      ]
+    },
+    {
+      "concept_id": "rad_lobulation",
+      "concept_zh": "分叶",
+      "concept_en": "lobulation",
+      "prompt": "Radiology describes lobulation of the pulmonary lesion.",
+      "patterns": [
+        "分叶"
+      ]
+    },
+    {
+      "concept_id": "rad_spiculation",
+      "concept_zh": "毛刺/棘状突起",
+      "concept_en": "spiculation",
+      "prompt": "Radiology describes spiculation or irregular margins of the pulmonary lesion.",
+      "patterns": [
+        "毛刺",
+        "棘状突起",
+        "毛糙"
+      ]
+    },
+    {
+      "concept_id": "rad_pleural_indentation",
+      "concept_zh": "胸膜凹陷/胸膜牵拉",
+      "concept_en": "pleural indentation or pleural retraction",
+      "prompt": "Radiology describes pleural indentation or pleural retraction.",
+      "patterns": [
+        "胸膜凹陷",
+        "胸膜牵拉",
+        "胸膜牵扯"
+      ]
+    },
+    {
+      "concept_id": "rad_vacuole",
+      "concept_zh": "空泡征",
+      "concept_en": "vacuole sign",
+      "prompt": "Radiology describes a vacuole sign within the pulmonary lesion.",
+      "patterns": [
+        "空泡"
+      ]
+    },
+    {
+      "concept_id": "rad_air_bronchogram",
+      "concept_zh": "支气管充气征/充气支气管",
+      "concept_en": "air bronchogram",
+      "prompt": "Radiology describes an air bronchogram within the lesion.",
+      "patterns": [
+        "支气管充气",
+        "充气支气管",
+        "空气支气管"
+      ]
+    },
+    {
+      "concept_id": "rad_fdg_uptake",
+      "concept_zh": "FDG摄取/糖代谢增高",
+      "concept_en": "increased FDG uptake",
+      "prompt": "Radiology describes increased FDG uptake or hypermetabolism.",
+      "patterns": [
+        "FDG.{0,8}摄取增高",
+        "糖代谢增高",
+        "SUVmax",
+        "代谢增高"
+      ]
+    },
+    {
+      "concept_id": "rad_lymph_node",
+      "concept_zh": "淋巴结增大/肿大",
+      "concept_en": "lymph node enlargement",
+      "prompt": "Radiology describes enlarged lymph nodes.",
+      "patterns": [
+        "淋巴结.{0,3}增大",
+        "淋巴结.{0,3}肿大",
+        "增大淋巴结"
+      ]
+    },
+    {
+      "concept_id": "rad_calcification",
+      "concept_zh": "钙化",
+      "concept_en": "calcification",
+      "prompt": "Radiology describes calcification.",
+      "patterns": [
+        "钙化"
+      ]
+    },
+    {
+      "concept_id": "rad_cavity",
+      "concept_zh": "空洞",
+      "concept_en": "cavitation",
+      "prompt": "Radiology describes cavitation.",
+      "patterns": [
+        "空洞"
+      ]
+    },
+    {
+      "concept_id": "rad_pleural_effusion",
+      "concept_zh": "胸腔积液",
+      "concept_en": "pleural effusion",
+      "prompt": "Radiology describes pleural effusion.",
+      "patterns": [
+        "胸腔积液"
+      ]
+    },
+    {
+      "concept_id": "rad_emphysema_bulla",
+      "concept_zh": "肺气肿/肺大泡",
+      "concept_en": "emphysema or pulmonary bullae",
+      "prompt": "Radiology describes emphysema or pulmonary bullae.",
+      "patterns": [
+        "肺气肿",
+        "肺大泡"
+      ]
+    }
+  ]
+}
