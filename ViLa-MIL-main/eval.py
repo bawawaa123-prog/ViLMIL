@@ -63,9 +63,13 @@ parser.add_argument("--use_concept_prompt_pool", action="store_true", default=Fa
 parser.add_argument(
     "--prompt_ensemble_mode",
     type=str,
-    choices=["embedding_mean", "logit_mean"],
+    choices=["embedding_mean", "logit_mean", "dynamic_gate"],
     default="embedding_mean",
 )
+parser.add_argument("--use_dynamic_prompt_gate", action="store_true", default=False)
+parser.add_argument("--dynamic_gate_hidden_dim", type=int, default=256)
+parser.add_argument("--dynamic_gate_residual_mean", action="store_true", default=False)
+parser.add_argument("--prompt_dropout", type=float, default=0.0)
 parser.add_argument("--prototype_number", type=int, default=16, help="number of prototypes (default: 16)")
 parser.add_argument(
     "--finetune_text_encoder",
@@ -164,6 +168,10 @@ settings = {
     "use_concept_prompt_pool": args.use_concept_prompt_pool,
     "concept_prompt_path": args.concept_prompt_path,
     "prompt_ensemble_mode": args.prompt_ensemble_mode,
+    "use_dynamic_prompt_gate": args.use_dynamic_prompt_gate,
+    "dynamic_gate_hidden_dim": args.dynamic_gate_hidden_dim,
+    "dynamic_gate_residual_mean": args.dynamic_gate_residual_mean,
+    "prompt_dropout": args.prompt_dropout,
 }
 
 with open(os.path.join(args.save_dir, f"eval_experiment_{args.save_exp_code}.txt"), "w") as f:
@@ -218,6 +226,10 @@ else:
 
 if args.use_concept_prompt_pool and not args.concept_prompt_path:
     raise ValueError("--use_concept_prompt_pool is set but --concept_prompt_path is missing.")
+if args.prompt_ensemble_mode == "dynamic_gate" and not args.use_concept_prompt_pool:
+    raise ValueError("--prompt_ensemble_mode dynamic_gate requires --use_concept_prompt_pool.")
+if args.use_dynamic_prompt_gate and args.prompt_ensemble_mode != "dynamic_gate":
+    raise ValueError("--use_dynamic_prompt_gate requires --prompt_ensemble_mode dynamic_gate.")
 
 start = 0 if args.k_start == -1 else args.k_start
 end = args.k if args.k_end == -1 else args.k_end
@@ -284,7 +296,7 @@ if __name__ == "__main__":
             csv_path=split_path,
         )[datasets_id[args.split]]
 
-        model, patient_results, metrics, df, each_class_acc = eval(
+        model, patient_results, metrics, df, each_class_acc, prompt_export_df = eval(
             args.mode,
             split_dataset,
             args,
@@ -317,6 +329,10 @@ if __name__ == "__main__":
                 "pr_auc": metrics["pr_auc"],
             }
         )
+        if prompt_export_df is not None and not prompt_export_df.empty:
+            prompt_export_path = os.path.join(args.save_dir, f"prompt_weight_analysis_fold{current_fold}.csv")
+            prompt_export_df.to_csv(prompt_export_path, index=False)
+            print(f"Saved prompt diagnostics to: {prompt_export_path}")
 
     if not all_results:
         print("没有成功完成任何折的评估，程序退出。")

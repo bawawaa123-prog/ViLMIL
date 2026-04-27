@@ -55,9 +55,13 @@ parser.add_argument("--use_concept_prompt_pool", action="store_true", default=Fa
 parser.add_argument(
     "--prompt_ensemble_mode",
     type=str,
-    choices=["embedding_mean", "logit_mean"],
+    choices=["embedding_mean", "logit_mean", "dynamic_gate"],
     default="embedding_mean",
 )
+parser.add_argument("--use_dynamic_prompt_gate", action="store_true", default=False)
+parser.add_argument("--dynamic_gate_hidden_dim", type=int, default=256)
+parser.add_argument("--dynamic_gate_residual_mean", action="store_true", default=False)
+parser.add_argument("--prompt_dropout", type=float, default=0.0)
 parser.add_argument("--prototype_number", type=int, default=16)
 parser.add_argument(
     "--finetune_text_encoder",
@@ -201,6 +205,10 @@ settings = {
     "use_concept_prompt_pool": args.use_concept_prompt_pool,
     "concept_prompt_path": args.concept_prompt_path,
     "prompt_ensemble_mode": args.prompt_ensemble_mode,
+    "use_dynamic_prompt_gate": args.use_dynamic_prompt_gate,
+    "dynamic_gate_hidden_dim": args.dynamic_gate_hidden_dim,
+    "dynamic_gate_residual_mean": args.dynamic_gate_residual_mean,
+    "prompt_dropout": args.prompt_dropout,
 }
 
 print("\nLoad Dataset")
@@ -264,6 +272,10 @@ else:
 
 if args.use_concept_prompt_pool and not args.concept_prompt_path:
     raise ValueError("--use_concept_prompt_pool is set but --concept_prompt_path is missing.")
+if args.prompt_ensemble_mode == "dynamic_gate" and not args.use_concept_prompt_pool:
+    raise ValueError("--prompt_ensemble_mode dynamic_gate requires --use_concept_prompt_pool.")
+if args.use_dynamic_prompt_gate and args.prompt_ensemble_mode != "dynamic_gate":
+    raise ValueError("--use_dynamic_prompt_gate requires --prompt_ensemble_mode dynamic_gate.")
 
 if not os.path.exists(args.results_dir):
     os.makedirs(args.results_dir)

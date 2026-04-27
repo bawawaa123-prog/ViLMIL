@@ -91,6 +91,44 @@ def _encode_prompt_list(prompts, text_encoder, tokenizer, device):
         text_encoder.train(prev_mode)
 
 
+def _build_group_features_and_texts(
+    grouped_prompts,
+    text_encoder,
+    tokenizer,
+    device,
+    num_classes,
+    dtype=None,
+):
+    def _encode_group(scale_name):
+        prompt_counts = [len(grouped_prompts[scale_name][class_id]) for class_id in range(num_classes)]
+        if any(count == 0 for count in prompt_counts):
+            raise ValueError(
+                f"Missing concept prompts for scale='{scale_name}': counts={prompt_counts}"
+            )
+        if len(set(prompt_counts)) != 1:
+            raise ValueError(
+                f"Dynamic prompt modes require balanced prompt counts per class for scale='{scale_name}', "
+                f"but got counts={prompt_counts}"
+            )
+
+        class_prompt_features = []
+        class_prompt_texts = []
+        for class_id in range(num_classes):
+            prompts = grouped_prompts[scale_name][class_id]
+            text_features = _encode_prompt_list(prompts, text_encoder, tokenizer, device)
+            class_prompt_features.append(text_features)
+            class_prompt_texts.append(list(prompts))
+
+        features = torch.stack(class_prompt_features, dim=0)
+        if dtype is not None:
+            features = features.to(dtype=dtype)
+        return features, class_prompt_texts
+
+    low_prompt_tensor, low_prompt_texts = _encode_group("low")
+    high_prompt_tensor, high_prompt_texts = _encode_group("high")
+    return low_prompt_tensor, high_prompt_tensor, low_prompt_texts, high_prompt_texts
+
+
 def build_concept_text_features(
     prompt_json_path,
     text_encoder,
@@ -142,30 +180,36 @@ def build_concept_prompt_tensors(
         num_classes=num_classes,
         class_names=class_names,
     )
-
-    def _encode_group(scale_name):
-        prompt_counts = [len(grouped_prompts[scale_name][class_id]) for class_id in range(num_classes)]
-        if any(count == 0 for count in prompt_counts):
-            raise ValueError(
-                f"Missing concept prompts for scale='{scale_name}': counts={prompt_counts}"
-            )
-        if len(set(prompt_counts)) != 1:
-            raise ValueError(
-                f"logit_mean requires balanced prompt counts per class for scale='{scale_name}', "
-                f"but got counts={prompt_counts}"
-            )
-
-        class_prompt_features = []
-        for class_id in range(num_classes):
-            prompts = grouped_prompts[scale_name][class_id]
-            text_features = _encode_prompt_list(prompts, text_encoder, tokenizer, device)
-            class_prompt_features.append(text_features)
-
-        features = torch.stack(class_prompt_features, dim=0)
-        if dtype is not None:
-            features = features.to(dtype=dtype)
-        return features
-
-    low_prompt_tensor = _encode_group("low")
-    high_prompt_tensor = _encode_group("high")
+    low_prompt_tensor, high_prompt_tensor, _, _ = _build_group_features_and_texts(
+        grouped_prompts=grouped_prompts,
+        text_encoder=text_encoder,
+        tokenizer=tokenizer,
+        device=device,
+        num_classes=num_classes,
+        dtype=dtype,
+    )
     return low_prompt_tensor, high_prompt_tensor
+
+
+def build_concept_prompt_bundle(
+    prompt_json_path,
+    text_encoder,
+    tokenizer,
+    device,
+    num_classes,
+    dtype=None,
+    class_names=None,
+):
+    _, grouped_prompts = _group_concept_prompts(
+        prompt_json_path=prompt_json_path,
+        num_classes=num_classes,
+        class_names=class_names,
+    )
+    return _build_group_features_and_texts(
+        grouped_prompts=grouped_prompts,
+        text_encoder=text_encoder,
+        tokenizer=tokenizer,
+        device=device,
+        num_classes=num_classes,
+        dtype=dtype,
+    )

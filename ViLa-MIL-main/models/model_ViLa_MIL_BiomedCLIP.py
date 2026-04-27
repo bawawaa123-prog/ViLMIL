@@ -18,7 +18,7 @@ from torch.nn import functional as F
 from open_clip import create_model_from_pretrained, get_tokenizer
 
 from .model_utils import MultiheadAttention
-from utils.prompt_utils import build_concept_prompt_tensors, build_concept_text_features
+from utils.prompt_utils import build_concept_prompt_bundle, build_concept_prompt_tensors, build_concept_text_features
 
 logger = logging.getLogger(__name__)
 
@@ -300,10 +300,34 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.use_concept_prompt_pool = bool(getattr(config, "use_concept_prompt_pool", False))
         self.concept_prompt_path = getattr(config, "concept_prompt_path", None)
         self.prompt_ensemble_mode = str(getattr(config, "prompt_ensemble_mode", "embedding_mean"))
+        self.use_dynamic_prompt_gate = bool(getattr(config, "use_dynamic_prompt_gate", False))
+        if self.prompt_ensemble_mode == "dynamic_gate":
+            self.use_dynamic_prompt_gate = True
+        self.dynamic_gate_hidden_dim = int(getattr(config, "dynamic_gate_hidden_dim", 256))
+        self.dynamic_gate_residual_mean = bool(getattr(config, "dynamic_gate_residual_mean", False))
+        self.prompt_dropout = float(getattr(config, "prompt_dropout", 0.0))
 
         self.norm = nn.LayerNorm(self.L)
         self.cross_attention_1 = MultiheadAttention(embed_dim=self.L, num_heads=1)
         self.cross_attention_2 = MultiheadAttention(embed_dim=self.L, num_heads=1)
+        self.dynamic_gate_low = None
+        self.dynamic_gate_high = None
+        self.dynamic_gate_gamma = None
+        self.concept_prompt_texts_low = None
+        self.concept_prompt_texts_high = None
+        if self.use_dynamic_prompt_gate:
+            gate_input_dim = self.L * 4
+            self.dynamic_gate_low = nn.Sequential(
+                nn.Linear(gate_input_dim, self.dynamic_gate_hidden_dim),
+                nn.GELU(),
+                nn.Linear(self.dynamic_gate_hidden_dim, 1),
+            )
+            self.dynamic_gate_high = nn.Sequential(
+                nn.Linear(gate_input_dim, self.dynamic_gate_hidden_dim),
+                nn.GELU(),
+                nn.Linear(self.dynamic_gate_hidden_dim, 1),
+            )
+            self.dynamic_gate_gamma = nn.Parameter(torch.tensor(0.1, dtype=torch.float32))
 
         self.learnable_image_center = nn.Parameter(torch.Tensor(config.prototype_number, 1, self.L))
         trunc_normal_(self.learnable_image_center, std=0.02)
@@ -410,6 +434,27 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
 
         raise ValueError(f"Unsupported text feature rank: {text_features.dim()}")
 
+    def _contextualize_dynamic_text_features(self, text_features, image_context):
+        if text_features.dim() != 3:
+            raise ValueError(f"Dynamic text features must be [batch, classes, dim], got rank={text_features.dim()}")
+
+        batch_size, _, _ = text_features.shape
+        if image_context.dim() == 2:
+            image_context = image_context.unsqueeze(1)
+        if image_context.dim() != 3:
+            raise ValueError(f"Image context must be rank-2/3, got rank={image_context.dim()}")
+        if image_context.size(1) == 1 and batch_size > 1:
+            image_context = image_context.expand(-1, batch_size, -1)
+        if image_context.size(1) != batch_size:
+            raise ValueError(
+                f"Dynamic text/image context batch mismatch: text batch={batch_size}, "
+                f"context batch={image_context.size(1)}"
+            )
+
+        query = text_features.permute(1, 0, 2)
+        text_context_features, _ = self.cross_attention_2(query, image_context, image_context)
+        return text_context_features.permute(1, 0, 2) + text_features
+
     def _compute_scale_logits(self, image_features, text_features):
         if text_features.dim() == 2:
             return image_features @ text_features.T
@@ -422,11 +467,130 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
 
         raise ValueError(f"Unsupported text feature rank for logits: {text_features.dim()}")
 
+    def _compute_dynamic_scale_logits(self, image_features, text_features):
+        if image_features.dim() == 1:
+            image_features = image_features.unsqueeze(0)
+        if text_features.dim() != 3:
+            raise ValueError(f"Dynamic scale logits expect [batch, classes, dim], got rank={text_features.dim()}")
+        if image_features.size(0) != text_features.size(0):
+            raise ValueError(
+                f"Dynamic logits batch mismatch: image batch={image_features.size(0)}, "
+                f"text batch={text_features.size(0)}"
+            )
+        return torch.einsum("bd,bcd->bc", image_features.float(), text_features.float())
+
+    def _apply_prompt_dropout(self, weights):
+        if (not self.training) or self.prompt_dropout <= 0.0 or weights.size(-1) <= 1:
+            return weights
+
+        keep_mask = (torch.rand_like(weights) >= self.prompt_dropout).to(weights.dtype)
+        dropped_weights = weights * keep_mask
+        keep_sum = dropped_weights.sum(dim=-1, keepdim=True)
+        all_dropped = keep_sum <= 0
+        if all_dropped.any():
+            fallback_mask = torch.zeros_like(dropped_weights)
+            fallback_mask[..., 0] = 1.0
+            dropped_weights = torch.where(all_dropped, fallback_mask, dropped_weights)
+            keep_sum = dropped_weights.sum(dim=-1, keepdim=True)
+        return dropped_weights / keep_sum.clamp_min(1e-6)
+
+    def _build_dynamic_text_features(self, image_features, prompt_features, gate_module, mean_text_features):
+        if image_features.dim() == 1:
+            image_features = image_features.unsqueeze(0)
+        if prompt_features.dim() != 3:
+            raise ValueError(f"Prompt features must be [classes, prompts, dim], got rank={prompt_features.dim()}")
+
+        image_features = F.normalize(image_features.float(), dim=-1)
+        prompt_features = F.normalize(prompt_features.float(), dim=-1)
+
+        batch_size = image_features.size(0)
+        num_classes, num_prompts, dim = prompt_features.shape
+
+        prompt_features_expanded = prompt_features.unsqueeze(0).expand(batch_size, -1, -1, -1)
+        image_features_expanded = image_features.unsqueeze(1).unsqueeze(2).expand(-1, num_classes, num_prompts, -1)
+
+        gate_input = torch.cat(
+            [
+                image_features_expanded,
+                prompt_features_expanded,
+                image_features_expanded * prompt_features_expanded,
+                torch.abs(image_features_expanded - prompt_features_expanded),
+            ],
+            dim=-1,
+        )
+
+        gate_scores = gate_module(gate_input).squeeze(-1)
+        prompt_weights = F.softmax(gate_scores, dim=-1)
+        prompt_weights = self._apply_prompt_dropout(prompt_weights)
+
+        dynamic_text = torch.sum(prompt_weights.unsqueeze(-1) * prompt_features_expanded, dim=2)
+        dynamic_text = F.normalize(dynamic_text, dim=-1)
+
+        mean_text = F.normalize(mean_text_features.float(), dim=-1).unsqueeze(0).expand(batch_size, -1, -1)
+        if self.dynamic_gate_residual_mean:
+            gamma = torch.clamp(self.dynamic_gate_gamma, min=0.0, max=1.0)
+            final_text = F.normalize((1.0 - gamma) * mean_text + gamma * dynamic_text, dim=-1)
+        else:
+            final_text = dynamic_text
+
+        return final_text, prompt_weights
+
+    def _compute_text_logits(
+        self,
+        image_features_low,
+        image_context_low,
+        image_features_high,
+        image_context_high,
+        device,
+        return_diagnostics=False,
+    ):
+        text_features_low, text_features_high = self._encode_prompt_text_features(device)
+        diagnostics = {}
+
+        if self.use_dynamic_prompt_gate:
+            mean_low = self.concept_mean_text_low.to(device)
+            mean_high = self.concept_mean_text_high.to(device)
+
+            text_features_low, prompt_weights_low = self._build_dynamic_text_features(
+                image_features_low,
+                text_features_low.to(device),
+                self.dynamic_gate_low,
+                mean_low,
+            )
+            text_features_high, prompt_weights_high = self._build_dynamic_text_features(
+                image_features_high,
+                text_features_high.to(device),
+                self.dynamic_gate_high,
+                mean_high,
+            )
+
+            text_features_low = self._contextualize_dynamic_text_features(text_features_low, image_context_low)
+            text_features_high = self._contextualize_dynamic_text_features(text_features_high, image_context_high)
+
+            logits_low = self._compute_dynamic_scale_logits(image_features_low, text_features_low)
+            logits_high = self._compute_dynamic_scale_logits(image_features_high, text_features_high)
+
+            if return_diagnostics:
+                diagnostics = {
+                    "prompt_weights_low": prompt_weights_low.detach(),
+                    "prompt_weights_high": prompt_weights_high.detach(),
+                    "dynamic_text_low": text_features_low.detach(),
+                    "dynamic_text_high": text_features_high.detach(),
+                    "gamma": torch.clamp(self.dynamic_gate_gamma.detach(), min=0.0, max=1.0),
+                }
+        else:
+            text_features_low = self._contextualize_text_features(text_features_low, image_context_low)
+            text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
+            logits_low = self._compute_scale_logits(image_features_low, text_features_low)
+            logits_high = self._compute_scale_logits(image_features_high, text_features_high)
+
+        return logits_low, logits_high, diagnostics
+
     def _initialize_concept_prompt_pool(self, config):
         if not self.use_concept_prompt_pool:
             return
 
-        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean"}:
+        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean", "dynamic_gate"}:
             raise ValueError(f"Unsupported prompt_ensemble_mode: {self.prompt_ensemble_mode}")
         if not self.concept_prompt_path:
             raise ValueError("use_concept_prompt_pool=True but concept_prompt_path is missing")
@@ -441,7 +605,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 dtype=torch.float32,
                 class_names=getattr(config, "class_names", None),
             )
-        else:
+        elif self.prompt_ensemble_mode == "logit_mean":
             concept_low, concept_high = build_concept_prompt_tensors(
                 prompt_json_path=self.concept_prompt_path,
                 text_encoder=self.text_encoder,
@@ -451,6 +615,22 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 dtype=torch.float32,
                 class_names=getattr(config, "class_names", None),
             )
+        else:
+            concept_low, concept_high, prompt_texts_low, prompt_texts_high = build_concept_prompt_bundle(
+                prompt_json_path=self.concept_prompt_path,
+                text_encoder=self.text_encoder,
+                tokenizer=self.tokenizer,
+                device=next(self.parameters()).device,
+                num_classes=self.num_classes,
+                dtype=torch.float32,
+                class_names=getattr(config, "class_names", None),
+            )
+            mean_low = F.normalize(concept_low.mean(dim=1), dim=-1)
+            mean_high = F.normalize(concept_high.mean(dim=1), dim=-1)
+            self.register_buffer("concept_mean_text_low", mean_low.detach().cpu())
+            self.register_buffer("concept_mean_text_high", mean_high.detach().cpu())
+            self.concept_prompt_texts_low = prompt_texts_low
+            self.concept_prompt_texts_high = prompt_texts_high
 
         self.register_buffer("concept_text_low", concept_low.detach().cpu())
         self.register_buffer("concept_text_high", concept_high.detach().cpu())
@@ -490,16 +670,16 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         A_high = F.softmax(A_high, dim=1)
         image_features_high = torch.mm(A_high, H_high)
 
-        text_features_low, text_features_high = self._encode_prompt_text_features(x_s.device)
-
         image_context = torch.cat((compents.squeeze(), M.squeeze(0)), dim=0)
-        text_features_low = self._contextualize_text_features(text_features_low, image_context)
-
         image_context_high = torch.cat((compents_high.squeeze(), M_high.squeeze(0)), dim=0)
-        text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
-
-        logits_low = self._compute_scale_logits(image_features_low, text_features_low)
-        logits_high = self._compute_scale_logits(image_features_high, text_features_high)
+        logits_low, logits_high, _ = self._compute_text_logits(
+            image_features_low=image_features_low,
+            image_context_low=image_context,
+            image_features_high=image_features_high,
+            image_context_high=image_context_high,
+            device=x_s.device,
+            return_diagnostics=False,
+        )
         logits = logits_low + logits_high
 
         loss = self.loss_ce(logits, label)
@@ -507,6 +687,59 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]
 
         return Y_prob, Y_hat, loss
+
+    def forward_with_prompt_diagnostics(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
+        del coord_s, coords_l, slide_id
+
+        M = x_s.float()
+        compents, _ = self.cross_attention_1(self.learnable_image_center, M, M)
+        compents = self.norm(compents + self.learnable_image_center)
+
+        H = compents.squeeze().float()
+        A_V = self.attention_V(H)
+        A_U = self.attention_U(H)
+        A = self.attention_weights(A_V * A_U)
+        A = torch.transpose(A, 1, 0)
+        A = F.softmax(A, dim=1)
+        image_features_low = torch.mm(A, H)
+
+        M_high = x_l.float()
+        compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
+        compents_high = self.norm(compents_high + self.learnable_image_center)
+
+        H_high = compents_high.squeeze().float()
+        A_V_high = self.attention_V(H_high)
+        A_U_high = self.attention_U(H_high)
+        A_high = self.attention_weights(A_V_high * A_U_high)
+        A_high = torch.transpose(A_high, 1, 0)
+        A_high = F.softmax(A_high, dim=1)
+        image_features_high = torch.mm(A_high, H_high)
+
+        image_context = torch.cat((compents.squeeze(), M.squeeze(0)), dim=0)
+        image_context_high = torch.cat((compents_high.squeeze(), M_high.squeeze(0)), dim=0)
+        logits_low, logits_high, diagnostics = self._compute_text_logits(
+            image_features_low=image_features_low,
+            image_context_low=image_context,
+            image_features_high=image_features_high,
+            image_context_high=image_context_high,
+            device=x_s.device,
+            return_diagnostics=True,
+        )
+        logits = logits_low + logits_high
+
+        loss = self.loss_ce(logits, label)
+        Y_prob = F.softmax(logits, dim=1)
+        Y_hat = torch.topk(Y_prob, 1, dim=1)[1]
+
+        diagnostics.update(
+            {
+                "logits_low": logits_low.detach(),
+                "logits_high": logits_high.detach(),
+                "final_logits": logits.detach(),
+                "pred_probs": Y_prob.detach(),
+            }
+        )
+        return Y_prob, Y_hat, loss, diagnostics
 
     def forward_with_attention(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         """前向传播并返回注意力权重(用于热力图)"""
@@ -540,16 +773,16 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         A_high = F.softmax(A_high, dim=1)
         image_features_high = torch.mm(A_high, H_high)
 
-        text_features_low, text_features_high = self._encode_prompt_text_features(x_s.device)
-
         image_context = torch.cat((compents.squeeze(), M.squeeze(0)), dim=0)
-        text_features_low = self._contextualize_text_features(text_features_low, image_context)
-
         image_context_high = torch.cat((compents_high.squeeze(), M_high.squeeze(0)), dim=0)
-        text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
-
-        logits_low = self._compute_scale_logits(image_features_low, text_features_low)
-        logits_high = self._compute_scale_logits(image_features_high, text_features_high)
+        logits_low, logits_high, _ = self._compute_text_logits(
+            image_features_low=image_features_low,
+            image_context_low=image_context,
+            image_features_high=image_features_high,
+            image_context_high=image_context_high,
+            device=x_s.device,
+            return_diagnostics=False,
+        )
         logits = logits_low + logits_high
 
         Y_prob = F.softmax(logits, dim=1)

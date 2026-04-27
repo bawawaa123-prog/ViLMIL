@@ -162,6 +162,10 @@ def train(datasets, cur, args):
         config.use_concept_prompt_pool = bool(getattr(args, 'use_concept_prompt_pool', False))
         config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
         config.prompt_ensemble_mode = str(getattr(args, 'prompt_ensemble_mode', 'embedding_mean'))
+        config.use_dynamic_prompt_gate = bool(getattr(args, 'use_dynamic_prompt_gate', False))
+        config.dynamic_gate_hidden_dim = int(getattr(args, 'dynamic_gate_hidden_dim', 256))
+        config.dynamic_gate_residual_mean = bool(getattr(args, 'dynamic_gate_residual_mean', False))
+        config.prompt_dropout = float(getattr(args, 'prompt_dropout', 0.0))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))

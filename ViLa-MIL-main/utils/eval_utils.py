@@ -3,6 +3,7 @@ import torch
 from models.model_mil import MIL_fc, MIL_fc_mc
 import pandas as pd
 import os
+import json
 from utils.utils import *
 from utils.core_utils import Accuracy_Logger
 from sklearn.metrics import roc_auc_score, roc_curve, auc, f1_score
@@ -39,6 +40,10 @@ def initiate_model(args, ckpt_path):
         config.use_concept_prompt_pool = bool(getattr(args, 'use_concept_prompt_pool', False))
         config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
         config.prompt_ensemble_mode = str(getattr(args, 'prompt_ensemble_mode', 'embedding_mean'))
+        config.use_dynamic_prompt_gate = bool(getattr(args, 'use_dynamic_prompt_gate', False))
+        config.dynamic_gate_hidden_dim = int(getattr(args, 'dynamic_gate_hidden_dim', 256))
+        config.dynamic_gate_residual_mean = bool(getattr(args, 'dynamic_gate_residual_mean', False))
+        config.prompt_dropout = float(getattr(args, 'prompt_dropout', 0.0))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
@@ -74,12 +79,75 @@ def initiate_model(args, ckpt_path):
     model.eval()
     return model
 
+
+def _extract_topk_prompt_strings(prompt_texts, prompt_weights, class_idx, topk=3):
+    prompts = prompt_texts[class_idx]
+    weights = np.asarray(prompt_weights[class_idx], dtype=float)
+    order = np.argsort(-weights)[:topk]
+    top_prompts = [prompts[idx] for idx in order]
+    top_weights = [float(weights[idx]) for idx in order]
+    return top_prompts, top_weights
+
+
+def _build_prompt_export_record(
+    slide_row,
+    label,
+    y_hat,
+    y_prob,
+    diagnostics,
+    class_names,
+    prompt_texts_low,
+    prompt_texts_high,
+):
+    pred_class = int(y_hat.item())
+    true_class = int(label.item())
+    num_classes = len(class_names)
+    opp_class = 1 - pred_class if num_classes == 2 else int(np.argsort(y_prob[0])[-2])
+
+    prompt_weights_low = diagnostics["prompt_weights_low"].detach().cpu().numpy()[0]
+    prompt_weights_high = diagnostics["prompt_weights_high"].detach().cpu().numpy()[0]
+    logits_low = diagnostics["logits_low"].detach().cpu().numpy()[0]
+    logits_high = diagnostics["logits_high"].detach().cpu().numpy()[0]
+    final_logits = diagnostics["final_logits"].detach().cpu().numpy()[0]
+    pred_probs = diagnostics["pred_probs"].detach().cpu().numpy()[0]
+
+    pred_low_prompts, pred_low_weights = _extract_topk_prompt_strings(prompt_texts_low, prompt_weights_low, pred_class)
+    pred_high_prompts, pred_high_weights = _extract_topk_prompt_strings(prompt_texts_high, prompt_weights_high, pred_class)
+    opp_low_prompts, opp_low_weights = _extract_topk_prompt_strings(prompt_texts_low, prompt_weights_low, opp_class)
+    opp_high_prompts, opp_high_weights = _extract_topk_prompt_strings(prompt_texts_high, prompt_weights_high, opp_class)
+
+    record = {
+        "case_id": slide_row["case_id"] if "case_id" in slide_row.index else slide_row["slide_id"],
+        "slide_id": slide_row["slide_id"],
+        "true_label": true_class,
+        "pred_label": pred_class,
+        "pred_class_name": class_names[pred_class],
+        "opp_class_name": class_names[opp_class],
+        "pred_prob": float(pred_probs[pred_class]),
+        "top3_pred_low_prompts": json.dumps(pred_low_prompts, ensure_ascii=False),
+        "top3_pred_low_weights": json.dumps(pred_low_weights),
+        "top3_pred_high_prompts": json.dumps(pred_high_prompts, ensure_ascii=False),
+        "top3_pred_high_weights": json.dumps(pred_high_weights),
+        "top3_opp_low_prompts": json.dumps(opp_low_prompts, ensure_ascii=False),
+        "top3_opp_low_weights": json.dumps(opp_low_weights),
+        "top3_opp_high_prompts": json.dumps(opp_high_prompts, ensure_ascii=False),
+        "top3_opp_high_weights": json.dumps(opp_high_weights),
+    }
+
+    for class_idx in range(num_classes):
+        record[f"logits_low_class{class_idx}"] = float(logits_low[class_idx])
+        record[f"logits_high_class{class_idx}"] = float(logits_high[class_idx])
+        record[f"final_logit_class{class_idx}"] = float(final_logits[class_idx])
+
+    return record
+
+
 def eval(mode, dataset, args, ckpt_path):
     model = initiate_model(args, ckpt_path)
     
     print('Init Loaders')
     loader = get_simple_loader(dataset, mode=args.mode)
-    patient_results, metrics, df, acc_logger = summary(mode, model, loader, args)
+    patient_results, metrics, df, acc_logger, prompt_export_df = summary(mode, model, loader, args)
     print('test_error: ', 1 - metrics["acc"])
     print('auc: ', metrics["auc"])
     print('f1: ', metrics["f1"])
@@ -93,7 +161,7 @@ def eval(mode, dataset, args, ckpt_path):
         acc, correct, count = acc_logger.get_summary(i)
         each_class_acc.append(acc)
 
-    return model, patient_results, metrics, df, each_class_acc
+    return model, patient_results, metrics, df, each_class_acc, prompt_export_df
 
 def summary(mode, model, loader, args):
     acc_logger = Accuracy_Logger(n_classes=args.n_classes)
@@ -110,7 +178,9 @@ def summary(mode, model, loader, args):
     all_label = []
 
     slide_ids = loader.dataset.slide_data['slide_id']
+    slide_rows = loader.dataset.slide_data.reset_index(drop=True)
     patient_results = {}
+    prompt_export_records = []
     if(mode == 'transformer'):
         for batch_idx, (data_s, coord_s, data_l, coord_l, label, batch_slide_ids) in enumerate(loader):
             data_s, coord_s, data_l, coord_l, label = data_s.to(device), coord_s.to(device), data_l.to(device), coord_l.to(device), label.to(device)
@@ -120,7 +190,13 @@ def summary(mode, model, loader, args):
             else:
                 slide_id_for_model = slide_id
             with torch.no_grad():
-                Y_prob, Y_hat, loss = model(data_s, coord_s, data_l, coord_l, label, slide_id=slide_id_for_model)
+                diagnostics = None
+                if hasattr(model, "forward_with_prompt_diagnostics") and bool(getattr(args, "use_dynamic_prompt_gate", False)):
+                    Y_prob, Y_hat, loss, diagnostics = model.forward_with_prompt_diagnostics(
+                        data_s, coord_s, data_l, coord_l, label, slide_id=slide_id_for_model
+                    )
+                else:
+                    Y_prob, Y_hat, loss = model(data_s, coord_s, data_l, coord_l, label, slide_id=slide_id_for_model)
 
             acc_logger.log(Y_hat, label)
             probs = Y_prob.cpu().numpy()
@@ -132,6 +208,19 @@ def summary(mode, model, loader, args):
             patient_results.update({slide_id: {'slide_id': np.array(slide_id), 'prob': probs, 'label': label.item()}})
             error = calculate_error(Y_hat, label)
             test_error += error
+            if diagnostics is not None:
+                prompt_export_records.append(
+                    _build_prompt_export_record(
+                        slide_row=slide_rows.iloc[batch_idx],
+                        label=label,
+                        y_hat=Y_hat,
+                        y_prob=probs,
+                        diagnostics=diagnostics,
+                        class_names=getattr(args, "class_names", [str(i) for i in range(args.n_classes)]),
+                        prompt_texts_low=getattr(model, "concept_prompt_texts_low", None),
+                        prompt_texts_high=getattr(model, "concept_prompt_texts_high", None),
+                    )
+                )
 
         # 将列表转换为numpy数组并展平
         all_pred_np = np.concatenate(all_pred)
@@ -144,5 +233,6 @@ def summary(mode, model, loader, args):
         for c in range(args.n_classes):
             results_dict.update({'p_{}'.format(c): all_probs[:,c]})
         df = pd.DataFrame(results_dict)
+        prompt_export_df = pd.DataFrame(prompt_export_records) if prompt_export_records else None
 
-        return patient_results, metrics, df, acc_logger 
+        return patient_results, metrics, df, acc_logger, prompt_export_df 
