@@ -7,6 +7,7 @@ from utils.utils import *
 from utils.core_utils import Accuracy_Logger
 from sklearn.metrics import roc_auc_score, roc_curve, auc, f1_score
 from sklearn.preprocessing import label_binarize
+from utils.metric_utils import compute_classification_metrics
 
 
 def initiate_model(args, ckpt_path):
@@ -34,6 +35,10 @@ def initiate_model(args, ckpt_path):
         config.input_size = 512
         config.hidden_size = 192
         config.text_prompt = args.text_prompt
+        config.class_names = getattr(args, 'class_names', None)
+        config.use_concept_prompt_pool = bool(getattr(args, 'use_concept_prompt_pool', False))
+        config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
+        config.prompt_ensemble_mode = str(getattr(args, 'prompt_ensemble_mode', 'embedding_mean'))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
@@ -74,17 +79,21 @@ def eval(mode, dataset, args, ckpt_path):
     
     print('Init Loaders')
     loader = get_simple_loader(dataset, mode=args.mode)
-    patient_results, test_error, auc, test_f1, df, acc_logger = summary(mode, model, loader, args)
-    print('test_error: ', test_error)
-    print('auc: ', auc)
-    print('f1: ', test_f1)
+    patient_results, metrics, df, acc_logger = summary(mode, model, loader, args)
+    print('test_error: ', 1 - metrics["acc"])
+    print('auc: ', metrics["auc"])
+    print('f1: ', metrics["f1"])
+    print('balanced_acc: ', metrics["balanced_acc"])
+    print('sensitivity: ', metrics["sensitivity"])
+    print('specificity: ', metrics["specificity"])
+    print('pr_auc: ', metrics["pr_auc"])
 
     each_class_acc = []
     for i in range(args.n_classes):
         acc, correct, count = acc_logger.get_summary(i)
         each_class_acc.append(acc)
 
-    return model, patient_results, test_error, auc, test_f1, df, each_class_acc
+    return model, patient_results, metrics, df, each_class_acc
 
 def summary(mode, model, loader, args):
     acc_logger = Accuracy_Logger(n_classes=args.n_classes)
@@ -127,34 +136,13 @@ def summary(mode, model, loader, args):
         # 将列表转换为numpy数组并展平
         all_pred_np = np.concatenate(all_pred)
         all_label_np = np.concatenate(all_label)
-        test_f1 = f1_score(all_label_np, all_pred_np, average='macro')
         test_error /= len(loader)
-
-        aucs = []
-        if len(np.unique(all_labels)) == 1:
-            auc_score = -1
-
-        else:
-            if args.n_classes == 2:
-                auc_score = roc_auc_score(all_labels, all_probs[:, 1])
-            else:
-                binary_labels = label_binarize(all_labels, classes=[i for i in range(args.n_classes)])
-                for class_idx in range(args.n_classes):
-                    if class_idx in all_labels:
-                        fpr, tpr, _ = roc_curve(binary_labels[:, class_idx], all_probs[:, class_idx])
-                        aucs.append(auc(fpr, tpr))
-                    else:
-                        aucs.append(float('nan'))
-                if args.micro_average:
-                    binary_labels = label_binarize(all_labels, classes=[i for i in range(args.n_classes)])
-                    fpr, tpr, _ = roc_curve(binary_labels.ravel(), all_probs.ravel())
-                    auc_score = auc(fpr, tpr)
-                else:
-                    auc_score = np.nanmean(np.array(aucs))
+        metrics = compute_classification_metrics(all_labels, all_probs, all_pred_np, args.n_classes)
+        metrics["error"] = 1.0 - metrics["acc"]
 
         results_dict = {'slide_id': slide_ids, 'Y': all_labels, 'Y_hat': all_preds}
         for c in range(args.n_classes):
             results_dict.update({'p_{}'.format(c): all_probs[:,c]})
         df = pd.DataFrame(results_dict)
 
-        return patient_results, test_error, auc_score, test_f1, df, acc_logger 
+        return patient_results, metrics, df, acc_logger 

@@ -8,8 +8,8 @@
       "NonAdenocarcinoma": 331
     },
     "label_mapping": {
-      "NonAdenocarcinoma": 0,
-      "Adenocarcinoma": 1
+      "Adenocarcinoma": 0,
+      "NonAdenocarcinoma": 1
     },
     "notes": [
       "The Chinese reports were used to mine and standardize pathology concepts.",
@@ -21,7 +21,7 @@
   "prompts": [
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_lepidic",
       "concept_zh": "贴壁样/贴壁状生长",
@@ -36,7 +36,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_acinar",
       "concept_zh": "腺泡状生长",
@@ -51,7 +51,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_papillary",
       "concept_zh": "乳头状生长",
@@ -66,7 +66,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_micropapillary",
       "concept_zh": "微乳头状生长",
@@ -81,7 +81,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_solid",
       "concept_zh": "实性生长",
@@ -96,7 +96,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "low",
       "concept_id": "adeno_mucinous",
       "concept_zh": "黏液/粘液性特征",
@@ -111,7 +111,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_acinar",
       "concept_zh": "腺泡状生长",
@@ -126,7 +126,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_lepidic",
       "concept_zh": "贴壁样/贴壁状生长",
@@ -141,7 +141,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_papillary",
       "concept_zh": "乳头状生长",
@@ -156,7 +156,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_micropapillary",
       "concept_zh": "微乳头状生长",
@@ -171,7 +171,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_mucinous",
       "concept_zh": "黏液/粘液性特征",
@@ -186,7 +186,7 @@
     },
     {
       "class_name": "Adenocarcinoma",
-      "class_id": 1,
+      "class_id": 0,
       "scale": "high",
       "concept_id": "adeno_solid",
       "concept_zh": "实性生长",
@@ -201,7 +201,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_squamous",
       "concept_zh": "鳞状细胞癌/鳞状分化",
@@ -216,7 +216,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_neuroendocrine",
       "concept_zh": "神经内分泌形态",
@@ -231,7 +231,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_hamartoma",
       "concept_zh": "错构瘤/软骨瘤型错构瘤",
@@ -246,7 +246,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_inflammatory",
       "concept_zh": "炎症/肉芽肿/机化性肺炎",
@@ -261,7 +261,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_sarcomatoid",
       "concept_zh": "肉瘤样/梭形细胞",
@@ -276,7 +276,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "low",
       "concept_id": "nonadeno_metastatic",
       "concept_zh": "转移性肿瘤",
@@ -291,7 +291,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_keratinization",
       "concept_zh": "角化/角化珠",
@@ -306,7 +306,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_intercellular_bridges",
       "concept_zh": "细胞间桥",
@@ -321,7 +321,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_neuroendocrine",
       "concept_zh": "神经内分泌形态",
@@ -336,7 +336,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_hamartoma",
       "concept_zh": "错构瘤/软骨瘤型错构瘤",
@@ -351,7 +351,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_inflammatory",
       "concept_zh": "炎症/肉芽肿/机化性肺炎",
@@ -366,7 +366,7 @@
     },
     {
       "class_name": "NonAdenocarcinoma",
-      "class_id": 0,
+      "class_id": 1,
       "scale": "high",
       "concept_id": "nonadeno_sarcomatoid",
       "concept_zh": "肉瘤样/梭形细胞",

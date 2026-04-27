@@ -10,6 +10,7 @@ import torch
 from datasets.dataset_generic import Generic_MIL_Dataset
 from utils.core_utils import train
 from utils.file_utils import save_pkl
+from utils.metric_utils import summarize_metric_list
 from utils.utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -49,6 +50,14 @@ parser.add_argument("--bag_loss", type=str, choices=["svm", "ce", "focal"], defa
 parser.add_argument("--task", type=str)
 parser.add_argument("--text_prompt", type=str, default=None)
 parser.add_argument("--text_prompt_path", type=str, default=None)
+parser.add_argument("--concept_prompt_path", type=str, default=None)
+parser.add_argument("--use_concept_prompt_pool", action="store_true", default=False)
+parser.add_argument(
+    "--prompt_ensemble_mode",
+    type=str,
+    choices=["embedding_mean", "logit_mean"],
+    default="embedding_mean",
+)
 parser.add_argument("--prototype_number", type=int, default=16)
 parser.add_argument(
     "--finetune_text_encoder",
@@ -100,6 +109,21 @@ def _resolve_text_prompt_path(path):
     return path
 
 
+def _resolve_concept_prompt_path(path):
+    if not path:
+        return path
+    if os.path.isfile(path):
+        return path
+    candidates = [
+        os.path.join("dataset_csv", path),
+        os.path.join(os.path.dirname(__file__), "dataset_csv", path),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+    return path
+
+
 def _load_text_prompts(path):
     if not path:
         return None
@@ -132,6 +156,7 @@ def _load_text_prompts(path):
 
 
 args.text_prompt_path = _resolve_text_prompt_path(args.text_prompt_path)
+args.concept_prompt_path = _resolve_concept_prompt_path(args.concept_prompt_path)
 args.text_prompt = _load_text_prompts(args.text_prompt_path)
 
 if args.max_epochs > 80:
@@ -173,6 +198,9 @@ settings = {
     "weighted_sample": args.weighted_sample,
     "opt": args.opt,
     "patience": args.patience,
+    "use_concept_prompt_pool": args.use_concept_prompt_pool,
+    "concept_prompt_path": args.concept_prompt_path,
+    "prompt_ensemble_mode": args.prompt_ensemble_mode,
 }
 
 print("\nLoad Dataset")
@@ -234,6 +262,9 @@ elif args.task == "task_adenocarcinoma":
 else:
     raise NotImplementedError
 
+if args.use_concept_prompt_pool and not args.concept_prompt_path:
+    raise ValueError("--use_concept_prompt_pool is set but --concept_prompt_path is missing.")
+
 if not os.path.exists(args.results_dir):
     os.makedirs(args.results_dir)
 
@@ -270,6 +301,10 @@ def main(args):
     all_test_acc = []
     all_val_acc = []
     all_test_f1 = []
+    all_test_balanced_acc = []
+    all_test_sensitivity = []
+    all_test_specificity = []
+    all_test_pr_auc = []
     all_epoch_details = []
 
     folds = np.arange(start, end)
@@ -295,13 +330,17 @@ def main(args):
             csv_path=f"{args.split_dir}/splits_{i}.csv",
         )
         datasets = (train_dataset, val_dataset, test_dataset)
-        results, test_auc, val_auc, test_acc, val_acc, _, test_f1, epoch_details = train(datasets, i, args)
+        results, test_metrics, val_metrics, _, epoch_details = train(datasets, i, args)
 
-        all_test_auc.append(test_auc)
-        all_val_auc.append(val_auc)
-        all_test_f1.append(test_f1)
-        all_test_acc.append(test_acc)
-        all_val_acc.append(val_acc)
+        all_test_auc.append(test_metrics["auc"])
+        all_val_auc.append(val_metrics["auc"])
+        all_test_f1.append(test_metrics["f1"])
+        all_test_acc.append(test_metrics["acc"])
+        all_val_acc.append(val_metrics["acc"])
+        all_test_balanced_acc.append(test_metrics["balanced_acc"])
+        all_test_sensitivity.append(test_metrics["sensitivity"])
+        all_test_specificity.append(test_metrics["specificity"])
+        all_test_pr_auc.append(test_metrics["pr_auc"])
         all_epoch_details.extend(epoch_details)
 
         filename = os.path.join(args.results_dir, f"split_{i}_results.pkl")
@@ -309,9 +348,13 @@ def main(args):
 
         fold_duration = time.time() - fold_start_time
         print(f"\n✅ FOLD {i + 1} 完成! (用时: {fold_duration / 60:.2f} 分钟)")
-        print(f"   Final Test AUC: {test_auc:.4f}")
-        print(f"   Final Test ACC: {test_acc:.4f}")
-        print(f"   Final Test F1:  {test_f1:.4f}")
+        print(f"   Final Test AUC: {test_metrics['auc']:.4f}")
+        print(f"   Final Test ACC: {test_metrics['acc']:.4f}")
+        print(f"   Final Test F1:  {test_metrics['f1']:.4f}")
+        print(f"   Balanced ACC:   {test_metrics['balanced_acc']:.4f}")
+        print(f"   Sensitivity:    {test_metrics['sensitivity']:.4f}")
+        print(f"   Specificity:    {test_metrics['specificity']:.4f}")
+        print(f"   PR-AUC:         {test_metrics['pr_auc']:.4f}")
 
     if all_epoch_details:
         epoch_df = pd.DataFrame(all_epoch_details)
@@ -329,6 +372,10 @@ def main(args):
                 "test_f1": all_test_f1[i],
                 "val_auc": all_val_auc[i],
                 "val_acc": all_val_acc[i],
+                "balanced_acc": all_test_balanced_acc[i],
+                "sensitivity": all_test_sensitivity[i],
+                "specificity": all_test_specificity[i],
+                "pr_auc": all_test_pr_auc[i],
             }
         )
 
@@ -342,16 +389,31 @@ def main(args):
     print(f"{'=' * 100}")
 
     print(f"\n📋 各折详细结果:")
-    print(f"{'Fold':<6}{'Test_AUC':<10}{'Test_ACC':<10}{'Test_F1':<10}{'Val_AUC':<10}")
-    print(f"{'-' * 50}")
+    print(
+        f"{'Fold':<6}{'Test_AUC':<10}{'Test_ACC':<10}{'Test_F1':<10}{'Val_AUC':<10}"
+        f"{'Bal_ACC':<10}{'Sens':<10}{'Spec':<10}{'PR_AUC':<10}"
+    )
+    print(f"{'-' * 90}")
     for i, fold in enumerate(folds):
-        print(f"{fold + 1:<6}{all_test_auc[i]:<10.4f}{all_test_acc[i]:<10.4f}{all_test_f1[i]:<10.4f}{all_val_auc[i]:<10.4f}")
+        print(
+            f"{fold + 1:<6}{all_test_auc[i]:<10.4f}{all_test_acc[i]:<10.4f}"
+            f"{all_test_f1[i]:<10.4f}{all_val_auc[i]:<10.4f}{all_test_balanced_acc[i]:<10.4f}"
+            f"{all_test_sensitivity[i]:<10.4f}{all_test_specificity[i]:<10.4f}{all_test_pr_auc[i]:<10.4f}"
+        )
 
     print(f"\n📈 统计总结:")
-    print(f"Test AUC:  Mean={np.mean(all_test_auc):.4f}, Std={np.std(all_test_auc):.4f}")
-    print(f"Test ACC:  Mean={np.mean(all_test_acc):.4f}, Std={np.std(all_test_acc):.4f}")
-    print(f"Test F1:   Mean={np.mean(all_test_f1):.4f}, Std={np.std(all_test_f1):.4f}")
-    print(f"Val AUC:   Mean={np.mean(all_val_auc):.4f}, Std={np.std(all_val_auc):.4f}")
+    for label, values in [
+        ("Test AUC", all_test_auc),
+        ("Test ACC", all_test_acc),
+        ("Test F1", all_test_f1),
+        ("Val AUC", all_val_auc),
+        ("Balanced ACC", all_test_balanced_acc),
+        ("Sensitivity", all_test_sensitivity),
+        ("Specificity", all_test_specificity),
+        ("PR-AUC", all_test_pr_auc),
+    ]:
+        mean_value, std_value = summarize_metric_list(values)
+        print(f"{label}:  Mean={mean_value:.4f}, Std={std_value:.4f}")
 
     total_duration = time.time() - total_start_time
     print(f"\n{'=' * 100}")
@@ -364,15 +426,32 @@ def main(args):
             "test_auc": all_test_auc,
             "test_acc": all_test_acc,
             "test_f1": all_test_f1,
+            "val_auc": all_val_auc,
+            "balanced_acc": all_test_balanced_acc,
+            "sensitivity": all_test_sensitivity,
+            "specificity": all_test_specificity,
+            "pr_auc": all_test_pr_auc,
         }
     )
+    test_auc_mean, test_auc_std = summarize_metric_list(all_test_auc)
+    test_f1_mean, test_f1_std = summarize_metric_list(all_test_f1)
+    test_acc_mean, test_acc_std = summarize_metric_list(all_test_acc)
+    val_auc_mean, val_auc_std = summarize_metric_list(all_val_auc)
+    bal_acc_mean, bal_acc_std = summarize_metric_list(all_test_balanced_acc)
+    sens_mean, sens_std = summarize_metric_list(all_test_sensitivity)
+    spec_mean, spec_std = summarize_metric_list(all_test_specificity)
+    pr_auc_mean, pr_auc_std = summarize_metric_list(all_test_pr_auc)
     result_df = pd.DataFrame(
         {
             "metric": ["mean", "std"],
-            "test_auc": [np.mean(all_test_auc), np.std(all_test_auc)],
-            "test_f1": [np.mean(all_test_f1), np.std(all_test_f1)],
-            "test_acc": [np.mean(all_test_acc), np.std(all_test_acc)],
-            "val_auc": [np.mean(all_val_auc), np.std(all_val_auc)],
+            "test_auc": [test_auc_mean, test_auc_std],
+            "test_f1": [test_f1_mean, test_f1_std],
+            "test_acc": [test_acc_mean, test_acc_std],
+            "val_auc": [val_auc_mean, val_auc_std],
+            "balanced_acc": [bal_acc_mean, bal_acc_std],
+            "sensitivity": [sens_mean, sens_std],
+            "specificity": [spec_mean, spec_std],
+            "pr_auc": [pr_auc_mean, pr_auc_std],
         }
     )
 

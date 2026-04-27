@@ -8,6 +8,7 @@ from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_auc_score, roc_curve, f1_score
 from sklearn.metrics import auc as calc_auc
 from utils.loss_utils import FocalLoss
+from utils.metric_utils import compute_classification_metrics
 import time
 from tqdm import tqdm
 
@@ -157,6 +158,10 @@ def train(datasets, cur, args):
         config.input_size = 512  # BiomedCLIP特征维度
         config.hidden_size = 192
         config.text_prompt = args.text_prompt
+        config.class_names = getattr(args, 'class_names', None)
+        config.use_concept_prompt_pool = bool(getattr(args, 'use_concept_prompt_pool', False))
+        config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
+        config.prompt_ensemble_mode = str(getattr(args, 'prompt_ensemble_mode', 'embedding_mean'))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
@@ -305,11 +310,17 @@ def train(datasets, cur, args):
     else:
         torch.save(model.state_dict(), os.path.join(args.results_dir, "s_{}_checkpoint.pt".format(cur)))
 
-    _, val_error, val_auc, _, val_f1 = summary(args.mode, model, val_loader, args.n_classes)
-    print(f'🎯 FOLD {cur+1} Final Validation: Error={val_error:.4f}, AUC={val_auc:.4f}, F1={val_f1:.4f}')
+    _, val_metrics, _ = summary(args.mode, model, val_loader, args.n_classes)
+    print(
+        f"🎯 FOLD {cur+1} Final Validation: Error={1 - val_metrics['acc']:.4f}, "
+        f"AUC={val_metrics['auc']:.4f}, F1={val_metrics['f1']:.4f}"
+    )
 
-    results_dict, test_error, test_auc, acc_logger, test_f1 = summary(args.mode, model, test_loader, args.n_classes)
-    print(f'🎯 FOLD {cur+1} Final Test: Error={test_error:.4f}, AUC={test_auc:.4f}, F1={test_f1:.4f}')
+    results_dict, test_metrics, acc_logger = summary(args.mode, model, test_loader, args.n_classes)
+    print(
+        f"🎯 FOLD {cur+1} Final Test: Error={1 - test_metrics['acc']:.4f}, "
+        f"AUC={test_metrics['auc']:.4f}, F1={test_metrics['f1']:.4f}"
+    )
 
     each_class_acc = []
     for i in range(args.n_classes):
@@ -321,13 +332,17 @@ def train(datasets, cur, args):
             writer.add_scalar('final/test_class_{}_acc'.format(i), acc, 0)
 
     if writer:
-        writer.add_scalar('final/val_error', val_error, 0)
-        writer.add_scalar('final/val_auc', val_auc, 0)
-        writer.add_scalar('final/test_error', test_error, 0)
-        writer.add_scalar('final/test_auc', test_auc, 0)
+        writer.add_scalar('final/val_error', 1 - val_metrics['acc'], 0)
+        writer.add_scalar('final/val_auc', val_metrics['auc'], 0)
+        writer.add_scalar('final/test_error', 1 - test_metrics['acc'], 0)
+        writer.add_scalar('final/test_auc', test_metrics['auc'], 0)
+        writer.add_scalar('final/test_balanced_acc', test_metrics['balanced_acc'], 0)
+        writer.add_scalar('final/test_sensitivity', test_metrics['sensitivity'], 0)
+        writer.add_scalar('final/test_specificity', test_metrics['specificity'], 0)
+        writer.add_scalar('final/test_pr_auc', test_metrics['pr_auc'], 0)
         writer.close()
-        
-    return results_dict, test_auc, val_auc, 1-test_error, 1-val_error, each_class_acc, test_f1, epoch_details
+
+    return results_dict, test_metrics, val_metrics, each_class_acc, epoch_details
 
 
 def train_loop(args, epoch, model, loader, optimizer, n_classes, writer = None, loss_fn = None, fold=0):
@@ -509,29 +524,12 @@ def summary(mode, model, loader, n_classes):
         error = calculate_error(Y_hat, label)
         test_error += error
 
-    test_error /= len(loader)
-    aucs = []
-    if len(np.unique(all_labels)) == 1:
-        auc_score = -1
-        
-    else:
-        if n_classes == 2:
-            auc_score = roc_auc_score(all_labels, all_probs[:, 1])
-        else:
-            binary_labels = label_binarize(all_labels, classes=[i for i in range(n_classes)])
-            for class_idx in range(n_classes):
-                if class_idx in all_labels:
-                    fpr, tpr, _ = roc_curve(binary_labels[:, class_idx], all_probs[:, class_idx])
-                    aucs.append(calc_auc(fpr, tpr))
-                else:
-                    aucs.append(float('nan'))
-            auc_score = np.nanmean(np.array(aucs))
-
     all_pred = np.argmax(all_probs, axis=1)
-    f1 = f1_score(all_labels, all_pred, average='macro', zero_division=0)
+    metrics = compute_classification_metrics(all_labels, all_probs, all_pred, n_classes)
+    metrics["error"] = 1.0 - metrics["acc"]
     
     end_time = time.time() # 计时结束
     duration = end_time - start_time
     print(f'   -> 评估耗时: {duration:.2f} 秒 ({duration/60:.2f} 分钟)')
 
-    return patient_results, test_error, auc_score, acc_logger, f1
+    return patient_results, metrics, acc_logger

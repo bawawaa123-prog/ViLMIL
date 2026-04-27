@@ -18,6 +18,7 @@ from torch.nn import functional as F
 from open_clip import create_model_from_pretrained, get_tokenizer
 
 from .model_utils import MultiheadAttention
+from utils.prompt_utils import build_concept_prompt_tensors, build_concept_text_features
 
 logger = logging.getLogger(__name__)
 
@@ -296,6 +297,9 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             biomedclip_model,
             tokenizer,
         )
+        self.use_concept_prompt_pool = bool(getattr(config, "use_concept_prompt_pool", False))
+        self.concept_prompt_path = getattr(config, "concept_prompt_path", None)
+        self.prompt_ensemble_mode = str(getattr(config, "prompt_ensemble_mode", "embedding_mean"))
 
         self.norm = nn.LayerNorm(self.L)
         self.cross_attention_1 = MultiheadAttention(embed_dim=self.L, num_heads=1)
@@ -305,6 +309,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         trunc_normal_(self.learnable_image_center, std=0.02)
 
         self._configure_biomedclip_finetune(config)
+        self._initialize_concept_prompt_pool(config)
 
     def _configure_biomedclip_finetune(self, config):
         finetune_text = bool(getattr(config, "finetune_text_encoder", False))
@@ -370,6 +375,9 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 _unfreeze_obj(getattr(text_clip, "text_projection"))
 
     def _encode_prompt_text_features(self, device):
+        if self.use_concept_prompt_pool and hasattr(self, "concept_text_low") and hasattr(self, "concept_text_high"):
+            return self.concept_text_low.to(device), self.concept_text_high.to(device)
+
         tokenized_prompts = self.prompt_learner.tokenized_prompts.to(device)
         prompt_embeddings = self.prompt_learner().to(device)
         eos_indices = self.prompt_learner.eos_indices.to(device)
@@ -379,6 +387,78 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             eos_indices=eos_indices,
         )
         return text_features[: self.num_classes], text_features[self.num_classes :]
+
+    def _contextualize_text_features(self, text_features, image_context):
+        if text_features.dim() == 2:
+            text_context_features, _ = self.cross_attention_2(
+                text_features.unsqueeze(1),
+                image_context,
+                image_context,
+            )
+            return text_context_features.squeeze(1) + text_features
+
+        if text_features.dim() == 3:
+            num_classes, num_prompts, dim = text_features.shape
+            flat_text_features = text_features.reshape(num_classes * num_prompts, dim)
+            text_context_features, _ = self.cross_attention_2(
+                flat_text_features.unsqueeze(1),
+                image_context,
+                image_context,
+            )
+            text_context_features = text_context_features.squeeze(1).reshape(num_classes, num_prompts, dim)
+            return text_context_features + text_features
+
+        raise ValueError(f"Unsupported text feature rank: {text_features.dim()}")
+
+    def _compute_scale_logits(self, image_features, text_features):
+        if text_features.dim() == 2:
+            return image_features @ text_features.T
+
+        if text_features.dim() == 3:
+            image_vector = F.normalize(image_features.float(), dim=-1).squeeze(0)
+            prompt_features = F.normalize(text_features.float(), dim=-1)
+            prompt_logits = torch.einsum("cpd,d->cp", prompt_features, image_vector)
+            return prompt_logits.mean(dim=1).unsqueeze(0)
+
+        raise ValueError(f"Unsupported text feature rank for logits: {text_features.dim()}")
+
+    def _initialize_concept_prompt_pool(self, config):
+        if not self.use_concept_prompt_pool:
+            return
+
+        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean"}:
+            raise ValueError(f"Unsupported prompt_ensemble_mode: {self.prompt_ensemble_mode}")
+        if not self.concept_prompt_path:
+            raise ValueError("use_concept_prompt_pool=True but concept_prompt_path is missing")
+
+        if self.prompt_ensemble_mode == "embedding_mean":
+            concept_low, concept_high = build_concept_text_features(
+                prompt_json_path=self.concept_prompt_path,
+                text_encoder=self.text_encoder,
+                tokenizer=self.tokenizer,
+                device=next(self.parameters()).device,
+                num_classes=self.num_classes,
+                dtype=torch.float32,
+                class_names=getattr(config, "class_names", None),
+            )
+        else:
+            concept_low, concept_high = build_concept_prompt_tensors(
+                prompt_json_path=self.concept_prompt_path,
+                text_encoder=self.text_encoder,
+                tokenizer=self.tokenizer,
+                device=next(self.parameters()).device,
+                num_classes=self.num_classes,
+                dtype=torch.float32,
+                class_names=getattr(config, "class_names", None),
+            )
+
+        self.register_buffer("concept_text_low", concept_low.detach().cpu())
+        self.register_buffer("concept_text_high", concept_high.detach().cpu())
+        print(
+            f"[ConceptPromptPool] enabled | mode={self.prompt_ensemble_mode} | "
+            f"path={self.concept_prompt_path} | low_shape={tuple(concept_low.shape)} | "
+            f"high_shape={tuple(concept_high.shape)}"
+        )
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         """
@@ -413,23 +493,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         text_features_low, text_features_high = self._encode_prompt_text_features(x_s.device)
 
         image_context = torch.cat((compents.squeeze(), M.squeeze(0)), dim=0)
-        text_context_features, _ = self.cross_attention_2(
-            text_features_low.unsqueeze(1),
-            image_context,
-            image_context,
-        )
-        text_features_low = text_context_features.squeeze() + text_features_low
+        text_features_low = self._contextualize_text_features(text_features_low, image_context)
 
         image_context_high = torch.cat((compents_high.squeeze(), M_high.squeeze(0)), dim=0)
-        text_context_features_high, _ = self.cross_attention_2(
-            text_features_high.unsqueeze(1),
-            image_context_high,
-            image_context_high,
-        )
-        text_features_high = text_context_features_high.squeeze() + text_features_high
+        text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
 
-        logits_low = image_features_low @ text_features_low.T
-        logits_high = image_features_high @ text_features_high.T
+        logits_low = self._compute_scale_logits(image_features_low, text_features_low)
+        logits_high = self._compute_scale_logits(image_features_high, text_features_high)
         logits = logits_low + logits_high
 
         loss = self.loss_ce(logits, label)
@@ -473,23 +543,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         text_features_low, text_features_high = self._encode_prompt_text_features(x_s.device)
 
         image_context = torch.cat((compents.squeeze(), M.squeeze(0)), dim=0)
-        text_context_features, _ = self.cross_attention_2(
-            text_features_low.unsqueeze(1),
-            image_context,
-            image_context,
-        )
-        text_features_low = text_context_features.squeeze() + text_features_low
+        text_features_low = self._contextualize_text_features(text_features_low, image_context)
 
         image_context_high = torch.cat((compents_high.squeeze(), M_high.squeeze(0)), dim=0)
-        text_context_features_high, _ = self.cross_attention_2(
-            text_features_high.unsqueeze(1),
-            image_context_high,
-            image_context_high,
-        )
-        text_features_high = text_context_features_high.squeeze() + text_features_high
+        text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
 
-        logits_low = image_features_low @ text_features_low.T
-        logits_high = image_features_high @ text_features_high.T
+        logits_low = self._compute_scale_logits(image_features_low, text_features_low)
+        logits_high = self._compute_scale_logits(image_features_high, text_features_high)
         logits = logits_low + logits_high
 
         Y_prob = F.softmax(logits, dim=1)

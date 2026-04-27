@@ -1,0 +1,504 @@
+{
+  "metadata": {
+    "created_at": "2026-04-27T00:00:00+08:00",
+    "based_on": "private_lung_concept_prompt_pool_stage2.json",
+    "description": "Core-12 concept prompt pool for Stage-2 size-sweep ablation. Each class_id and scale keeps 12 pathology morphology prompts.",
+    "label_mapping": {
+      "Adenocarcinoma": 0,
+      "NonAdenocarcinoma": 1
+    },
+    "prompt_counts": {
+      "Adenocarcinoma_low": 12,
+      "Adenocarcinoma_high": 12,
+      "NonAdenocarcinoma_low": 12,
+      "NonAdenocarcinoma_high": 12
+    },
+    "notes": [
+      "Only pathology morphology concepts are included.",
+      "Non-core concepts such as TNM, margin status, pleural invasion, and vascular invasion are excluded.",
+      "This file is intended for embedding_mean concept-pool size sweeps."
+    ]
+  },
+  "prompts": [
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_lepidic",
+      "concept_en": "lepidic growth pattern",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with lepidic growth pattern.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_acinar",
+      "concept_en": "acinar growth pattern",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with acinar gland-forming architecture.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_papillary",
+      "concept_en": "papillary architecture",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with papillary architecture.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_micropapillary",
+      "concept_en": "micropapillary pattern",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with micropapillary clusters.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_solid",
+      "concept_en": "solid growth pattern",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with solid growth pattern.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_mucinous",
+      "concept_en": "mucinous features",
+      "prompt": "A low magnification histopathology image showing mucinous lung adenocarcinoma with extracellular mucin pools.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_glandular_infiltration_low",
+      "concept_en": "infiltrative glandular adenocarcinoma",
+      "prompt": "A low magnification histopathology image showing infiltrative gland-forming lung adenocarcinoma replacing alveolated lung parenchyma.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_mixed_acinar_papillary_low",
+      "concept_en": "mixed acinar papillary architecture",
+      "prompt": "A low magnification histopathology image showing mixed acinar and papillary adenocarcinoma architecture.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_desmoplastic_invasion_low",
+      "concept_en": "desmoplastic stromal invasion",
+      "prompt": "A low magnification histopathology image showing invasive adenocarcinoma glands within desmoplastic stroma.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_multifocal_glandular_low",
+      "concept_en": "multifocal irregular glandular proliferation",
+      "prompt": "A low magnification histopathology image showing multifocal irregular glandular proliferation consistent with lung adenocarcinoma.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_acinar_high",
+      "concept_en": "glandular lumen formation",
+      "prompt": "A high magnification histopathology image showing adenocarcinoma cells forming glandular lumina.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_lepidic_high",
+      "concept_en": "lepidic tumor cells along alveolar septa",
+      "prompt": "A high magnification histopathology image showing lepidic tumor cells growing along alveolar septa.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_papillary_high",
+      "concept_en": "tumor cells lining fibrovascular cores",
+      "prompt": "A high magnification histopathology image showing adenocarcinoma cells lining fibrovascular cores.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_micropapillary_high",
+      "concept_en": "floating micropapillary clusters",
+      "prompt": "A high magnification histopathology image showing small floating clusters of adenocarcinoma cells without fibrovascular cores.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_mucinous_high",
+      "concept_en": "mucin-producing tumor cells",
+      "prompt": "A high magnification histopathology image showing adenocarcinoma cells with mucin production and mucinous cytoplasm.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_solid_high",
+      "concept_en": "solid sheets with nuclear atypia",
+      "prompt": "A high magnification histopathology image showing solid sheets of adenocarcinoma cells with nuclear atypia.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_columnar_cells_high",
+      "concept_en": "columnar tumor cells with nucleoli",
+      "prompt": "A high magnification histopathology image showing columnar adenocarcinoma cells with enlarged hyperchromatic nuclei and nucleoli.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_intracytoplasmic_mucin_high",
+      "concept_en": "intracytoplasmic mucin vacuoles",
+      "prompt": "A high magnification histopathology image showing adenocarcinoma cells with intracytoplasmic mucin vacuoles.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_hobnail_high",
+      "concept_en": "hobnail adenocarcinoma cells",
+      "prompt": "A high magnification histopathology image showing hobnail-like adenocarcinoma cells lining alveolar spaces.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_atypical_glands_high",
+      "concept_en": "atypical gland-forming tumor cells",
+      "prompt": "A high magnification histopathology image showing atypical gland-forming tumor cells with pseudostratified nuclei.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_squamous_low",
+      "concept_en": "squamous tumor nests",
+      "prompt": "A low magnification histopathology image showing squamous cell carcinoma arranged in tumor nests.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_neuroendocrine_low",
+      "concept_en": "neuroendocrine tumor architecture",
+      "prompt": "A low magnification histopathology image showing neuroendocrine tumor architecture.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_hamartoma_low",
+      "concept_en": "pulmonary hamartoma",
+      "prompt": "A low magnification histopathology image showing pulmonary hamartoma with cartilage and benign mesenchymal components.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_inflammatory_low",
+      "concept_en": "inflammatory or granulomatous lesion",
+      "prompt": "A low magnification histopathology image showing inflammatory or granulomatous lung lesion without malignant glandular structures.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_sarcomatoid_low",
+      "concept_en": "sarcomatoid spindle cell morphology",
+      "prompt": "A low magnification histopathology image showing sarcomatoid carcinoma with spindle cell morphology.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_metastatic_low",
+      "concept_en": "metastatic tumor in lung",
+      "prompt": "A low magnification histopathology image showing metastatic tumor in the lung without primary lung adenocarcinoma morphology.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_small_cell_low",
+      "concept_en": "diffuse small blue cell growth pattern",
+      "prompt": "A low magnification histopathology image showing a diffuse small blue cell neuroendocrine tumor growth pattern.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_necrotic_squamous_low",
+      "concept_en": "necrotic squamous carcinoma nests",
+      "prompt": "A low magnification histopathology image showing necrotic squamous carcinoma nests without glandular differentiation.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_fibroinflammatory_low",
+      "concept_en": "fibroinflammatory scar-like lesion",
+      "prompt": "A low magnification histopathology image showing a fibroinflammatory lung lesion with scarring and no malignant gland formation.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_benign_reactive_low",
+      "concept_en": "benign reactive lung tissue",
+      "prompt": "A low magnification histopathology image showing benign reactive lung tissue changes without adenocarcinoma morphology.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_keratinization_high",
+      "concept_en": "keratinization",
+      "prompt": "A high magnification histopathology image showing squamous cell carcinoma with keratinization and keratin pearls.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_intercellular_bridges_high",
+      "concept_en": "intercellular bridges",
+      "prompt": "A high magnification histopathology image showing squamous cell carcinoma with intercellular bridges.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_neuroendocrine_high",
+      "concept_en": "salt-and-pepper chromatin",
+      "prompt": "A high magnification histopathology image showing neuroendocrine tumor cells with salt-and-pepper chromatin.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_hamartoma_high",
+      "concept_en": "benign cartilage in pulmonary hamartoma",
+      "prompt": "A high magnification histopathology image showing benign cartilage and respiratory epithelium in pulmonary hamartoma.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_inflammatory_high",
+      "concept_en": "inflammatory cells and granulomas",
+      "prompt": "A high magnification histopathology image showing inflammatory cells, granulomas, or fibrosis without adenocarcinoma morphology.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_sarcomatoid_high",
+      "concept_en": "spindle-shaped malignant cells",
+      "prompt": "A high magnification histopathology image showing spindle-shaped malignant tumor cells.",
+      "source": "stage2_core6_base",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_dense_eosinophilic_cytoplasm_high",
+      "concept_en": "dense eosinophilic cytoplasm",
+      "prompt": "A high magnification histopathology image showing squamous carcinoma cells with dense eosinophilic cytoplasm and distinct cell borders.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_nuclear_molding_high",
+      "concept_en": "nuclear molding",
+      "prompt": "A high magnification histopathology image showing neuroendocrine tumor cells with nuclear molding and scant cytoplasm.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_chondromyxoid_matrix_high",
+      "concept_en": "chondromyxoid matrix",
+      "prompt": "A high magnification histopathology image showing chondromyxoid matrix and benign stromal elements in pulmonary hamartoma.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_fibrosis_inflammation_high",
+      "concept_en": "fibrosis and chronic inflammation",
+      "prompt": "A high magnification histopathology image showing fibrosis and chronic inflammatory infiltrates without adenocarcinoma cells.",
+      "source": "expert_added_core10_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_cribriform_low",
+      "concept_en": "cribriform glandular pattern",
+      "prompt": "A low magnification histopathology image showing lung adenocarcinoma with cribriform glandular architecture.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "low",
+      "concept_id": "adeno_alveolar_replacement_low",
+      "concept_en": "alveolar replacement by atypical glands",
+      "prompt": "A low magnification histopathology image showing atypical adenocarcinoma glands replacing pre-existing alveolar structures.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_fused_glands_high",
+      "concept_en": "fused back-to-back glands",
+      "prompt": "A high magnification histopathology image showing fused back-to-back adenocarcinoma glands with little intervening stroma.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "Adenocarcinoma",
+      "class_id": 0,
+      "scale": "high",
+      "concept_id": "adeno_prominent_nucleoli_high",
+      "concept_en": "prominent nucleoli in gland-forming tumor cells",
+      "prompt": "A high magnification histopathology image showing gland-forming adenocarcinoma cells with vesicular chromatin and prominent nucleoli.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_solid_nests_low",
+      "concept_en": "solid non-gland-forming tumor nests",
+      "prompt": "A low magnification histopathology image showing solid non-gland-forming tumor nests without adenocarcinoma-type acinar structures.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "low",
+      "concept_id": "nonadeno_organoid_neuroendocrine_low",
+      "concept_en": "organoid neuroendocrine nesting pattern",
+      "prompt": "A low magnification histopathology image showing organoid nests and trabeculae consistent with neuroendocrine morphology.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_spindle_atypia_high",
+      "concept_en": "spindle cell atypia without gland formation",
+      "prompt": "A high magnification histopathology image showing atypical spindle tumor cells without gland formation or mucin production.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    },
+    {
+      "class_name": "NonAdenocarcinoma",
+      "class_id": 1,
+      "scale": "high",
+      "concept_id": "nonadeno_chondroid_matrix_high",
+      "concept_en": "chondroid or myxochondroid matrix",
+      "prompt": "A high magnification histopathology image showing chondroid or myxochondroid matrix characteristic of hamartomatous morphology.",
+      "source": "expert_added_core_pool_extension",
+      "use_in_stage2": true
+    }
+  ]
+}

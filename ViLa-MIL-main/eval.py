@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from datasets.dataset_generic import Generic_MIL_Dataset
 from utils.eval_utils import *
+from utils.metric_utils import summarize_metric_list
 from utils.utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,6 +58,14 @@ parser.add_argument("--split", type=str, choices=["train", "val", "test", "all"]
 parser.add_argument("--task", type=str)
 parser.add_argument("--text_prompt", type=str, default=None)
 parser.add_argument("--text_prompt_path", type=str, default=None)
+parser.add_argument("--concept_prompt_path", type=str, default=None)
+parser.add_argument("--use_concept_prompt_pool", action="store_true", default=False)
+parser.add_argument(
+    "--prompt_ensemble_mode",
+    type=str,
+    choices=["embedding_mean", "logit_mean"],
+    default="embedding_mean",
+)
 parser.add_argument("--prototype_number", type=int, default=16, help="number of prototypes (default: 16)")
 parser.add_argument(
     "--finetune_text_encoder",
@@ -96,6 +105,21 @@ def _resolve_text_prompt_path(path):
     return path
 
 
+def _resolve_concept_prompt_path(path):
+    if not path:
+        return path
+    if os.path.isfile(path):
+        return path
+    candidates = [
+        os.path.join("dataset_csv", path),
+        os.path.join(os.path.dirname(__file__), "dataset_csv", path),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+    return path
+
+
 def _load_text_prompts(path):
     if not path:
         return None
@@ -117,6 +141,7 @@ def _load_text_prompts(path):
 
 
 args.text_prompt_path = _resolve_text_prompt_path(args.text_prompt_path)
+args.concept_prompt_path = _resolve_concept_prompt_path(args.concept_prompt_path)
 args.text_prompt = _load_text_prompts(args.text_prompt_path)
 
 args.save_dir = os.path.join("./eval_results", "EVAL_" + str(args.save_exp_code))
@@ -136,6 +161,9 @@ settings = {
     "mode": args.mode,
     "drop_out": args.drop_out,
     "model_size": args.model_size,
+    "use_concept_prompt_pool": args.use_concept_prompt_pool,
+    "concept_prompt_path": args.concept_prompt_path,
+    "prompt_ensemble_mode": args.prompt_ensemble_mode,
 }
 
 with open(os.path.join(args.save_dir, f"eval_experiment_{args.save_exp_code}.txt"), "w") as f:
@@ -188,6 +216,9 @@ elif args.task == "task_adenocarcinoma":
 else:
     raise NotImplementedError
 
+if args.use_concept_prompt_pool and not args.concept_prompt_path:
+    raise ValueError("--use_concept_prompt_pool is set but --concept_prompt_path is missing.")
+
 start = 0 if args.k_start == -1 else args.k_start
 end = args.k if args.k_end == -1 else args.k_end
 
@@ -226,9 +257,14 @@ if __name__ == "__main__":
     all_auc = []
     all_acc = []
     all_f1 = []
+    all_balanced_acc = []
+    all_sensitivity = []
+    all_specificity = []
+    all_pr_auc = []
     all_true = []
     all_pred = []
     timing_records = []
+    fold_metrics_records = []
 
     print(f"\n共检测到 {len(available_folds)} 个有效折：{available_folds}")
     for ckpt_idx, current_fold in enumerate(tqdm(available_folds, desc="Overall Progress", ncols=80)):
@@ -248,7 +284,7 @@ if __name__ == "__main__":
             csv_path=split_path,
         )[datasets_id[args.split]]
 
-        model, patient_results, test_error, auc_score, test_f1, df, each_class_acc = eval(
+        model, patient_results, metrics, df, each_class_acc = eval(
             args.mode,
             split_dataset,
             args,
@@ -260,11 +296,27 @@ if __name__ == "__main__":
         print(f"Fold {current_fold} completed in {fold_duration:.2f}s")
 
         all_results.append(df)
-        all_auc.append(auc_score)
-        all_acc.append(1 - test_error)
-        all_f1.append(test_f1)
+        all_auc.append(metrics["auc"])
+        all_acc.append(metrics["acc"])
+        all_f1.append(metrics["f1"])
+        all_balanced_acc.append(metrics["balanced_acc"])
+        all_sensitivity.append(metrics["sensitivity"])
+        all_specificity.append(metrics["specificity"])
+        all_pr_auc.append(metrics["pr_auc"])
         all_true.extend(df["Y"].tolist())
         all_pred.extend(df["Y_hat"].tolist())
+        fold_metrics_records.append(
+            {
+                "fold": current_fold,
+                "test_auc": metrics["auc"],
+                "test_f1": metrics["f1"],
+                "test_acc": metrics["acc"],
+                "balanced_acc": metrics["balanced_acc"],
+                "sensitivity": metrics["sensitivity"],
+                "specificity": metrics["specificity"],
+                "pr_auc": metrics["pr_auc"],
+            }
+        )
 
     if not all_results:
         print("没有成功完成任何折的评估，程序退出。")
@@ -274,12 +326,27 @@ if __name__ == "__main__":
     summary_path = os.path.join(args.save_dir, "summary.csv")
     summary_df.to_csv(summary_path, index=False)
 
+    fold_metrics_path = os.path.join(args.save_dir, "fold_metrics.csv")
+    pd.DataFrame(fold_metrics_records).to_csv(fold_metrics_path, index=False)
+
+    test_auc_mean, test_auc_std = summarize_metric_list(all_auc)
+    test_f1_mean, test_f1_std = summarize_metric_list(all_f1)
+    test_acc_mean, test_acc_std = summarize_metric_list(all_acc)
+    bal_acc_mean, bal_acc_std = summarize_metric_list(all_balanced_acc)
+    sens_mean, sens_std = summarize_metric_list(all_sensitivity)
+    spec_mean, spec_std = summarize_metric_list(all_specificity)
+    pr_auc_mean, pr_auc_std = summarize_metric_list(all_pr_auc)
+
     result_df = pd.DataFrame(
         {
             "metric": ["mean", "std"],
-            "test_auc": [np.mean(all_auc), np.std(all_auc)],
-            "test_f1": [np.mean(all_f1), np.std(all_f1)],
-            "test_acc": [np.mean(all_acc), np.std(all_acc)],
+            "test_auc": [test_auc_mean, test_auc_std],
+            "test_f1": [test_f1_mean, test_f1_std],
+            "test_acc": [test_acc_mean, test_acc_std],
+            "balanced_acc": [bal_acc_mean, bal_acc_std],
+            "sensitivity": [sens_mean, sens_std],
+            "specificity": [spec_mean, spec_std],
+            "pr_auc": [pr_auc_mean, pr_auc_std],
         }
     )
     result_path = os.path.join(args.save_dir, "result.csv")
@@ -292,6 +359,11 @@ if __name__ == "__main__":
     total_duration = time.time() - total_start_time
     print("\nEvaluation finished!")
     print(f"Saved summary to: {summary_path}")
+    print(f"Saved fold metrics to: {fold_metrics_path}")
     print(f"Saved aggregate result to: {result_path}")
-    print(f"Mean AUC={np.mean(all_auc):.4f}, Mean ACC={np.mean(all_acc):.4f}, Mean F1={np.mean(all_f1):.4f}")
+    print(
+        f"Mean AUC={test_auc_mean:.4f}, Mean ACC={test_acc_mean:.4f}, Mean F1={test_f1_mean:.4f}, "
+        f"Balanced ACC={bal_acc_mean:.4f}, Sensitivity={sens_mean:.4f}, "
+        f"Specificity={spec_mean:.4f}, PR-AUC={pr_auc_mean:.4f}"
+    )
     print(f"Total time: {total_duration / 60:.2f} minutes")
