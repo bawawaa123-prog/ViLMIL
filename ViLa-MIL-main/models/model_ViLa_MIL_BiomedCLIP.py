@@ -301,11 +301,15 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.concept_prompt_path = getattr(config, "concept_prompt_path", None)
         self.prompt_ensemble_mode = str(getattr(config, "prompt_ensemble_mode", "embedding_mean"))
         self.use_dynamic_prompt_gate = bool(getattr(config, "use_dynamic_prompt_gate", False))
+        self.use_peps = self.prompt_ensemble_mode == "peps"
         if self.prompt_ensemble_mode == "dynamic_gate":
             self.use_dynamic_prompt_gate = True
         self.dynamic_gate_hidden_dim = int(getattr(config, "dynamic_gate_hidden_dim", 256))
         self.dynamic_gate_residual_mean = bool(getattr(config, "dynamic_gate_residual_mean", False))
         self.prompt_dropout = float(getattr(config, "prompt_dropout", 0.0))
+        self.peps_topk = int(getattr(config, "peps_topk", 3))
+        self.peps_tau = float(getattr(config, "peps_tau", 0.1))
+        self.save_peps_weights = bool(getattr(config, "save_peps_weights", False))
 
         self.norm = nn.LayerNorm(self.L)
         self.cross_attention_1 = MultiheadAttention(embed_dim=self.L, num_heads=1)
@@ -315,6 +319,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.dynamic_gate_gamma = None
         self.concept_prompt_texts_low = None
         self.concept_prompt_texts_high = None
+        self.concept_prompt_metadata_low = None
+        self.concept_prompt_metadata_high = None
         if self.use_dynamic_prompt_gate:
             gate_input_dim = self.L * 4
             self.dynamic_gate_low = nn.Sequential(
@@ -479,6 +485,11 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             )
         return torch.einsum("bd,bcd->bc", image_features.float(), text_features.float())
 
+    def _prototype_tensor_from_components(self, components):
+        if components.dim() != 3:
+            raise ValueError(f"Prototype components must be rank-3, got rank={components.dim()}")
+        return components.permute(1, 0, 2).contiguous().float()
+
     def _apply_prompt_dropout(self, weights):
         if (not self.training) or self.prompt_dropout <= 0.0 or weights.size(-1) <= 1:
             return weights
@@ -535,12 +546,41 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
 
         return final_text, prompt_weights
 
+    def _build_peps_text_features(self, prototype_features, prompt_features):
+        if prototype_features.dim() != 3:
+            raise ValueError(
+                f"Prototype features must be [batch, num_proto, dim], got rank={prototype_features.dim()}"
+            )
+        if prompt_features.dim() != 3:
+            raise ValueError(f"Prompt features must be [classes, prompts, dim], got rank={prompt_features.dim()}")
+
+        prototype_features = F.normalize(prototype_features.float(), dim=-1)
+        prompt_features = F.normalize(prompt_features.float(), dim=-1)
+
+        sim = torch.einsum("bpd,cmd->bcmp", prototype_features, prompt_features)
+        topk_k = max(1, min(int(self.peps_topk), sim.size(-1)))
+        topk_values, topk_indices = torch.topk(sim, k=topk_k, dim=-1)
+        evidence = topk_values.mean(dim=-1)
+        tau = max(float(self.peps_tau), 1e-6)
+        prompt_weights = F.softmax(evidence / tau, dim=-1)
+        dynamic_text = torch.einsum("bcm,cmd->bcd", prompt_weights, prompt_features)
+        dynamic_text = F.normalize(dynamic_text, dim=-1)
+
+        diagnostics = {
+            "prompt_weights": prompt_weights.detach(),
+            "prompt_evidence": evidence.detach(),
+            "supporting_prototype_index": topk_indices[..., 0].detach(),
+        }
+        return dynamic_text, diagnostics
+
     def _compute_text_logits(
         self,
         image_features_low,
         image_context_low,
         image_features_high,
         image_context_high,
+        prototype_features_low,
+        prototype_features_high,
         device,
         return_diagnostics=False,
     ):
@@ -578,6 +618,33 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                     "dynamic_text_high": text_features_high.detach(),
                     "gamma": torch.clamp(self.dynamic_gate_gamma.detach(), min=0.0, max=1.0),
                 }
+        elif self.use_peps:
+            text_features_low, peps_diag_low = self._build_peps_text_features(
+                prototype_features_low,
+                text_features_low.to(device),
+            )
+            text_features_high, peps_diag_high = self._build_peps_text_features(
+                prototype_features_high,
+                text_features_high.to(device),
+            )
+
+            text_features_low = self._contextualize_dynamic_text_features(text_features_low, image_context_low)
+            text_features_high = self._contextualize_dynamic_text_features(text_features_high, image_context_high)
+
+            logits_low = self._compute_dynamic_scale_logits(image_features_low, text_features_low)
+            logits_high = self._compute_dynamic_scale_logits(image_features_high, text_features_high)
+
+            if return_diagnostics:
+                diagnostics = {
+                    "prompt_weights_low": peps_diag_low["prompt_weights"],
+                    "prompt_weights_high": peps_diag_high["prompt_weights"],
+                    "prompt_evidence_low": peps_diag_low["prompt_evidence"],
+                    "prompt_evidence_high": peps_diag_high["prompt_evidence"],
+                    "supporting_prototype_index_low": peps_diag_low["supporting_prototype_index"],
+                    "supporting_prototype_index_high": peps_diag_high["supporting_prototype_index"],
+                    "dynamic_text_low": text_features_low.detach(),
+                    "dynamic_text_high": text_features_high.detach(),
+                }
         else:
             text_features_low = self._contextualize_text_features(text_features_low, image_context_low)
             text_features_high = self._contextualize_text_features(text_features_high, image_context_high)
@@ -590,7 +657,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         if not self.use_concept_prompt_pool:
             return
 
-        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean", "dynamic_gate"}:
+        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean", "dynamic_gate", "peps"}:
             raise ValueError(f"Unsupported prompt_ensemble_mode: {self.prompt_ensemble_mode}")
         if not self.concept_prompt_path:
             raise ValueError("use_concept_prompt_pool=True but concept_prompt_path is missing")
@@ -616,7 +683,14 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 class_names=getattr(config, "class_names", None),
             )
         else:
-            concept_low, concept_high, prompt_texts_low, prompt_texts_high = build_concept_prompt_bundle(
+            (
+                concept_low,
+                concept_high,
+                prompt_texts_low,
+                prompt_texts_high,
+                prompt_metadata_low,
+                prompt_metadata_high,
+            ) = build_concept_prompt_bundle(
                 prompt_json_path=self.concept_prompt_path,
                 text_encoder=self.text_encoder,
                 tokenizer=self.tokenizer,
@@ -625,12 +699,15 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 dtype=torch.float32,
                 class_names=getattr(config, "class_names", None),
             )
-            mean_low = F.normalize(concept_low.mean(dim=1), dim=-1)
-            mean_high = F.normalize(concept_high.mean(dim=1), dim=-1)
-            self.register_buffer("concept_mean_text_low", mean_low.detach().cpu())
-            self.register_buffer("concept_mean_text_high", mean_high.detach().cpu())
             self.concept_prompt_texts_low = prompt_texts_low
             self.concept_prompt_texts_high = prompt_texts_high
+            self.concept_prompt_metadata_low = prompt_metadata_low
+            self.concept_prompt_metadata_high = prompt_metadata_high
+            if self.prompt_ensemble_mode == "dynamic_gate":
+                mean_low = F.normalize(concept_low.mean(dim=1), dim=-1)
+                mean_high = F.normalize(concept_high.mean(dim=1), dim=-1)
+                self.register_buffer("concept_mean_text_low", mean_low.detach().cpu())
+                self.register_buffer("concept_mean_text_high", mean_high.detach().cpu())
 
         self.register_buffer("concept_text_low", concept_low.detach().cpu())
         self.register_buffer("concept_text_high", concept_high.detach().cpu())
@@ -649,6 +726,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         M = x_s.float()
         compents, _ = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
+        prototype_features_low = self._prototype_tensor_from_components(compents)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -661,6 +739,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         M_high = x_l.float()
         compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
         compents_high = self.norm(compents_high + self.learnable_image_center)
+        prototype_features_high = self._prototype_tensor_from_components(compents_high)
 
         H_high = compents_high.squeeze().float()
         A_V_high = self.attention_V(H_high)
@@ -677,6 +756,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_low=image_context,
             image_features_high=image_features_high,
             image_context_high=image_context_high,
+            prototype_features_low=prototype_features_low,
+            prototype_features_high=prototype_features_high,
             device=x_s.device,
             return_diagnostics=False,
         )
@@ -694,6 +775,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         M = x_s.float()
         compents, _ = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
+        prototype_features_low = self._prototype_tensor_from_components(compents)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -706,6 +788,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         M_high = x_l.float()
         compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
         compents_high = self.norm(compents_high + self.learnable_image_center)
+        prototype_features_high = self._prototype_tensor_from_components(compents_high)
 
         H_high = compents_high.squeeze().float()
         A_V_high = self.attention_V(H_high)
@@ -722,6 +805,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_low=image_context,
             image_features_high=image_features_high,
             image_context_high=image_context_high,
+            prototype_features_low=prototype_features_low,
+            prototype_features_high=prototype_features_high,
             device=x_s.device,
             return_diagnostics=True,
         )
@@ -748,6 +833,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         M = x_s.float()
         compents, cross_attn_weights_s = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
+        prototype_features_low = self._prototype_tensor_from_components(compents)
 
         M_high = x_l.float()
         compents_high, cross_attn_weights_l = self.cross_attention_1(
@@ -756,6 +842,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             M_high,
         )
         compents_high = self.norm(compents_high + self.learnable_image_center)
+        prototype_features_high = self._prototype_tensor_from_components(compents_high)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -780,6 +867,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_low=image_context,
             image_features_high=image_features_high,
             image_context_high=image_context_high,
+            prototype_features_low=prototype_features_low,
+            prototype_features_high=prototype_features_high,
             device=x_s.device,
             return_diagnostics=False,
         )

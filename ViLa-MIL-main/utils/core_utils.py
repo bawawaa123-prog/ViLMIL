@@ -166,6 +166,9 @@ def train(datasets, cur, args):
         config.dynamic_gate_hidden_dim = int(getattr(args, 'dynamic_gate_hidden_dim', 256))
         config.dynamic_gate_residual_mean = bool(getattr(args, 'dynamic_gate_residual_mean', False))
         config.prompt_dropout = float(getattr(args, 'prompt_dropout', 0.0))
+        config.peps_topk = int(getattr(args, 'peps_topk', 3))
+        config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
+        config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))

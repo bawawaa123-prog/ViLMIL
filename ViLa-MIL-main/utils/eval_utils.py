@@ -44,6 +44,9 @@ def initiate_model(args, ckpt_path):
         config.dynamic_gate_hidden_dim = int(getattr(args, 'dynamic_gate_hidden_dim', 256))
         config.dynamic_gate_residual_mean = bool(getattr(args, 'dynamic_gate_residual_mean', False))
         config.prompt_dropout = float(getattr(args, 'prompt_dropout', 0.0))
+        config.peps_topk = int(getattr(args, 'peps_topk', 3))
+        config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
+        config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
@@ -142,6 +145,62 @@ def _build_prompt_export_record(
     return record
 
 
+def _build_peps_export_records(
+    slide_row,
+    label,
+    y_hat,
+    diagnostics,
+    class_names,
+    prompt_metadata_low,
+    prompt_metadata_high,
+):
+    true_class = int(label.item())
+    pred_class = int(y_hat.item())
+    pred_probs = diagnostics["pred_probs"].detach().cpu().numpy()[0]
+
+    scale_configs = [
+        (
+            "low",
+            diagnostics["prompt_weights_low"].detach().cpu().numpy()[0],
+            diagnostics["prompt_evidence_low"].detach().cpu().numpy()[0],
+            diagnostics["supporting_prototype_index_low"].detach().cpu().numpy()[0],
+            prompt_metadata_low,
+        ),
+        (
+            "high",
+            diagnostics["prompt_weights_high"].detach().cpu().numpy()[0],
+            diagnostics["prompt_evidence_high"].detach().cpu().numpy()[0],
+            diagnostics["supporting_prototype_index_high"].detach().cpu().numpy()[0],
+            prompt_metadata_high,
+        ),
+    ]
+
+    records = []
+    for scale_name, weights_by_class, evidence_by_class, support_by_class, metadata_by_class in scale_configs:
+        for class_idx, class_name in enumerate(class_names):
+            order = np.argsort(-weights_by_class[class_idx])[:3]
+            record = {
+                "case_id": slide_row["case_id"] if "case_id" in slide_row.index else slide_row["slide_id"],
+                "slide_id": slide_row["slide_id"],
+                "true_label": true_class,
+                "pred_label": pred_class,
+                "pred_prob": float(pred_probs[pred_class]),
+                "scale": scale_name,
+                "class_id": class_idx,
+                "class_name": class_name,
+            }
+            for rank_idx, prompt_idx in enumerate(order, start=1):
+                meta = metadata_by_class[class_idx][prompt_idx]
+                concept_name = meta.get("concept_en") or meta.get("concept_id") or ""
+                record[f"top{rank_idx}_prompt_text"] = meta.get("prompt", "")
+                record[f"top{rank_idx}_prompt_concept"] = concept_name
+                record[f"top{rank_idx}_prompt_weight"] = float(weights_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_prompt_evidence"] = float(evidence_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_supporting_prototype_index"] = int(support_by_class[class_idx][prompt_idx])
+            records.append(record)
+    return records
+
+
 def eval(mode, dataset, args, ckpt_path):
     model = initiate_model(args, ckpt_path)
     
@@ -191,7 +250,11 @@ def summary(mode, model, loader, args):
                 slide_id_for_model = slide_id
             with torch.no_grad():
                 diagnostics = None
-                if hasattr(model, "forward_with_prompt_diagnostics") and bool(getattr(args, "use_dynamic_prompt_gate", False)):
+                need_prompt_diagnostics = bool(getattr(args, "use_dynamic_prompt_gate", False)) or (
+                    str(getattr(args, "prompt_ensemble_mode", "")) == "peps"
+                    and bool(getattr(args, "save_peps_weights", False))
+                )
+                if hasattr(model, "forward_with_prompt_diagnostics") and need_prompt_diagnostics:
                     Y_prob, Y_hat, loss, diagnostics = model.forward_with_prompt_diagnostics(
                         data_s, coord_s, data_l, coord_l, label, slide_id=slide_id_for_model
                     )
@@ -209,18 +272,31 @@ def summary(mode, model, loader, args):
             error = calculate_error(Y_hat, label)
             test_error += error
             if diagnostics is not None:
-                prompt_export_records.append(
-                    _build_prompt_export_record(
-                        slide_row=slide_rows.iloc[batch_idx],
-                        label=label,
-                        y_hat=Y_hat,
-                        y_prob=probs,
-                        diagnostics=diagnostics,
-                        class_names=getattr(args, "class_names", [str(i) for i in range(args.n_classes)]),
-                        prompt_texts_low=getattr(model, "concept_prompt_texts_low", None),
-                        prompt_texts_high=getattr(model, "concept_prompt_texts_high", None),
+                if str(getattr(args, "prompt_ensemble_mode", "")) == "peps":
+                    prompt_export_records.extend(
+                        _build_peps_export_records(
+                            slide_row=slide_rows.iloc[batch_idx],
+                            label=label,
+                            y_hat=Y_hat,
+                            diagnostics=diagnostics,
+                            class_names=getattr(args, "class_names", [str(i) for i in range(args.n_classes)]),
+                            prompt_metadata_low=getattr(model, "concept_prompt_metadata_low", None),
+                            prompt_metadata_high=getattr(model, "concept_prompt_metadata_high", None),
+                        )
                     )
-                )
+                else:
+                    prompt_export_records.append(
+                        _build_prompt_export_record(
+                            slide_row=slide_rows.iloc[batch_idx],
+                            label=label,
+                            y_hat=Y_hat,
+                            y_prob=probs,
+                            diagnostics=diagnostics,
+                            class_names=getattr(args, "class_names", [str(i) for i in range(args.n_classes)]),
+                            prompt_texts_low=getattr(model, "concept_prompt_texts_low", None),
+                            prompt_texts_high=getattr(model, "concept_prompt_texts_high", None),
+                        )
+                    )
 
         # 将列表转换为numpy数组并展平
         all_pred_np = np.concatenate(all_pred)

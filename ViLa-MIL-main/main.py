@@ -11,6 +11,7 @@ from datasets.dataset_generic import Generic_MIL_Dataset
 from utils.core_utils import train
 from utils.file_utils import save_pkl
 from utils.metric_utils import summarize_metric_list
+from utils.prompt_utils import print_and_save_concept_prompt_class_mapping
 from utils.utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -55,13 +56,16 @@ parser.add_argument("--use_concept_prompt_pool", action="store_true", default=Fa
 parser.add_argument(
     "--prompt_ensemble_mode",
     type=str,
-    choices=["embedding_mean", "logit_mean", "dynamic_gate"],
+    choices=["embedding_mean", "logit_mean", "dynamic_gate", "peps"],
     default="embedding_mean",
 )
 parser.add_argument("--use_dynamic_prompt_gate", action="store_true", default=False)
 parser.add_argument("--dynamic_gate_hidden_dim", type=int, default=256)
 parser.add_argument("--dynamic_gate_residual_mean", action="store_true", default=False)
 parser.add_argument("--prompt_dropout", type=float, default=0.0)
+parser.add_argument("--peps_topk", type=int, default=3)
+parser.add_argument("--peps_tau", type=float, default=0.1)
+parser.add_argument("--save_peps_weights", action="store_true", default=False)
 parser.add_argument("--prototype_number", type=int, default=16)
 parser.add_argument(
     "--finetune_text_encoder",
@@ -209,6 +213,9 @@ settings = {
     "dynamic_gate_hidden_dim": args.dynamic_gate_hidden_dim,
     "dynamic_gate_residual_mean": args.dynamic_gate_residual_mean,
     "prompt_dropout": args.prompt_dropout,
+    "peps_topk": args.peps_topk,
+    "peps_tau": args.peps_tau,
+    "save_peps_weights": args.save_peps_weights,
 }
 
 print("\nLoad Dataset")
@@ -276,6 +283,8 @@ if args.prompt_ensemble_mode == "dynamic_gate" and not args.use_concept_prompt_p
     raise ValueError("--prompt_ensemble_mode dynamic_gate requires --use_concept_prompt_pool.")
 if args.use_dynamic_prompt_gate and args.prompt_ensemble_mode != "dynamic_gate":
     raise ValueError("--use_dynamic_prompt_gate requires --prompt_ensemble_mode dynamic_gate.")
+if args.prompt_ensemble_mode == "peps" and not args.use_concept_prompt_pool:
+    raise ValueError("--prompt_ensemble_mode peps requires --use_concept_prompt_pool.")
 
 if not os.path.exists(args.results_dir):
     os.makedirs(args.results_dir)
@@ -283,6 +292,14 @@ if not os.path.exists(args.results_dir):
 args.results_dir = os.path.join(args.results_dir, f"{args.exp_code}_s{args.seed}")
 if not os.path.exists(args.results_dir):
     os.makedirs(args.results_dir)
+
+if args.use_concept_prompt_pool:
+    print_and_save_concept_prompt_class_mapping(
+        prompt_json_path=args.concept_prompt_path,
+        output_dir=args.results_dir,
+        num_classes=args.n_classes,
+        class_names=args.class_names,
+    )
 
 if args.split_dir is None:
     args.split_dir = os.path.join("splits", f"{args.task}_{int(args.label_frac * 100)}")

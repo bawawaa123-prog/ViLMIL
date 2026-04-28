@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 
@@ -38,10 +39,78 @@ def _load_prompt_items(prompt_json_path):
     return resolved_path, prompt_items
 
 
-def _group_concept_prompts(prompt_json_path, num_classes, class_names=None):
+def get_concept_prompt_class_mapping(prompt_json_path, num_classes=None, class_names=None):
+    resolved_path, prompt_items = _load_prompt_items(prompt_json_path)
+    mapping = {}
+    for item in prompt_items:
+        class_id = int(item.get("class_id"))
+        class_name = str(item.get("class_name", "")).strip()
+        if class_id in mapping and mapping[class_id] != class_name:
+            raise ValueError(
+                f"Inconsistent class mapping in {resolved_path}: "
+                f"class_id={class_id} maps to both '{mapping[class_id]}' and '{class_name}'"
+            )
+        mapping[class_id] = class_name
+
+    if num_classes is not None:
+        expected_ids = list(range(int(num_classes)))
+        if sorted(mapping.keys()) != expected_ids:
+            raise ValueError(
+                f"Class id mismatch in {resolved_path}: found ids={sorted(mapping.keys())}, "
+                f"expected ids={expected_ids}"
+            )
+
+    records = [{"class_id": class_id, "class_name": mapping[class_id]} for class_id in sorted(mapping.keys())]
+    if class_names is not None:
+        expected_records = [{"class_id": idx, "class_name": str(name)} for idx, name in enumerate(class_names)]
+        if records != expected_records:
+            raise ValueError(
+                f"Concept prompt class mapping mismatch.\n"
+                f"JSON mapping: {records}\nExpected: {expected_records}"
+            )
+    return resolved_path, records
+
+
+def print_and_save_concept_prompt_class_mapping(
+    prompt_json_path,
+    output_dir,
+    *,
+    num_classes=None,
+    class_names=None,
+):
+    resolved_path, records = get_concept_prompt_class_mapping(
+        prompt_json_path=prompt_json_path,
+        num_classes=num_classes,
+        class_names=class_names,
+    )
+    print(f"[ConceptPromptPool] class mapping from {resolved_path}")
+    for record in records:
+        print(f"  class_id={record['class_id']} -> class_name={record['class_name']}")
+
+    os.makedirs(output_dir, exist_ok=True)
+    csv_path = os.path.join(output_dir, "concept_class_mapping.csv")
+    json_path = os.path.join(output_dir, "concept_class_mapping.json")
+    with open(csv_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["class_id", "class_name"])
+        writer.writeheader()
+        writer.writerows(records)
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "prompt_json_path": resolved_path,
+                "class_mapping": records,
+            },
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+    return records
+
+
+def _group_concept_prompt_items(prompt_json_path, num_classes, class_names=None):
     resolved_path, prompt_items = _load_prompt_items(prompt_json_path)
 
-    grouped_prompts = {
+    grouped_items = {
         "low": {class_id: [] for class_id in range(num_classes)},
         "high": {class_id: [] for class_id in range(num_classes)},
     }
@@ -56,16 +125,11 @@ def _group_concept_prompts(prompt_json_path, num_classes, class_names=None):
 
         scale = str(item.get("scale", "")).strip().lower()
         class_id = int(item.get("class_id"))
-        prompt = str(item.get("prompt", "")).strip()
         class_name = str(item.get("class_name", "")).strip()
-
-        if scale not in grouped_prompts:
+        if scale not in grouped_items:
             continue
         if class_id < 0 or class_id >= num_classes:
             raise ValueError(f"Invalid class_id={class_id} for num_classes={num_classes}")
-        if not prompt:
-            continue
-
         if expected_name_by_id:
             expected_name = expected_name_by_id[class_id]
             if class_name and class_name != expected_name:
@@ -73,8 +137,37 @@ def _group_concept_prompts(prompt_json_path, num_classes, class_names=None):
                     f"Concept prompt class mismatch at class_id={class_id}: "
                     f"json class_name='{class_name}' vs expected '{expected_name}'"
                 )
+        prompt = str(item.get("prompt", "")).strip()
+        if not prompt:
+            continue
+        grouped_items[scale][class_id].append(
+            {
+                "prompt": prompt,
+                "class_id": class_id,
+                "class_name": class_name,
+                "scale": scale,
+                "concept_id": str(item.get("concept_id", "")).strip(),
+                "concept_en": str(item.get("concept_en", "")).strip(),
+                "source": str(item.get("source", "")).strip(),
+            }
+        )
 
-        grouped_prompts[scale][class_id].append(prompt)
+    return resolved_path, grouped_items
+
+
+def _group_concept_prompts(prompt_json_path, num_classes, class_names=None):
+    resolved_path, grouped_items = _group_concept_prompt_items(
+        prompt_json_path=prompt_json_path,
+        num_classes=num_classes,
+        class_names=class_names,
+    )
+    grouped_prompts = {
+        scale: {
+            class_id: [item["prompt"] for item in grouped_items[scale][class_id]]
+            for class_id in grouped_items[scale]
+        }
+        for scale in grouped_items
+    }
 
     return resolved_path, grouped_prompts
 
@@ -92,7 +185,7 @@ def _encode_prompt_list(prompts, text_encoder, tokenizer, device):
 
 
 def _build_group_features_and_texts(
-    grouped_prompts,
+    grouped_items,
     text_encoder,
     tokenizer,
     device,
@@ -100,7 +193,7 @@ def _build_group_features_and_texts(
     dtype=None,
 ):
     def _encode_group(scale_name):
-        prompt_counts = [len(grouped_prompts[scale_name][class_id]) for class_id in range(num_classes)]
+        prompt_counts = [len(grouped_items[scale_name][class_id]) for class_id in range(num_classes)]
         if any(count == 0 for count in prompt_counts):
             raise ValueError(
                 f"Missing concept prompts for scale='{scale_name}': counts={prompt_counts}"
@@ -113,20 +206,30 @@ def _build_group_features_and_texts(
 
         class_prompt_features = []
         class_prompt_texts = []
+        class_prompt_metadata = []
         for class_id in range(num_classes):
-            prompts = grouped_prompts[scale_name][class_id]
+            prompt_items = grouped_items[scale_name][class_id]
+            prompts = [item["prompt"] for item in prompt_items]
             text_features = _encode_prompt_list(prompts, text_encoder, tokenizer, device)
             class_prompt_features.append(text_features)
             class_prompt_texts.append(list(prompts))
+            class_prompt_metadata.append([dict(item) for item in prompt_items])
 
         features = torch.stack(class_prompt_features, dim=0)
         if dtype is not None:
             features = features.to(dtype=dtype)
-        return features, class_prompt_texts
+        return features, class_prompt_texts, class_prompt_metadata
 
-    low_prompt_tensor, low_prompt_texts = _encode_group("low")
-    high_prompt_tensor, high_prompt_texts = _encode_group("high")
-    return low_prompt_tensor, high_prompt_tensor, low_prompt_texts, high_prompt_texts
+    low_prompt_tensor, low_prompt_texts, low_prompt_metadata = _encode_group("low")
+    high_prompt_tensor, high_prompt_texts, high_prompt_metadata = _encode_group("high")
+    return (
+        low_prompt_tensor,
+        high_prompt_tensor,
+        low_prompt_texts,
+        high_prompt_texts,
+        low_prompt_metadata,
+        high_prompt_metadata,
+    )
 
 
 def build_concept_text_features(
@@ -175,13 +278,13 @@ def build_concept_prompt_tensors(
     dtype=None,
     class_names=None,
 ):
-    _, grouped_prompts = _group_concept_prompts(
+    _, grouped_items = _group_concept_prompt_items(
         prompt_json_path=prompt_json_path,
         num_classes=num_classes,
         class_names=class_names,
     )
-    low_prompt_tensor, high_prompt_tensor, _, _ = _build_group_features_and_texts(
-        grouped_prompts=grouped_prompts,
+    low_prompt_tensor, high_prompt_tensor, _, _, _, _ = _build_group_features_and_texts(
+        grouped_items=grouped_items,
         text_encoder=text_encoder,
         tokenizer=tokenizer,
         device=device,
@@ -200,13 +303,13 @@ def build_concept_prompt_bundle(
     dtype=None,
     class_names=None,
 ):
-    _, grouped_prompts = _group_concept_prompts(
+    _, grouped_items = _group_concept_prompt_items(
         prompt_json_path=prompt_json_path,
         num_classes=num_classes,
         class_names=class_names,
     )
     return _build_group_features_and_texts(
-        grouped_prompts=grouped_prompts,
+        grouped_items=grouped_items,
         text_encoder=text_encoder,
         tokenizer=tokenizer,
         device=device,
