@@ -310,6 +310,9 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.peps_topk = int(getattr(config, "peps_topk", 3))
         self.peps_tau = float(getattr(config, "peps_tau", 0.1))
         self.save_peps_weights = bool(getattr(config, "save_peps_weights", False))
+        self.scale_mode = str(getattr(config, "scale_mode", "dual"))
+        if self.scale_mode not in {"dual", "low_only", "high_only"}:
+            raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
 
         self.norm = nn.LayerNorm(self.L)
         self.cross_attention_1 = MultiheadAttention(embed_dim=self.L, num_heads=1)
@@ -717,6 +720,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             f"high_shape={tuple(concept_high.shape)}"
         )
 
+    def _combine_scale_logits(self, logits_low, logits_high):
+        if self.scale_mode == "low_only":
+            return logits_low
+        if self.scale_mode == "high_only":
+            return logits_high
+        return logits_low + logits_high
+
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         """
         前向传播
@@ -761,7 +771,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=False,
         )
-        logits = logits_low + logits_high
+        logits = self._combine_scale_logits(logits_low, logits_high)
 
         loss = self.loss_ce(logits, label)
         Y_prob = F.softmax(logits, dim=1)
@@ -810,7 +820,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=True,
         )
-        logits = logits_low + logits_high
+        logits = self._combine_scale_logits(logits_low, logits_high)
 
         loss = self.loss_ce(logits, label)
         Y_prob = F.softmax(logits, dim=1)
@@ -872,7 +882,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=False,
         )
-        logits = logits_low + logits_high
+        logits = self._combine_scale_logits(logits_low, logits_high)
 
         Y_prob = F.softmax(logits, dim=1)
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]

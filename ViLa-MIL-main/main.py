@@ -68,6 +68,13 @@ parser.add_argument("--peps_tau", type=float, default=0.1)
 parser.add_argument("--save_peps_weights", action="store_true", default=False)
 parser.add_argument("--prototype_number", type=int, default=16)
 parser.add_argument(
+    "--scale_mode",
+    type=str,
+    choices=["dual", "low_only", "high_only"],
+    default="dual",
+    help="scale fusion mode: dual keeps the original low+high fusion; low_only/high_only are ablations.",
+)
+parser.add_argument(
     "--finetune_text_encoder",
     action="store_true",
     default=False,
@@ -216,6 +223,7 @@ settings = {
     "peps_topk": args.peps_topk,
     "peps_tau": args.peps_tau,
     "save_peps_weights": args.save_peps_weights,
+    "scale_mode": args.scale_mode,
 }
 
 print("\nLoad Dataset")

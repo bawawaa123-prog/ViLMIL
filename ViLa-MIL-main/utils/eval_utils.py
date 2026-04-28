@@ -47,6 +47,7 @@ def initiate_model(args, ckpt_path):
         config.peps_topk = int(getattr(args, 'peps_topk', 3))
         config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
         config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
+        config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))

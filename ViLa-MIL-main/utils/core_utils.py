@@ -169,6 +169,7 @@ def train(datasets, cur, args):
         config.peps_topk = int(getattr(args, 'peps_topk', 3))
         config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
         config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
+        config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
