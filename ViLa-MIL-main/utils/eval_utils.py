@@ -47,6 +47,10 @@ def initiate_model(args, ckpt_path):
         config.peps_topk = int(getattr(args, 'peps_topk', 3))
         config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
         config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
+        config.save_sap_peps_weights = bool(getattr(args, 'save_sap_peps_weights', False))
+        config.spatial_lambda = float(getattr(args, 'spatial_lambda', 1.0))
+        config.spatial_sigma = float(getattr(args, 'spatial_sigma', 1.0))
+        config.spatial_score_type = str(getattr(args, 'spatial_score_type', 'centroid_mean_dist'))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
@@ -158,26 +162,45 @@ def _build_peps_export_records(
     true_class = int(label.item())
     pred_class = int(y_hat.item())
     pred_probs = diagnostics["pred_probs"].detach().cpu().numpy()[0]
+    mode = str(diagnostics.get("mode", "peps"))
 
     scale_configs = [
         (
             "low",
             diagnostics["prompt_weights_low"].detach().cpu().numpy()[0],
-            diagnostics["prompt_evidence_low"].detach().cpu().numpy()[0],
+            diagnostics["prompt_semantic_evidence_low"].detach().cpu().numpy()[0],
+            diagnostics["prompt_spatial_score_low"].detach().cpu().numpy()[0],
+            diagnostics["prompt_final_evidence_low"].detach().cpu().numpy()[0],
             diagnostics["supporting_prototype_index_low"].detach().cpu().numpy()[0],
+            diagnostics["topk_prototype_indices_low"].detach().cpu().numpy()[0],
+            diagnostics["topk_proto_mean_dist_low"].detach().cpu().numpy()[0],
             prompt_metadata_low,
         ),
         (
             "high",
             diagnostics["prompt_weights_high"].detach().cpu().numpy()[0],
-            diagnostics["prompt_evidence_high"].detach().cpu().numpy()[0],
+            diagnostics["prompt_semantic_evidence_high"].detach().cpu().numpy()[0],
+            diagnostics["prompt_spatial_score_high"].detach().cpu().numpy()[0],
+            diagnostics["prompt_final_evidence_high"].detach().cpu().numpy()[0],
             diagnostics["supporting_prototype_index_high"].detach().cpu().numpy()[0],
+            diagnostics["topk_prototype_indices_high"].detach().cpu().numpy()[0],
+            diagnostics["topk_proto_mean_dist_high"].detach().cpu().numpy()[0],
             prompt_metadata_high,
         ),
     ]
 
     records = []
-    for scale_name, weights_by_class, evidence_by_class, support_by_class, metadata_by_class in scale_configs:
+    for (
+        scale_name,
+        weights_by_class,
+        semantic_by_class,
+        spatial_by_class,
+        final_by_class,
+        support_by_class,
+        topk_proto_indices_by_class,
+        topk_mean_dist_by_class,
+        metadata_by_class,
+    ) in scale_configs:
         for class_idx, class_name in enumerate(class_names):
             order = np.argsort(-weights_by_class[class_idx])[:3]
             record = {
@@ -189,6 +212,15 @@ def _build_peps_export_records(
                 "scale": scale_name,
                 "class_id": class_idx,
                 "class_name": class_name,
+                "prompt_selection_mode": mode,
+                "semantic_evidence_mean": float(np.mean(semantic_by_class[class_idx])),
+                "semantic_evidence_std": float(np.std(semantic_by_class[class_idx])),
+                "spatial_score_mean": float(np.mean(spatial_by_class[class_idx])),
+                "spatial_score_std": float(np.std(spatial_by_class[class_idx])),
+                "final_evidence_mean": float(np.mean(final_by_class[class_idx])),
+                "final_evidence_std": float(np.std(final_by_class[class_idx])),
+                "topk_proto_mean_dist_mean": float(np.mean(topk_mean_dist_by_class[class_idx])),
+                "topk_proto_mean_dist_std": float(np.std(topk_mean_dist_by_class[class_idx])),
             }
             for rank_idx, prompt_idx in enumerate(order, start=1):
                 meta = metadata_by_class[class_idx][prompt_idx]
@@ -196,8 +228,14 @@ def _build_peps_export_records(
                 record[f"top{rank_idx}_prompt_text"] = meta.get("prompt", "")
                 record[f"top{rank_idx}_prompt_concept"] = concept_name
                 record[f"top{rank_idx}_prompt_weight"] = float(weights_by_class[class_idx][prompt_idx])
-                record[f"top{rank_idx}_prompt_evidence"] = float(evidence_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_prompt_semantic_evidence"] = float(semantic_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_prompt_spatial_score"] = float(spatial_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_prompt_final_evidence"] = float(final_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_prompt_topk_proto_mean_dist"] = float(topk_mean_dist_by_class[class_idx][prompt_idx])
                 record[f"top{rank_idx}_supporting_prototype_index"] = int(support_by_class[class_idx][prompt_idx])
+                record[f"top{rank_idx}_supporting_prototype_indices"] = json.dumps(
+                    [int(x) for x in topk_proto_indices_by_class[class_idx][prompt_idx].tolist()]
+                )
             records.append(record)
     return records
 
@@ -251,9 +289,15 @@ def summary(mode, model, loader, args):
                 slide_id_for_model = slide_id
             with torch.no_grad():
                 diagnostics = None
+                prompt_mode = str(getattr(args, "prompt_ensemble_mode", ""))
                 need_prompt_diagnostics = bool(getattr(args, "use_dynamic_prompt_gate", False)) or (
-                    str(getattr(args, "prompt_ensemble_mode", "")) == "peps"
-                    and bool(getattr(args, "save_peps_weights", False))
+                    prompt_mode == "peps" and bool(getattr(args, "save_peps_weights", False))
+                ) or (
+                    prompt_mode == "sap_peps"
+                    and (
+                        bool(getattr(args, "save_sap_peps_weights", False))
+                        or bool(getattr(args, "save_peps_weights", False))
+                    )
                 )
                 if hasattr(model, "forward_with_prompt_diagnostics") and need_prompt_diagnostics:
                     Y_prob, Y_hat, loss, diagnostics = model.forward_with_prompt_diagnostics(
@@ -273,7 +317,7 @@ def summary(mode, model, loader, args):
             error = calculate_error(Y_hat, label)
             test_error += error
             if diagnostics is not None:
-                if str(getattr(args, "prompt_ensemble_mode", "")) == "peps":
+                if str(getattr(args, "prompt_ensemble_mode", "")) in {"peps", "sap_peps"}:
                     prompt_export_records.extend(
                         _build_peps_export_records(
                             slide_row=slide_rows.iloc[batch_idx],

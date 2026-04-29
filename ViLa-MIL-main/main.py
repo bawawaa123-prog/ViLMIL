@@ -56,7 +56,7 @@ parser.add_argument("--use_concept_prompt_pool", action="store_true", default=Fa
 parser.add_argument(
     "--prompt_ensemble_mode",
     type=str,
-    choices=["embedding_mean", "logit_mean", "dynamic_gate", "peps"],
+    choices=["embedding_mean", "logit_mean", "dynamic_gate", "peps", "sap_peps"],
     default="embedding_mean",
 )
 parser.add_argument("--use_dynamic_prompt_gate", action="store_true", default=False)
@@ -66,6 +66,15 @@ parser.add_argument("--prompt_dropout", type=float, default=0.0)
 parser.add_argument("--peps_topk", type=int, default=3)
 parser.add_argument("--peps_tau", type=float, default=0.1)
 parser.add_argument("--save_peps_weights", action="store_true", default=False)
+parser.add_argument("--save_sap_peps_weights", action="store_true", default=False)
+parser.add_argument("--spatial_lambda", type=float, default=1.0)
+parser.add_argument("--spatial_sigma", type=float, default=1.0)
+parser.add_argument(
+    "--spatial_score_type",
+    type=str,
+    choices=["centroid_mean_dist"],
+    default="centroid_mean_dist",
+)
 parser.add_argument("--prototype_number", type=int, default=16)
 parser.add_argument(
     "--scale_mode",
@@ -223,6 +232,10 @@ settings = {
     "peps_topk": args.peps_topk,
     "peps_tau": args.peps_tau,
     "save_peps_weights": args.save_peps_weights,
+    "save_sap_peps_weights": args.save_sap_peps_weights,
+    "spatial_lambda": args.spatial_lambda,
+    "spatial_sigma": args.spatial_sigma,
+    "spatial_score_type": args.spatial_score_type,
     "scale_mode": args.scale_mode,
 }
 
@@ -293,6 +306,8 @@ if args.use_dynamic_prompt_gate and args.prompt_ensemble_mode != "dynamic_gate":
     raise ValueError("--use_dynamic_prompt_gate requires --prompt_ensemble_mode dynamic_gate.")
 if args.prompt_ensemble_mode == "peps" and not args.use_concept_prompt_pool:
     raise ValueError("--prompt_ensemble_mode peps requires --use_concept_prompt_pool.")
+if args.prompt_ensemble_mode == "sap_peps" and not args.use_concept_prompt_pool:
+    raise ValueError("--prompt_ensemble_mode sap_peps requires --use_concept_prompt_pool.")
 
 if not os.path.exists(args.results_dir):
     os.makedirs(args.results_dir)

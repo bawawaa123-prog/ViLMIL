@@ -64,7 +64,7 @@ parser.add_argument("--use_concept_prompt_pool", action="store_true", default=Fa
 parser.add_argument(
     "--prompt_ensemble_mode",
     type=str,
-    choices=["embedding_mean", "logit_mean", "dynamic_gate", "peps"],
+    choices=["embedding_mean", "logit_mean", "dynamic_gate", "peps", "sap_peps"],
     default="embedding_mean",
 )
 parser.add_argument("--use_dynamic_prompt_gate", action="store_true", default=False)
@@ -74,6 +74,15 @@ parser.add_argument("--prompt_dropout", type=float, default=0.0)
 parser.add_argument("--peps_topk", type=int, default=3)
 parser.add_argument("--peps_tau", type=float, default=0.1)
 parser.add_argument("--save_peps_weights", action="store_true", default=False)
+parser.add_argument("--save_sap_peps_weights", action="store_true", default=False)
+parser.add_argument("--spatial_lambda", type=float, default=1.0)
+parser.add_argument("--spatial_sigma", type=float, default=1.0)
+parser.add_argument(
+    "--spatial_score_type",
+    type=str,
+    choices=["centroid_mean_dist"],
+    default="centroid_mean_dist",
+)
 parser.add_argument("--prototype_number", type=int, default=16, help="number of prototypes (default: 16)")
 parser.add_argument(
     "--scale_mode",
@@ -186,6 +195,10 @@ settings = {
     "peps_topk": args.peps_topk,
     "peps_tau": args.peps_tau,
     "save_peps_weights": args.save_peps_weights,
+    "save_sap_peps_weights": args.save_sap_peps_weights,
+    "spatial_lambda": args.spatial_lambda,
+    "spatial_sigma": args.spatial_sigma,
+    "spatial_score_type": args.spatial_score_type,
     "scale_mode": args.scale_mode,
 }
 
@@ -247,6 +260,8 @@ if args.use_dynamic_prompt_gate and args.prompt_ensemble_mode != "dynamic_gate":
     raise ValueError("--use_dynamic_prompt_gate requires --prompt_ensemble_mode dynamic_gate.")
 if args.prompt_ensemble_mode == "peps" and not args.use_concept_prompt_pool:
     raise ValueError("--prompt_ensemble_mode peps requires --use_concept_prompt_pool.")
+if args.prompt_ensemble_mode == "sap_peps" and not args.use_concept_prompt_pool:
+    raise ValueError("--prompt_ensemble_mode sap_peps requires --use_concept_prompt_pool.")
 
 if args.use_concept_prompt_pool:
     print_and_save_concept_prompt_class_mapping(
@@ -355,11 +370,12 @@ if __name__ == "__main__":
             }
         )
         if prompt_export_df is not None and not prompt_export_df.empty:
-            export_filename = (
-                f"peps_prompt_analysis_fold{current_fold}.csv"
-                if args.prompt_ensemble_mode == "peps"
-                else f"prompt_weight_analysis_fold{current_fold}.csv"
-            )
+            if args.prompt_ensemble_mode == "peps":
+                export_filename = f"peps_prompt_analysis_fold{current_fold}.csv"
+            elif args.prompt_ensemble_mode == "sap_peps":
+                export_filename = f"sap_peps_prompt_analysis_fold{current_fold}.csv"
+            else:
+                export_filename = f"prompt_weight_analysis_fold{current_fold}.csv"
             prompt_export_path = os.path.join(args.save_dir, export_filename)
             prompt_export_df.to_csv(prompt_export_path, index=False)
             print(f"Saved prompt diagnostics to: {prompt_export_path}")

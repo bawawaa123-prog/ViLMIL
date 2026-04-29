@@ -169,6 +169,10 @@ def train(datasets, cur, args):
         config.peps_topk = int(getattr(args, 'peps_topk', 3))
         config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
         config.save_peps_weights = bool(getattr(args, 'save_peps_weights', False))
+        config.save_sap_peps_weights = bool(getattr(args, 'save_sap_peps_weights', False))
+        config.spatial_lambda = float(getattr(args, 'spatial_lambda', 1.0))
+        config.spatial_sigma = float(getattr(args, 'spatial_sigma', 1.0))
+        config.spatial_score_type = str(getattr(args, 'spatial_score_type', 'centroid_mean_dist'))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)

@@ -302,6 +302,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.prompt_ensemble_mode = str(getattr(config, "prompt_ensemble_mode", "embedding_mean"))
         self.use_dynamic_prompt_gate = bool(getattr(config, "use_dynamic_prompt_gate", False))
         self.use_peps = self.prompt_ensemble_mode == "peps"
+        self.use_sap_peps = self.prompt_ensemble_mode == "sap_peps"
         if self.prompt_ensemble_mode == "dynamic_gate":
             self.use_dynamic_prompt_gate = True
         self.dynamic_gate_hidden_dim = int(getattr(config, "dynamic_gate_hidden_dim", 256))
@@ -310,6 +311,10 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.peps_topk = int(getattr(config, "peps_topk", 3))
         self.peps_tau = float(getattr(config, "peps_tau", 0.1))
         self.save_peps_weights = bool(getattr(config, "save_peps_weights", False))
+        self.save_sap_peps_weights = bool(getattr(config, "save_sap_peps_weights", False))
+        self.spatial_lambda = float(getattr(config, "spatial_lambda", 1.0))
+        self.spatial_sigma = max(float(getattr(config, "spatial_sigma", 1.0)), 1e-6)
+        self.spatial_score_type = str(getattr(config, "spatial_score_type", "centroid_mean_dist"))
         self.scale_mode = str(getattr(config, "scale_mode", "dual"))
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
@@ -493,6 +498,44 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             raise ValueError(f"Prototype components must be rank-3, got rank={components.dim()}")
         return components.permute(1, 0, 2).contiguous().float()
 
+    def _normalize_coords(self, coords):
+        if coords.dim() == 2:
+            coords = coords.unsqueeze(0)
+        coords = coords.float()
+        min_xy = coords.min(dim=1, keepdim=True).values
+        max_xy = coords.max(dim=1, keepdim=True).values
+        span_xy = (max_xy - min_xy).clamp_min(1.0)
+        return (coords - min_xy) / span_xy
+
+    def _prototype_coords_from_attention(self, raw_attn_weights, coords):
+        if raw_attn_weights is None:
+            raise ValueError("Prototype coordinates require raw attention weights, got None")
+        if raw_attn_weights.dim() != 4:
+            raise ValueError(
+                f"Expected raw attention weights [batch, heads, num_proto, num_patches], got rank={raw_attn_weights.dim()}"
+            )
+        coords = self._normalize_coords(coords)
+        attn_scores = raw_attn_weights.float().mean(dim=1)
+        attn_probs = F.softmax(attn_scores, dim=-1)
+        prototype_coords = torch.einsum("bpn,bnd->bpd", attn_probs, coords)
+        return prototype_coords
+
+    def _gather_topk_coords(self, prototype_coords, topk_indices):
+        batch_size, num_proto, coord_dim = prototype_coords.shape
+        _, num_classes, num_prompts, topk_k = topk_indices.shape
+        expanded_coords = prototype_coords.unsqueeze(1).unsqueeze(2).expand(
+            batch_size, num_classes, num_prompts, num_proto, coord_dim
+        )
+        gather_index = topk_indices.unsqueeze(-1).expand(-1, -1, -1, -1, coord_dim)
+        return torch.gather(expanded_coords, dim=3, index=gather_index)
+
+    def _compute_topk_proto_mean_dist(self, topk_coords):
+        if topk_coords.size(-2) <= 1:
+            return torch.zeros(topk_coords.shape[:-2], device=topk_coords.device, dtype=topk_coords.dtype)
+        centroid = topk_coords.mean(dim=-2, keepdim=True)
+        dists = torch.norm(topk_coords - centroid, dim=-1)
+        return dists.mean(dim=-1)
+
     def _apply_prompt_dropout(self, weights):
         if (not self.training) or self.prompt_dropout <= 0.0 or weights.size(-1) <= 1:
             return weights
@@ -549,7 +592,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
 
         return final_text, prompt_weights
 
-    def _build_peps_text_features(self, prototype_features, prompt_features):
+    def _build_peps_text_features(self, prototype_features, prompt_features, prototype_coords=None):
         if prototype_features.dim() != 3:
             raise ValueError(
                 f"Prototype features must be [batch, num_proto, dim], got rank={prototype_features.dim()}"
@@ -569,10 +612,81 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         dynamic_text = torch.einsum("bcm,cmd->bcd", prompt_weights, prompt_features)
         dynamic_text = F.normalize(dynamic_text, dim=-1)
 
+        topk_proto_mean_dist = None
+        if prototype_coords is not None:
+            if prototype_coords.dim() != 3:
+                raise ValueError(
+                    f"Prototype coords must be [batch, num_proto, 2], got rank={prototype_coords.dim()}"
+                )
+            prototype_coords = self._normalize_coords(prototype_coords)
+            topk_coords = self._gather_topk_coords(prototype_coords, topk_indices)
+            topk_proto_mean_dist = self._compute_topk_proto_mean_dist(topk_coords).detach()
+
         diagnostics = {
             "prompt_weights": prompt_weights.detach(),
-            "prompt_evidence": evidence.detach(),
+            "prompt_semantic_evidence": evidence.detach(),
+            "prompt_spatial_score": torch.zeros_like(evidence).detach(),
+            "prompt_final_evidence": evidence.detach(),
             "supporting_prototype_index": topk_indices[..., 0].detach(),
+            "topk_prototype_indices": topk_indices.detach(),
+        }
+        if topk_proto_mean_dist is not None:
+            diagnostics["topk_proto_mean_dist"] = topk_proto_mean_dist
+        return dynamic_text, diagnostics
+
+    def _build_sap_peps_text_features(self, prototype_features, prompt_features, prototype_coords):
+        if prototype_features.dim() != 3:
+            raise ValueError(
+                f"Prototype features must be [batch, num_proto, dim], got rank={prototype_features.dim()}"
+            )
+        if prompt_features.dim() != 3:
+            raise ValueError(f"Prompt features must be [classes, prompts, dim], got rank={prompt_features.dim()}")
+        if prototype_coords.dim() != 3:
+            raise ValueError(
+                f"Prototype coords must be [batch, num_proto, 2], got rank={prototype_coords.dim()}"
+            )
+
+        prototype_features = F.normalize(prototype_features.float(), dim=-1)
+        prompt_features = F.normalize(prompt_features.float(), dim=-1)
+        prototype_coords = self._normalize_coords(prototype_coords)
+
+        sim = torch.einsum("bpd,cmd->bcmp", prototype_features, prompt_features)
+        topk_k = max(1, min(int(self.peps_topk), sim.size(-1)))
+
+        semantic_topk_values, semantic_topk_indices = torch.topk(sim, k=topk_k, dim=-1)
+        semantic_topk_coords = self._gather_topk_coords(prototype_coords, semantic_topk_indices)
+        semantic_centroid = semantic_topk_coords.mean(dim=-2)
+
+        expanded_coords = prototype_coords.unsqueeze(1).unsqueeze(2)
+        spatial_dist = torch.norm(expanded_coords - semantic_centroid.unsqueeze(-2), dim=-1)
+        if self.spatial_score_type != "centroid_mean_dist":
+            raise ValueError(f"Unsupported spatial_score_type: {self.spatial_score_type}")
+        spatial_proto_scores = -spatial_dist / self.spatial_sigma
+
+        combined_scores = sim + (self.spatial_lambda * spatial_proto_scores)
+        final_topk_values, final_topk_indices = torch.topk(combined_scores, k=topk_k, dim=-1)
+
+        final_topk_coords = self._gather_topk_coords(prototype_coords, final_topk_indices)
+        final_topk_semantic = torch.gather(sim, dim=-1, index=final_topk_indices)
+        final_topk_spatial = torch.gather(spatial_proto_scores, dim=-1, index=final_topk_indices)
+
+        semantic_evidence = final_topk_semantic.mean(dim=-1)
+        spatial_score = final_topk_spatial.mean(dim=-1)
+        final_evidence = final_topk_values.mean(dim=-1)
+
+        tau = max(float(self.peps_tau), 1e-6)
+        prompt_weights = F.softmax(final_evidence / tau, dim=-1)
+        dynamic_text = torch.einsum("bcm,cmd->bcd", prompt_weights, prompt_features)
+        dynamic_text = F.normalize(dynamic_text, dim=-1)
+
+        diagnostics = {
+            "prompt_weights": prompt_weights.detach(),
+            "prompt_semantic_evidence": semantic_evidence.detach(),
+            "prompt_spatial_score": spatial_score.detach(),
+            "prompt_final_evidence": final_evidence.detach(),
+            "supporting_prototype_index": final_topk_indices[..., 0].detach(),
+            "topk_prototype_indices": final_topk_indices.detach(),
+            "topk_proto_mean_dist": self._compute_topk_proto_mean_dist(final_topk_coords).detach(),
         }
         return dynamic_text, diagnostics
 
@@ -584,6 +698,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         image_context_high,
         prototype_features_low,
         prototype_features_high,
+        prototype_coords_low,
+        prototype_coords_high,
         device,
         return_diagnostics=False,
     ):
@@ -625,10 +741,12 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             text_features_low, peps_diag_low = self._build_peps_text_features(
                 prototype_features_low,
                 text_features_low.to(device),
+                prototype_coords_low.to(device),
             )
             text_features_high, peps_diag_high = self._build_peps_text_features(
                 prototype_features_high,
                 text_features_high.to(device),
+                prototype_coords_high.to(device),
             )
 
             text_features_low = self._contextualize_dynamic_text_features(text_features_low, image_context_low)
@@ -641,10 +759,67 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 diagnostics = {
                     "prompt_weights_low": peps_diag_low["prompt_weights"],
                     "prompt_weights_high": peps_diag_high["prompt_weights"],
-                    "prompt_evidence_low": peps_diag_low["prompt_evidence"],
-                    "prompt_evidence_high": peps_diag_high["prompt_evidence"],
+                    "prompt_semantic_evidence_low": peps_diag_low["prompt_semantic_evidence"],
+                    "prompt_semantic_evidence_high": peps_diag_high["prompt_semantic_evidence"],
+                    "prompt_spatial_score_low": peps_diag_low["prompt_spatial_score"],
+                    "prompt_spatial_score_high": peps_diag_high["prompt_spatial_score"],
+                    "prompt_final_evidence_low": peps_diag_low["prompt_final_evidence"],
+                    "prompt_final_evidence_high": peps_diag_high["prompt_final_evidence"],
                     "supporting_prototype_index_low": peps_diag_low["supporting_prototype_index"],
                     "supporting_prototype_index_high": peps_diag_high["supporting_prototype_index"],
+                    "topk_prototype_indices_low": peps_diag_low["topk_prototype_indices"],
+                    "topk_prototype_indices_high": peps_diag_high["topk_prototype_indices"],
+                    "topk_proto_mean_dist_low": peps_diag_low.get("topk_proto_mean_dist", torch.zeros_like(peps_diag_low["prompt_final_evidence"])),
+                    "topk_proto_mean_dist_high": peps_diag_high.get("topk_proto_mean_dist", torch.zeros_like(peps_diag_high["prompt_final_evidence"])),
+                    "spatial_lambda": torch.tensor(self.spatial_lambda, dtype=torch.float32, device=device),
+                    "spatial_sigma": torch.tensor(self.spatial_sigma, dtype=torch.float32, device=device),
+                    "spatial_score_type": self.spatial_score_type,
+                    "prototype_coords_low": prototype_coords_low.detach(),
+                    "prototype_coords_high": prototype_coords_high.detach(),
+                    "mode": "peps",
+                    "dynamic_text_low": text_features_low.detach(),
+                    "dynamic_text_high": text_features_high.detach(),
+                }
+        elif self.use_sap_peps:
+            text_features_low, sap_diag_low = self._build_sap_peps_text_features(
+                prototype_features_low,
+                text_features_low.to(device),
+                prototype_coords_low.to(device),
+            )
+            text_features_high, sap_diag_high = self._build_sap_peps_text_features(
+                prototype_features_high,
+                text_features_high.to(device),
+                prototype_coords_high.to(device),
+            )
+
+            text_features_low = self._contextualize_dynamic_text_features(text_features_low, image_context_low)
+            text_features_high = self._contextualize_dynamic_text_features(text_features_high, image_context_high)
+
+            logits_low = self._compute_dynamic_scale_logits(image_features_low, text_features_low)
+            logits_high = self._compute_dynamic_scale_logits(image_features_high, text_features_high)
+
+            if return_diagnostics:
+                diagnostics = {
+                    "prompt_weights_low": sap_diag_low["prompt_weights"],
+                    "prompt_weights_high": sap_diag_high["prompt_weights"],
+                    "prompt_semantic_evidence_low": sap_diag_low["prompt_semantic_evidence"],
+                    "prompt_semantic_evidence_high": sap_diag_high["prompt_semantic_evidence"],
+                    "prompt_spatial_score_low": sap_diag_low["prompt_spatial_score"],
+                    "prompt_spatial_score_high": sap_diag_high["prompt_spatial_score"],
+                    "prompt_final_evidence_low": sap_diag_low["prompt_final_evidence"],
+                    "prompt_final_evidence_high": sap_diag_high["prompt_final_evidence"],
+                    "supporting_prototype_index_low": sap_diag_low["supporting_prototype_index"],
+                    "supporting_prototype_index_high": sap_diag_high["supporting_prototype_index"],
+                    "topk_prototype_indices_low": sap_diag_low["topk_prototype_indices"],
+                    "topk_prototype_indices_high": sap_diag_high["topk_prototype_indices"],
+                    "topk_proto_mean_dist_low": sap_diag_low["topk_proto_mean_dist"],
+                    "topk_proto_mean_dist_high": sap_diag_high["topk_proto_mean_dist"],
+                    "spatial_lambda": torch.tensor(self.spatial_lambda, dtype=torch.float32, device=device),
+                    "spatial_sigma": torch.tensor(self.spatial_sigma, dtype=torch.float32, device=device),
+                    "spatial_score_type": self.spatial_score_type,
+                    "prototype_coords_low": prototype_coords_low.detach(),
+                    "prototype_coords_high": prototype_coords_high.detach(),
+                    "mode": "sap_peps",
                     "dynamic_text_low": text_features_low.detach(),
                     "dynamic_text_high": text_features_high.detach(),
                 }
@@ -660,7 +835,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         if not self.use_concept_prompt_pool:
             return
 
-        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean", "dynamic_gate", "peps"}:
+        if self.prompt_ensemble_mode not in {"embedding_mean", "logit_mean", "dynamic_gate", "peps", "sap_peps"}:
             raise ValueError(f"Unsupported prompt_ensemble_mode: {self.prompt_ensemble_mode}")
         if not self.concept_prompt_path:
             raise ValueError("use_concept_prompt_pool=True but concept_prompt_path is missing")
@@ -731,12 +906,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         """
         前向传播
         """
-        del coord_s, coords_l, slide_id
+        del slide_id
 
         M = x_s.float()
-        compents, _ = self.cross_attention_1(self.learnable_image_center, M, M)
+        compents, attn_weights_low = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
         prototype_features_low = self._prototype_tensor_from_components(compents)
+        prototype_coords_low = self._prototype_coords_from_attention(attn_weights_low, coord_s)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -747,9 +923,10 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         image_features_low = torch.mm(A, H)
 
         M_high = x_l.float()
-        compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
+        compents_high, attn_weights_high = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
         compents_high = self.norm(compents_high + self.learnable_image_center)
         prototype_features_high = self._prototype_tensor_from_components(compents_high)
+        prototype_coords_high = self._prototype_coords_from_attention(attn_weights_high, coords_l)
 
         H_high = compents_high.squeeze().float()
         A_V_high = self.attention_V(H_high)
@@ -768,6 +945,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_high=image_context_high,
             prototype_features_low=prototype_features_low,
             prototype_features_high=prototype_features_high,
+            prototype_coords_low=prototype_coords_low,
+            prototype_coords_high=prototype_coords_high,
             device=x_s.device,
             return_diagnostics=False,
         )
@@ -780,12 +959,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         return Y_prob, Y_hat, loss
 
     def forward_with_prompt_diagnostics(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
-        del coord_s, coords_l, slide_id
+        del slide_id
 
         M = x_s.float()
-        compents, _ = self.cross_attention_1(self.learnable_image_center, M, M)
+        compents, attn_weights_low = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
         prototype_features_low = self._prototype_tensor_from_components(compents)
+        prototype_coords_low = self._prototype_coords_from_attention(attn_weights_low, coord_s)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -796,9 +976,10 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         image_features_low = torch.mm(A, H)
 
         M_high = x_l.float()
-        compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
+        compents_high, attn_weights_high = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
         compents_high = self.norm(compents_high + self.learnable_image_center)
         prototype_features_high = self._prototype_tensor_from_components(compents_high)
+        prototype_coords_high = self._prototype_coords_from_attention(attn_weights_high, coords_l)
 
         H_high = compents_high.squeeze().float()
         A_V_high = self.attention_V(H_high)
@@ -817,6 +998,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_high=image_context_high,
             prototype_features_low=prototype_features_low,
             prototype_features_high=prototype_features_high,
+            prototype_coords_low=prototype_coords_low,
+            prototype_coords_high=prototype_coords_high,
             device=x_s.device,
             return_diagnostics=True,
         )
@@ -838,12 +1021,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
 
     def forward_with_attention(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         """前向传播并返回注意力权重(用于热力图)"""
-        del coord_s, coords_l, label, slide_id
+        del label, slide_id
 
         M = x_s.float()
         compents, cross_attn_weights_s = self.cross_attention_1(self.learnable_image_center, M, M)
         compents = self.norm(compents + self.learnable_image_center)
         prototype_features_low = self._prototype_tensor_from_components(compents)
+        prototype_coords_low = self._prototype_coords_from_attention(cross_attn_weights_s, coord_s)
 
         M_high = x_l.float()
         compents_high, cross_attn_weights_l = self.cross_attention_1(
@@ -853,6 +1037,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         )
         compents_high = self.norm(compents_high + self.learnable_image_center)
         prototype_features_high = self._prototype_tensor_from_components(compents_high)
+        prototype_coords_high = self._prototype_coords_from_attention(cross_attn_weights_l, coords_l)
 
         H = compents.squeeze().float()
         A_V = self.attention_V(H)
@@ -879,6 +1064,8 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             image_context_high=image_context_high,
             prototype_features_low=prototype_features_low,
             prototype_features_high=prototype_features_high,
+            prototype_coords_low=prototype_coords_low,
+            prototype_coords_high=prototype_coords_high,
             device=x_s.device,
             return_diagnostics=False,
         )
