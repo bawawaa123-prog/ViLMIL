@@ -11,6 +11,8 @@ CONCEPT12_PATH="${CONCEPT12_PATH:-${ROOT_DIR}/dataset_csv/private_lung_concept_p
 
 CONCEPT12_EMBED_DIR="${CONCEPT12_EMBED_DIR:-${ROOT_DIR}/trained_models/adeno_concept12_embedding_mean_s1}"
 CONCEPT12_GATE_DIR="${CONCEPT12_GATE_DIR:-${ROOT_DIR}/trained_models/adeno_concept12_dynamic_gate_s1}"
+PEPS_TOPK3_TAU01_DIR="${PEPS_TOPK3_TAU01_DIR:-${ROOT_DIR}/trained_models/adeno_concept12_peps_topk3_tau0.1_s1}"
+PEPS_TOPK5_TAU01_DIR="${PEPS_TOPK5_TAU01_DIR:-${ROOT_DIR}/trained_models/adeno_concept12_peps_topk5_tau0.1_s1}"
 
 MAX_EPOCHS="${MAX_EPOCHS:-40}"
 SEED="${SEED:-1}"
@@ -19,13 +21,13 @@ K_START="${K_START:-0}"
 K_END="${K_END:-4}"
 LR="${LR:-1e-4}"
 PROTO_NUM="${PROTO_NUM:-16}"
-PEPS_TAU="${PEPS_TAU:-0.1}"
 
 cd "${ROOT_DIR}"
 
 run_train() {
   local exp_code="$1"
   local peps_topk="$2"
+  local peps_tau="$3"
 
   PYTHONPATH="${ROOT_DIR}" \
   HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
@@ -41,7 +43,7 @@ run_train() {
     --concept_prompt_path "${CONCEPT12_PATH}" \
     --prompt_ensemble_mode peps \
     --peps_topk "${peps_topk}" \
-    --peps_tau "${PEPS_TAU}" \
+    --peps_tau "${peps_tau}" \
     --split_dir "${SPLIT_DIR}" \
     --results_dir "${RESULTS_DIR}" \
     --exp_code "${exp_code}" \
@@ -59,6 +61,7 @@ run_eval() {
   local models_exp_code="$1"
   local save_exp_code="$2"
   local peps_topk="$3"
+  local peps_tau="$4"
 
   PYTHONPATH="${ROOT_DIR}" \
   HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
@@ -81,28 +84,42 @@ run_eval() {
     --concept_prompt_path "${CONCEPT12_PATH}" \
     --prompt_ensemble_mode peps \
     --peps_topk "${peps_topk}" \
-    --peps_tau "${PEPS_TAU}" \
+    --peps_tau "${peps_tau}" \
     --save_peps_weights \
     --prototype_number "${PROTO_NUM}"
 }
 
-echo "[1/5] Reuse existing Concept-12 embedding_mean"
-echo "Reuse result: ${CONCEPT12_EMBED_DIR}"
+echo "[Reuse] Concept-12 embedding_mean: ${CONCEPT12_EMBED_DIR}"
+echo "[Reuse] Concept-12 MLP dynamic_gate: ${CONCEPT12_GATE_DIR}"
+echo "[Reuse] PEPS topk=3 tau=0.1: ${PEPS_TOPK3_TAU01_DIR}"
+echo "[Reuse] PEPS topk=5 tau=0.1: ${PEPS_TOPK5_TAU01_DIR}"
 
-echo "[2/5] Reuse existing Concept-12 MLP dynamic_gate"
-echo "Reuse result: ${CONCEPT12_GATE_DIR}"
+for SPEC in "3 0.07" "3 0.15" "5 0.07" "5 0.15"; do
+  read -r K TAU <<<"${SPEC}"
+  EXP_CODE="adeno_concept12_peps_topk${K}_tau${TAU}"
+  SAVE_CODE="adeno_concept12_peps_topk${K}_tau${TAU}"
 
-for K in 1 3 5; do
-  EXP_CODE="adeno_concept12_peps_topk${K}_tau${PEPS_TAU}"
-  SAVE_CODE="adeno_concept12_peps_topk${K}_tau${PEPS_TAU}"
+  echo "[Train] ${EXP_CODE}"
+  run_train "${EXP_CODE}" "${K}" "${TAU}"
 
-  echo "[PEPS] Train ${EXP_CODE}"
-  run_train "${EXP_CODE}" "${K}"
-
-  echo "[PEPS] Eval ${EXP_CODE} and export PEPS prompt analysis"
-  run_eval "${EXP_CODE}_s${SEED}" "${SAVE_CODE}" "${K}"
+  echo "[Eval] ${EXP_CODE}"
+  run_eval "${EXP_CODE}_s${SEED}" "${SAVE_CODE}" "${K}" "${TAU}"
 done
 
-echo "[Done] Aggregate 5-way comparison"
+echo "[Aggregate] Extended PEPS summary"
 PYTHONPATH="${ROOT_DIR}" \
-  "${PYTHON_BIN}" "${ROOT_DIR}/scripts/aggregate_stage3_peps_results.py"
+  "${PYTHON_BIN}" "${ROOT_DIR}/scripts/analysis/aggregate_stage3_peps_extended_results.py"
+
+echo "[Analyze] Fold-level deltas"
+PYTHONPATH="${ROOT_DIR}" \
+  "${PYTHON_BIN}" "${ROOT_DIR}/scripts/analysis/analyze_stage3_peps_fold_deltas.py"
+
+echo "[Analyze] Prompt usage diversity"
+PYTHONPATH="${ROOT_DIR}" \
+  "${PYTHON_BIN}" "${ROOT_DIR}/scripts/analysis/analyze_stage3_peps_prompt_usage.py"
+
+echo "[Report] Build markdown report"
+PYTHONPATH="${ROOT_DIR}" \
+  "${PYTHON_BIN}" "${ROOT_DIR}/scripts/analysis/build_stage3_peps_extended_report.py"
+
+echo "[Done] Outputs are under ${ROOT_DIR}/trained_models/stage3_peps_comparison"

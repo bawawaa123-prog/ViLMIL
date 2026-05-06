@@ -11,6 +11,32 @@ from sklearn.preprocessing import label_binarize
 from utils.metric_utils import compute_classification_metrics
 
 
+def _load_state_dict_with_scale_gate_compat(model, state_dict, allow_legacy_scale_fusion_ckpt=False):
+    if not allow_legacy_scale_fusion_ckpt:
+        model.load_state_dict(state_dict, strict=True)
+        return
+
+    incompatible = model.load_state_dict(state_dict, strict=False)
+    missing_keys = list(getattr(incompatible, "missing_keys", []))
+    unexpected_keys = list(getattr(incompatible, "unexpected_keys", []))
+    allowed_missing_prefixes = ("scale_gate.",)
+    disallowed_missing = [key for key in missing_keys if not key.startswith(allowed_missing_prefixes)]
+
+    if unexpected_keys or disallowed_missing:
+        raise RuntimeError(
+            "Legacy scale-fusion checkpoint compatibility failed.\n"
+            f"Unexpected keys: {unexpected_keys}\n"
+            f"Disallowed missing keys: {disallowed_missing}\n"
+            f"Allowed missing prefixes: {allowed_missing_prefixes}"
+        )
+
+    if missing_keys:
+        print(
+            "[Compat] Loaded checkpoint with legacy SAF-PEPS compatibility. "
+            f"Missing newly introduced keys: {missing_keys}"
+        )
+
+
 def initiate_model(args, ckpt_path):
     print('Init Model')    
     model_dict = {"dropout": args.drop_out, 'n_classes': args.n_classes}
@@ -52,6 +78,11 @@ def initiate_model(args, ckpt_path):
         config.spatial_sigma = float(getattr(args, 'spatial_sigma', 1.0))
         config.spatial_score_type = str(getattr(args, 'spatial_score_type', 'centroid_mean_dist'))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
+        config.scale_fusion_mode = str(getattr(args, 'scale_fusion_mode', 'sum'))
+        config.scale_gate_hidden_dim = int(getattr(args, 'scale_gate_hidden_dim', 128))
+        config.scale_gate_dropout = float(getattr(args, 'scale_gate_dropout', 0.25))
+        config.scale_residual_gamma = float(getattr(args, 'scale_residual_gamma', 0.25))
+        config.allow_legacy_scale_fusion_ckpt = bool(getattr(args, 'allow_legacy_scale_fusion_ckpt', False))
         config.prototype_number = args.prototype_number
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
         config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
@@ -78,7 +109,11 @@ def initiate_model(args, ckpt_path):
         if 'instance_loss_fn' in key:
             continue
         ckpt_clean.update({key.replace('.module', ''):ckpt[key]})
-    model.load_state_dict(ckpt_clean, strict=True)
+    _load_state_dict_with_scale_gate_compat(
+        model,
+        ckpt_clean,
+        allow_legacy_scale_fusion_ckpt=bool(getattr(args, 'allow_legacy_scale_fusion_ckpt', False)),
+    )
 
     if hasattr(model, "relocate"):
         model.relocate()
@@ -132,6 +167,7 @@ def _build_prompt_export_record(
         "pred_class_name": class_names[pred_class],
         "opp_class_name": class_names[opp_class],
         "pred_prob": float(pred_probs[pred_class]),
+        "scale_fusion_mode": str(diagnostics.get("scale_fusion_mode", "sum")),
         "top3_pred_low_prompts": json.dumps(pred_low_prompts, ensure_ascii=False),
         "top3_pred_low_weights": json.dumps(pred_low_weights),
         "top3_pred_high_prompts": json.dumps(pred_high_prompts, ensure_ascii=False),
@@ -141,6 +177,19 @@ def _build_prompt_export_record(
         "top3_opp_high_prompts": json.dumps(opp_high_prompts, ensure_ascii=False),
         "top3_opp_high_weights": json.dumps(opp_high_weights),
     }
+    if diagnostics.get("alpha_high") is not None:
+        alpha_high = diagnostics["alpha_high"].detach().cpu().numpy()[0]
+        alpha_low = diagnostics["alpha_low"].detach().cpu().numpy()[0]
+        record["alpha_high"] = float(alpha_high[0])
+        record["alpha_low"] = float(alpha_low[0])
+    if diagnostics.get("residual_r") is not None:
+        residual_r = diagnostics["residual_r"].detach().cpu().numpy()[0]
+        high_coef = diagnostics["high_coef"].detach().cpu().numpy()[0]
+        low_coef = diagnostics["low_coef"].detach().cpu().numpy()[0]
+        record["scale_residual_gamma"] = float(diagnostics.get("scale_residual_gamma", 0.25))
+        record["residual_r"] = float(residual_r[0])
+        record["high_coef"] = float(high_coef[0])
+        record["low_coef"] = float(low_coef[0])
 
     for class_idx in range(num_classes):
         record[f"logits_low_class{class_idx}"] = float(logits_low[class_idx])
@@ -213,6 +262,7 @@ def _build_peps_export_records(
                 "class_id": class_idx,
                 "class_name": class_name,
                 "prompt_selection_mode": mode,
+                "scale_fusion_mode": str(diagnostics.get("scale_fusion_mode", "sum")),
                 "semantic_evidence_mean": float(np.mean(semantic_by_class[class_idx])),
                 "semantic_evidence_std": float(np.std(semantic_by_class[class_idx])),
                 "spatial_score_mean": float(np.mean(spatial_by_class[class_idx])),
@@ -222,6 +272,19 @@ def _build_peps_export_records(
                 "topk_proto_mean_dist_mean": float(np.mean(topk_mean_dist_by_class[class_idx])),
                 "topk_proto_mean_dist_std": float(np.std(topk_mean_dist_by_class[class_idx])),
             }
+            if diagnostics.get("alpha_high") is not None:
+                alpha_high = diagnostics["alpha_high"].detach().cpu().numpy()[0]
+                alpha_low = diagnostics["alpha_low"].detach().cpu().numpy()[0]
+                record["alpha_high"] = float(alpha_high[0])
+                record["alpha_low"] = float(alpha_low[0])
+            if diagnostics.get("residual_r") is not None:
+                residual_r = diagnostics["residual_r"].detach().cpu().numpy()[0]
+                high_coef = diagnostics["high_coef"].detach().cpu().numpy()[0]
+                low_coef = diagnostics["low_coef"].detach().cpu().numpy()[0]
+                record["scale_residual_gamma"] = float(diagnostics.get("scale_residual_gamma", 0.25))
+                record["residual_r"] = float(residual_r[0])
+                record["high_coef"] = float(high_coef[0])
+                record["low_coef"] = float(low_coef[0])
             for rank_idx, prompt_idx in enumerate(order, start=1):
                 meta = metadata_by_class[class_idx][prompt_idx]
                 concept_name = meta.get("concept_en") or meta.get("concept_id") or ""

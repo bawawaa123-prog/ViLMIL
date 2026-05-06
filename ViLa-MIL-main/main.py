@@ -84,6 +84,22 @@ parser.add_argument(
     help="scale fusion mode: dual keeps the original low+high fusion; low_only/high_only are ablations.",
 )
 parser.add_argument(
+    "--scale_fusion_mode",
+    type=str,
+    choices=["sum", "learned_gate", "residual_gate"],
+    default="sum",
+    help="dual-scale fusion strategy: sum keeps the legacy logits_low + logits_high behavior.",
+)
+parser.add_argument("--scale_gate_hidden_dim", type=int, default=128)
+parser.add_argument("--scale_gate_dropout", type=float, default=0.25)
+parser.add_argument("--scale_residual_gamma", type=float, default=0.25)
+parser.add_argument(
+    "--allow_legacy_scale_fusion_ckpt",
+    action="store_true",
+    default=False,
+    help="allow loading old checkpoints that do not contain SAF-PEPS scale gate parameters",
+)
+parser.add_argument(
     "--finetune_text_encoder",
     action="store_true",
     default=False,
@@ -237,6 +253,11 @@ settings = {
     "spatial_sigma": args.spatial_sigma,
     "spatial_score_type": args.spatial_score_type,
     "scale_mode": args.scale_mode,
+    "scale_fusion_mode": args.scale_fusion_mode,
+    "scale_gate_hidden_dim": args.scale_gate_hidden_dim,
+    "scale_gate_dropout": args.scale_gate_dropout,
+    "scale_residual_gamma": args.scale_residual_gamma,
+    "allow_legacy_scale_fusion_ckpt": args.allow_legacy_scale_fusion_ckpt,
 }
 
 print("\nLoad Dataset")

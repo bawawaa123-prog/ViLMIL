@@ -174,6 +174,11 @@ def train(datasets, cur, args):
         config.spatial_sigma = float(getattr(args, 'spatial_sigma', 1.0))
         config.spatial_score_type = str(getattr(args, 'spatial_score_type', 'centroid_mean_dist'))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
+        config.scale_fusion_mode = str(getattr(args, 'scale_fusion_mode', 'sum'))
+        config.scale_gate_hidden_dim = int(getattr(args, 'scale_gate_hidden_dim', 128))
+        config.scale_gate_dropout = float(getattr(args, 'scale_gate_dropout', 0.25))
+        config.scale_residual_gamma = float(getattr(args, 'scale_residual_gamma', 0.25))
+        config.allow_legacy_scale_fusion_ckpt = bool(getattr(args, 'allow_legacy_scale_fusion_ckpt', False))
         config.prototype_number = args.prototype_number
         # Control whether BiomedCLIP text encoder is finetuned (default: frozen)
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))

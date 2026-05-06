@@ -318,6 +318,12 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.scale_mode = str(getattr(config, "scale_mode", "dual"))
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
+        self.scale_fusion_mode = str(getattr(config, "scale_fusion_mode", "sum"))
+        if self.scale_fusion_mode not in {"sum", "learned_gate", "residual_gate"}:
+            raise ValueError(f"Unsupported scale_fusion_mode: {self.scale_fusion_mode}")
+        self.scale_gate_hidden_dim = int(getattr(config, "scale_gate_hidden_dim", 128))
+        self.scale_gate_dropout = float(getattr(config, "scale_gate_dropout", 0.25))
+        self.scale_residual_gamma = float(getattr(config, "scale_residual_gamma", 0.25))
 
         self.norm = nn.LayerNorm(self.L)
         self.cross_attention_1 = MultiheadAttention(embed_dim=self.L, num_heads=1)
@@ -325,6 +331,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.dynamic_gate_low = None
         self.dynamic_gate_high = None
         self.dynamic_gate_gamma = None
+        self.scale_gate = None
         self.concept_prompt_texts_low = None
         self.concept_prompt_texts_high = None
         self.concept_prompt_metadata_low = None
@@ -342,6 +349,15 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 nn.Linear(self.dynamic_gate_hidden_dim, 1),
             )
             self.dynamic_gate_gamma = nn.Parameter(torch.tensor(0.1, dtype=torch.float32))
+
+        if self.scale_fusion_mode in {"learned_gate", "residual_gate"} and self.scale_mode == "dual":
+            scale_gate_input_dim = self.L * 4
+            self.scale_gate = nn.Sequential(
+                nn.Linear(scale_gate_input_dim, self.scale_gate_hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(self.scale_gate_dropout),
+                nn.Linear(self.scale_gate_hidden_dim, 1),
+            )
 
         self.learnable_image_center = nn.Parameter(torch.Tensor(config.prototype_number, 1, self.L))
         trunc_normal_(self.learnable_image_center, std=0.02)
@@ -895,12 +911,74 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             f"high_shape={tuple(concept_high.shape)}"
         )
 
-    def _combine_scale_logits(self, logits_low, logits_high):
+    def _build_scale_gate_input(self, image_features_low, image_features_high):
+        if image_features_low.dim() == 1:
+            image_features_low = image_features_low.unsqueeze(0)
+        if image_features_high.dim() == 1:
+            image_features_high = image_features_high.unsqueeze(0)
+        return torch.cat(
+            [
+                image_features_low.float(),
+                image_features_high.float(),
+                torch.abs(image_features_low.float() - image_features_high.float()),
+                image_features_low.float() * image_features_high.float(),
+            ],
+            dim=-1,
+        )
+
+    def _compute_scale_gate_raw(self, image_features_low, image_features_high):
+        if self.scale_gate is None:
+            return None
+        gate_input = self._build_scale_gate_input(image_features_low, image_features_high)
+        return self.scale_gate(gate_input)
+
+    def _combine_scale_logits(
+        self,
+        logits_low,
+        logits_high,
+        image_features_low=None,
+        image_features_high=None,
+        return_diagnostics=False,
+    ):
+        fusion_diagnostics = {
+            "scale_fusion_mode": self.scale_fusion_mode,
+            "scale_residual_gamma": self.scale_residual_gamma,
+        }
+        alpha_high = None
+        residual_r = None
+        high_coef = None
+        low_coef = None
+
         if self.scale_mode == "low_only":
-            return logits_low
-        if self.scale_mode == "high_only":
-            return logits_high
-        return logits_low + logits_high
+            logits = logits_low
+        elif self.scale_mode == "high_only":
+            logits = logits_high
+        elif self.scale_fusion_mode == "learned_gate":
+            if image_features_low is None or image_features_high is None:
+                raise ValueError("learned_gate fusion requires low/high image features")
+            alpha_high = torch.sigmoid(self._compute_scale_gate_raw(image_features_low, image_features_high))
+            logits = (1.0 - alpha_high) * logits_low + alpha_high * logits_high
+        elif self.scale_fusion_mode == "residual_gate":
+            if image_features_low is None or image_features_high is None:
+                raise ValueError("residual_gate fusion requires low/high image features")
+            raw = self._compute_scale_gate_raw(image_features_low, image_features_high)
+            residual_r = self.scale_residual_gamma * torch.tanh(raw)
+            logits_sum = logits_low + logits_high
+            logits = logits_sum + residual_r * (logits_high - logits_low)
+            high_coef = 1.0 + residual_r
+            low_coef = 1.0 - residual_r
+        else:
+            logits = logits_low + logits_high
+
+        if return_diagnostics:
+            fusion_diagnostics["alpha_high"] = alpha_high.detach() if alpha_high is not None else None
+            fusion_diagnostics["alpha_low"] = (1.0 - alpha_high).detach() if alpha_high is not None else None
+            fusion_diagnostics["residual_r"] = residual_r.detach() if residual_r is not None else None
+            fusion_diagnostics["high_coef"] = high_coef.detach() if high_coef is not None else None
+            fusion_diagnostics["low_coef"] = low_coef.detach() if low_coef is not None else None
+            fusion_diagnostics["logits_fused"] = logits.detach()
+            return logits, fusion_diagnostics
+        return logits
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         """
@@ -950,7 +1028,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=False,
         )
-        logits = self._combine_scale_logits(logits_low, logits_high)
+        logits = self._combine_scale_logits(
+            logits_low,
+            logits_high,
+            image_features_low=image_features_low,
+            image_features_high=image_features_high,
+            return_diagnostics=False,
+        )
 
         loss = self.loss_ce(logits, label)
         Y_prob = F.softmax(logits, dim=1)
@@ -1003,7 +1087,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=True,
         )
-        logits = self._combine_scale_logits(logits_low, logits_high)
+        logits, fusion_diagnostics = self._combine_scale_logits(
+            logits_low,
+            logits_high,
+            image_features_low=image_features_low,
+            image_features_high=image_features_high,
+            return_diagnostics=True,
+        )
 
         loss = self.loss_ce(logits, label)
         Y_prob = F.softmax(logits, dim=1)
@@ -1015,8 +1105,17 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
                 "logits_high": logits_high.detach(),
                 "final_logits": logits.detach(),
                 "pred_probs": Y_prob.detach(),
+                "scale_fusion_mode": fusion_diagnostics["scale_fusion_mode"],
+                "scale_residual_gamma": fusion_diagnostics.get("scale_residual_gamma", self.scale_residual_gamma),
             }
         )
+        if fusion_diagnostics.get("alpha_high") is not None:
+            diagnostics["alpha_high"] = fusion_diagnostics["alpha_high"]
+            diagnostics["alpha_low"] = fusion_diagnostics["alpha_low"]
+        if fusion_diagnostics.get("residual_r") is not None:
+            diagnostics["residual_r"] = fusion_diagnostics["residual_r"]
+            diagnostics["high_coef"] = fusion_diagnostics["high_coef"]
+            diagnostics["low_coef"] = fusion_diagnostics["low_coef"]
         return Y_prob, Y_hat, loss, diagnostics
 
     def forward_with_attention(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
@@ -1069,7 +1168,13 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
             device=x_s.device,
             return_diagnostics=False,
         )
-        logits = self._combine_scale_logits(logits_low, logits_high)
+        logits = self._combine_scale_logits(
+            logits_low,
+            logits_high,
+            image_features_low=image_features_low,
+            image_features_high=image_features_high,
+            return_diagnostics=False,
+        )
 
         Y_prob = F.softmax(logits, dim=1)
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]
