@@ -1,0 +1,22 @@
+candidate_experiment,reference_experiment,metric,wins,losses,ties,mean_delta
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,test_auc,3,2,0,0.003615695903090166
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,test_acc,3,1,1,0.002088563645104502
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,test_f1,3,2,0,0.0023159101585845223
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,balanced_acc,3,2,0,0.002292242037842329
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,sensitivity,2,1,2,0.0029850746268656803
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,specificity,3,1,1,0.001599409448818867
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 embedding_mean,pr_auc,2,3,0,0.00046870913550418615
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,test_auc,3,2,0,0.002107149470970171
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,test_acc,2,2,1,0.002077880455103953
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,test_f1,2,2,1,0.001911388565104577
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,balanced_acc,3,1,1,0.0007772185066079685
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,sensitivity,2,1,2,-0.0031207598371777666
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,specificity,2,2,1,0.0046751968503936595
+Concept-12 PEPS topk=3 tau=0.1,Concept-12 embedding_mean,pr_auc,2,3,0,0.001536457785009171
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,test_auc,3,2,0,0.004038287668671736
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,test_acc,3,2,0,0.007243202820362149
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,test_f1,3,2,0,0.0076388114592751185
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,balanced_acc,3,2,0,0.004044007993318966
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,sensitivity,2,2,1,-0.006060606060606055
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,specificity,4,1,0,0.014148622047244031
+Concept-12 PEPS topk=5 tau=0.1,Concept-12 MLP dynamic_gate,pr_auc,4,1,0,0.014034225419300684
