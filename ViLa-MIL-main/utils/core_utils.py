@@ -187,7 +187,25 @@ def train(datasets, cur, args):
         config.text_unfreeze_last_n = int(getattr(args, 'text_unfreeze_last_n', 2))
 
         model = ViLa_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
-    
+
+    elif args.model_type == 'RCE_MIL_BiomedCLIP':
+        print('🔬 Using BiomedCLIP-based RCE-MIL')
+        import ml_collections
+        from models.model_RCE_MIL_BiomedCLIP import RCE_MIL_BiomedCLIP
+
+        config = ml_collections.ConfigDict()
+        config.input_size = 512
+        config.hidden_size = 192
+        config.class_names = getattr(args, 'class_names', None)
+        config.use_concept_prompt_pool = bool(getattr(args, 'use_concept_prompt_pool', False))
+        config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
+        config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
+        config.prototype_number = int(getattr(args, 'prototype_number', 16))
+        config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
+        config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
+
+        model = RCE_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
+
     elif args.model_type == 'ViLa_MIL':
         # 原始CLIP版本
         import ml_collections
@@ -216,7 +234,7 @@ def train(datasets, cur, args):
 
     # After BiomedCLIP loads successfully once, lock HF Hub into offline mode so later folds
     # won't fail due to transient SSL/proxy/network issues.
-    if args.model_type == 'ViLa_MIL_BiomedCLIP':
+    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP'}:
         if os.environ.get('HF_HUB_OFFLINE', '0') != '1':
             _lock_hf_offline_for_remaining_folds()
 
