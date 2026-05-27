@@ -201,6 +201,10 @@ def train(datasets, cur, args):
         config.concept_prompt_path = getattr(args, 'concept_prompt_path', None)
         config.peps_tau = float(getattr(args, 'peps_tau', 0.1))
         config.prototype_number = int(getattr(args, 'prototype_number', 16))
+        config.rce_use_logit_calibration = bool(getattr(args, 'rce_use_logit_calibration', False))
+        config.rce_use_concept_prior = bool(getattr(args, 'rce_use_concept_prior', False))
+        config.rce_logit_scale_init = float(getattr(args, 'rce_logit_scale_init', 10.0))
+        config.rce_concept_prior_strength = float(getattr(args, 'rce_concept_prior_strength', 1.0))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
 

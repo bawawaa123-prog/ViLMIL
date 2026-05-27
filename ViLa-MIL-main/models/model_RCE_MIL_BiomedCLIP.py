@@ -35,6 +35,9 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.region_number = int(config.prototype_number)
         self.peps_tau = float(getattr(config, "peps_tau", 0.1))
         self.scale_mode = str(getattr(config, "scale_mode", "dual"))
+        self.rce_use_logit_calibration = bool(getattr(config, "rce_use_logit_calibration", False))
+        self.rce_use_concept_prior = bool(getattr(config, "rce_use_concept_prior", False))
+        self.rce_concept_prior_strength = float(getattr(config, "rce_concept_prior_strength", 1.0))
 
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
@@ -86,6 +89,18 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         nn.init.normal_(self.region_queries_low, std=0.02)
         nn.init.normal_(self.region_queries_high, std=0.02)
 
+        if self.rce_use_logit_calibration:
+            self.rce_logit_scale = nn.Parameter(
+                torch.log(torch.tensor(float(getattr(config, "rce_logit_scale_init", 10.0))))
+            )
+            self.rce_class_bias = nn.Parameter(torch.zeros(self.num_classes))
+
+        self.last_low_prompt_weights = None
+        self.last_high_prompt_weights = None
+        self.last_low_prompt_evidence = None
+        self.last_high_prompt_evidence = None
+        self.last_final_logits = None
+
         self._initialize_concept_prompt_pool(config)
 
     def _initialize_concept_prompt_pool(self, config):
@@ -100,6 +115,13 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         )
         self.register_buffer("low_prompt_features", low_prompt_features.detach().cpu())
         self.register_buffer("high_prompt_features", high_prompt_features.detach().cpu())
+        if self.rce_use_concept_prior:
+            self.low_concept_prior = nn.Parameter(
+                torch.zeros(self.num_classes, low_prompt_features.shape[1], dtype=torch.float32)
+            )
+            self.high_concept_prior = nn.Parameter(
+                torch.zeros(self.num_classes, high_prompt_features.shape[1], dtype=torch.float32)
+            )
         print(
             f"[ConceptPromptPool] enabled for RCE_MIL_BiomedCLIP | "
             f"path={self.concept_prompt_path} | low_shape={tuple(low_prompt_features.shape)} | "
@@ -130,16 +152,19 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         region_features = norm_layer(region_features + query)
         return region_features.permute(1, 0, 2).contiguous()
 
-    def _compute_scale_logits(self, region_features, prompt_features):
+    def _compute_scale_logits(self, region_features, prompt_features, concept_prior=None):
         region_features = F.normalize(region_features.float(), dim=-1)
         prompt_features = F.normalize(prompt_features.float(), dim=-1)
 
         sim = torch.einsum("brd,cpd->bcrp", region_features, prompt_features)
         prompt_evidence = sim.max(dim=2).values
         tau = max(float(self.peps_tau), 1e-6)
-        prompt_weights = F.softmax(prompt_evidence / tau, dim=-1)
+        weight_logits = prompt_evidence / tau
+        if self.rce_use_concept_prior and concept_prior is not None:
+            weight_logits = weight_logits + self.rce_concept_prior_strength * concept_prior.unsqueeze(0)
+        prompt_weights = F.softmax(weight_logits, dim=-1)
         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
-        return logits_scale
+        return logits_scale, prompt_weights, prompt_evidence
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         del coord_s, coords_l, slide_id
@@ -160,8 +185,19 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.norm_high,
         )
 
-        logits_low = self._compute_scale_logits(low_region_features, self.low_prompt_features.to(x_s.device))
-        logits_high = self._compute_scale_logits(high_region_features, self.high_prompt_features.to(x_s.device))
+        low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
+        high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
+
+        logits_low, low_prompt_weights, low_prompt_evidence = self._compute_scale_logits(
+            low_region_features,
+            self.low_prompt_features.to(x_s.device),
+            concept_prior=low_concept_prior,
+        )
+        logits_high, high_prompt_weights, high_prompt_evidence = self._compute_scale_logits(
+            high_region_features,
+            self.high_prompt_features.to(x_s.device),
+            concept_prior=high_concept_prior,
+        )
 
         if self.scale_mode == "low_only":
             final_logits = logits_low
@@ -169,6 +205,16 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             final_logits = logits_high
         else:
             final_logits = logits_low + logits_high
+
+        if self.rce_use_logit_calibration:
+            scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)
+            final_logits = final_logits * scale + self.rce_class_bias
+
+        self.last_low_prompt_weights = low_prompt_weights.detach().cpu()
+        self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
+        self.last_low_prompt_evidence = low_prompt_evidence.detach().cpu()
+        self.last_high_prompt_evidence = high_prompt_evidence.detach().cpu()
+        self.last_final_logits = final_logits.detach().cpu()
 
         loss = self.loss_ce(final_logits, label)
         Y_prob = F.softmax(final_logits, dim=1)

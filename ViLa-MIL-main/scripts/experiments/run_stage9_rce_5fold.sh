@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 PYTHON_BIN="${PYTHON_BIN:-/home/ljh/anaconda3/envs/vila_mil/bin/python}"
 DATA_ROOT_DIR="${DATA_ROOT_DIR:-/xiangmu/data/VILMIL}"
-RESULTS_DIR="${RESULTS_DIR:-${ROOT_DIR}/results_smoke}"
+RESULTS_DIR="${RESULTS_DIR:-${ROOT_DIR}/results_stage9}"
 SPLIT_DIR="${SPLIT_DIR:-splits/adenocarcinoma/task_adenocarcinoma_strictcv_100}"
 TEXT_PROMPT_PATH="${TEXT_PROMPT_PATH:-${ROOT_DIR}/text_prompt/adenocarcinoma_dual_scale_prompt.csv}"
 CONCEPT12_PATH="${CONCEPT12_PATH:-${ROOT_DIR}/dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json}"
@@ -28,17 +28,16 @@ CMD=(
   --scale_mode dual
   --k 5
   --k_start 0
-  --k_end 0
-  --max_epochs 1
+  --k_end 4
+  --max_epochs 20
   --seed 1
   --prototype_number 16
-  --testing
   --split_dir "${SPLIT_DIR}"
   --results_dir "${RESULTS_DIR}"
-  --exp_code rce_mil_smoke
+  --exp_code rce_mil_5fold_e20
 )
 
 PYTHONPATH="${ROOT_DIR}" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 "${CMD[@]}"
 
-echo "[Done] RCE-MIL smoke test finished."
-echo "[Done] Results directory: ${RESULTS_DIR}/rce_mil_smoke_s1"
+echo "[Done] RCE-MIL 5-fold evaluation finished."
+echo "[Done] Results directory: ${RESULTS_DIR}/rce_mil_5fold_e20_s1"

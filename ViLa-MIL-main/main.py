@@ -76,6 +76,10 @@ parser.add_argument(
     default="centroid_mean_dist",
 )
 parser.add_argument("--prototype_number", type=int, default=16)
+parser.add_argument("--rce_use_logit_calibration", action="store_true", default=False)
+parser.add_argument("--rce_use_concept_prior", action="store_true", default=False)
+parser.add_argument("--rce_logit_scale_init", type=float, default=10.0)
+parser.add_argument("--rce_concept_prior_strength", type=float, default=1.0)
 parser.add_argument(
     "--scale_mode",
     type=str,
@@ -252,6 +256,10 @@ settings = {
     "spatial_lambda": args.spatial_lambda,
     "spatial_sigma": args.spatial_sigma,
     "spatial_score_type": args.spatial_score_type,
+    "rce_use_logit_calibration": args.rce_use_logit_calibration,
+    "rce_use_concept_prior": args.rce_use_concept_prior,
+    "rce_logit_scale_init": args.rce_logit_scale_init,
+    "rce_concept_prior_strength": args.rce_concept_prior_strength,
     "scale_mode": args.scale_mode,
     "scale_fusion_mode": args.scale_fusion_mode,
     "scale_gate_hidden_dim": args.scale_gate_hidden_dim,
