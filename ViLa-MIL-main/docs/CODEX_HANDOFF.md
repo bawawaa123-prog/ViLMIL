@@ -104,3 +104,54 @@
   - `--rce_concept_prior_strength`
 - Default is fully backward compatible: all new options are off by default, so base `RCE_MIL_BiomedCLIP` behavior is unchanged.
 - Next suggested step: run a fold0 pilot comparison against base RCE-MIL.
+
+## Step7: RCE-MIL v2 Fold0 Pilot Ablation Script
+
+- Modified files:
+  - `scripts/experiments/run_stage9_rce_v2_pilot_ablation.sh`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/experiments/run_stage9_rce_v2_pilot_ablation.sh`
+- Supported `VARIANT` values:
+  - `calib_only`
+  - `prior_only`
+  - `prior_calib`
+  - `all`
+- Behavior:
+  - Runs fold0 pilot ablations for the Step6 optional enhancements only.
+  - Uses bash arrays and keeps environment-variable overrides for paths and Python binary.
+- This step did not run any long training.
+- Next suggested step: the user manually runs the script and shares the results for comparison against base RCE-MIL.
+
+## Step8: RCE-MIL v2 5-Fold Evaluation Script
+
+- Modified files:
+  - `scripts/experiments/run_stage9_rce_v2_5fold.sh`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/experiments/run_stage9_rce_v2_5fold.sh`
+- Supported `VARIANT` values:
+  - `prior_calib`
+  - `prior_only`
+  - `all`
+- Default `VARIANT`:
+  - `prior_calib`
+- Behavior:
+  - Runs 5-fold evaluation for the two strongest Step7 candidates only.
+  - Uses bash arrays and keeps environment-variable overrides for paths and Python binary.
+- This step did not run any long training.
+- Next suggested step: the user manually runs the script and shares the 5-fold results.
+
+## Step9: RCE-MIL v3 Residual Visual Evidence Branch
+
+- Modified files:
+  - `main.py`
+  - `utils/core_utils.py`
+  - `models/model_RCE_MIL_BiomedCLIP.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added args:
+  - `--rce_use_visual_residual`
+  - `--rce_visual_residual_init`
+- Default is fully backward compatible: the visual residual branch is off by default, so base and v2 `RCE_MIL_BiomedCLIP` behavior is unchanged.
+- Residual visual evidence is added after concept logits are fused and before optional logit calibration.
+- Next suggested step: run a fold0 pilot comparison between `prior_calib` and `prior_calib + visual residual`.

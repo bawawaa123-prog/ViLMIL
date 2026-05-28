@@ -38,6 +38,8 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_use_logit_calibration = bool(getattr(config, "rce_use_logit_calibration", False))
         self.rce_use_concept_prior = bool(getattr(config, "rce_use_concept_prior", False))
         self.rce_concept_prior_strength = float(getattr(config, "rce_concept_prior_strength", 1.0))
+        self.rce_use_visual_residual = bool(getattr(config, "rce_use_visual_residual", False))
+        self.rce_visual_residual_init = float(getattr(config, "rce_visual_residual_init", 0.1))
 
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
@@ -95,11 +97,21 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             )
             self.rce_class_bias = nn.Parameter(torch.zeros(self.num_classes))
 
+        if self.rce_use_visual_residual:
+            self.low_visual_head = nn.Linear(self.input_size, self.num_classes)
+            self.high_visual_head = nn.Linear(self.input_size, self.num_classes)
+            init = min(max(self.rce_visual_residual_init, 1e-4), 1.0 - 1e-4)
+            self.rce_visual_residual_alpha = nn.Parameter(torch.logit(torch.tensor(init, dtype=torch.float32)))
+
         self.last_low_prompt_weights = None
         self.last_high_prompt_weights = None
         self.last_low_prompt_evidence = None
         self.last_high_prompt_evidence = None
         self.last_final_logits = None
+        self.last_visual_residual_alpha = None
+        self.last_low_visual_logits = None
+        self.last_high_visual_logits = None
+        self.last_visual_logits = None
 
         self._initialize_concept_prompt_pool(config)
 
@@ -199,12 +211,47 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             concept_prior=high_concept_prior,
         )
 
+        low_visual_logits = None
+        high_visual_logits = None
+        visual_logits = None
+
         if self.scale_mode == "low_only":
             final_logits = logits_low
+            if self.rce_use_visual_residual:
+                low_region_pool = low_region_features.mean(dim=1)
+                low_visual_logits = self.low_visual_head(low_region_pool)
+                visual_logits = low_visual_logits
         elif self.scale_mode == "high_only":
             final_logits = logits_high
+            if self.rce_use_visual_residual:
+                high_region_pool = high_region_features.mean(dim=1)
+                high_visual_logits = self.high_visual_head(high_region_pool)
+                visual_logits = high_visual_logits
         else:
             final_logits = logits_low + logits_high
+            if self.rce_use_visual_residual:
+                low_region_pool = low_region_features.mean(dim=1)
+                high_region_pool = high_region_features.mean(dim=1)
+                low_visual_logits = self.low_visual_head(low_region_pool)
+                high_visual_logits = self.high_visual_head(high_region_pool)
+                visual_logits = low_visual_logits + high_visual_logits
+
+        if self.rce_use_visual_residual:
+            alpha = torch.sigmoid(self.rce_visual_residual_alpha)
+            final_logits = final_logits + alpha * visual_logits
+            self.last_visual_residual_alpha = alpha.detach().cpu()
+            self.last_low_visual_logits = (
+                low_visual_logits.detach().cpu() if low_visual_logits is not None else None
+            )
+            self.last_high_visual_logits = (
+                high_visual_logits.detach().cpu() if high_visual_logits is not None else None
+            )
+            self.last_visual_logits = visual_logits.detach().cpu()
+        else:
+            self.last_visual_residual_alpha = None
+            self.last_low_visual_logits = None
+            self.last_high_visual_logits = None
+            self.last_visual_logits = None
 
         if self.rce_use_logit_calibration:
             scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)

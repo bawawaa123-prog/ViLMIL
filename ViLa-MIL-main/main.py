@@ -80,6 +80,8 @@ parser.add_argument("--rce_use_logit_calibration", action="store_true", default=
 parser.add_argument("--rce_use_concept_prior", action="store_true", default=False)
 parser.add_argument("--rce_logit_scale_init", type=float, default=10.0)
 parser.add_argument("--rce_concept_prior_strength", type=float, default=1.0)
+parser.add_argument("--rce_use_visual_residual", action="store_true", default=False)
+parser.add_argument("--rce_visual_residual_init", type=float, default=0.1)
 parser.add_argument(
     "--scale_mode",
     type=str,
@@ -260,6 +262,8 @@ settings = {
     "rce_use_concept_prior": args.rce_use_concept_prior,
     "rce_logit_scale_init": args.rce_logit_scale_init,
     "rce_concept_prior_strength": args.rce_concept_prior_strength,
+    "rce_use_visual_residual": args.rce_use_visual_residual,
+    "rce_visual_residual_init": args.rce_visual_residual_init,
     "scale_mode": args.scale_mode,
     "scale_fusion_mode": args.scale_fusion_mode,
     "scale_gate_hidden_dim": args.scale_gate_hidden_dim,
