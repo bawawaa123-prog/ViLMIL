@@ -194,3 +194,26 @@
   - Uses bash arrays and keeps environment-variable overrides for paths and Python binary.
 - This step did not run any long training.
 - Next suggested step: the user manually runs the script and shares the 5-fold results.
+
+## Step12: Stage9 RCE Final Analysis
+
+- Modified files:
+  - `scripts/analysis/build_stage9_rce_final_analysis.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/build_stage9_rce_final_analysis.py`
+- Default compatibility:
+  - Yes. This step only reads existing result CSV files and writes a new analysis directory.
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Generated outputs:
+  - `results_stage9/stage9_rce_final_analysis/rce_stage9_main_comparison.csv`
+  - `results_stage9/stage9_rce_final_analysis/rce_stage9_main_comparison.md`
+  - `results_stage9/stage9_rce_final_analysis/rce_stage9_metric_deltas.csv`
+  - `results_stage9/stage9_rce_final_analysis/rce_stage9_final_report.md`
+- Recommendation captured in report:
+  - Current recommended RCE variant is `RCE-MIL v3 prior_calib + visual_residual_init=0.05` (`RCE-v3-VR-a005`).
+- Next suggested step:
+  - Step13: RCE region-concept evidence export
