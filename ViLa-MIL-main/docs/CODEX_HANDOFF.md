@@ -155,3 +155,42 @@
 - Default is fully backward compatible: the visual residual branch is off by default, so base and v2 `RCE_MIL_BiomedCLIP` behavior is unchanged.
 - Residual visual evidence is added after concept logits are fused and before optional logit calibration.
 - Next suggested step: run a fold0 pilot comparison between `prior_calib` and `prior_calib + visual residual`.
+
+## Step10: RCE-MIL v3 Visual Residual Fold0 Pilot Script
+
+- Modified files:
+  - `scripts/experiments/run_stage9_rce_v3_pilot_visual_residual.sh`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/experiments/run_stage9_rce_v3_pilot_visual_residual.sh`
+- Supported `VARIANT` values:
+  - `prior_calib_vr_a01`
+  - `prior_calib_vr_a005`
+  - `prior_calib_vr_a02`
+  - `all`
+- Default `VARIANT`:
+  - `prior_calib_vr_a01`
+- Behavior:
+  - Runs fold0 pilot experiments for `prior_calib + visual_residual` with three alpha initializations.
+  - Uses bash arrays and keeps environment-variable overrides for paths and Python binary.
+- This step did not run any long training.
+- Next suggested step: the user manually runs the script and shares the fold0 results.
+
+## Step11: RCE-MIL v3 Visual Residual 5-Fold Script
+
+- Modified files:
+  - `scripts/experiments/run_stage9_rce_v3_5fold_visual_residual.sh`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/experiments/run_stage9_rce_v3_5fold_visual_residual.sh`
+- Supported `VARIANT` values:
+  - `vr_a01`
+  - `vr_a005`
+  - `all`
+- Default `VARIANT`:
+  - `vr_a01`
+- Behavior:
+  - Runs 5-fold evaluation for the two strongest Step10 visual residual candidates.
+  - Uses bash arrays and keeps environment-variable overrides for paths and Python binary.
+- This step did not run any long training.
+- Next suggested step: the user manually runs the script and shares the 5-fold results.
