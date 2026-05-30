@@ -1,0 +1,4 @@
+check,status,row_count,slide_id_unique,missing_required_columns,correct_matches_pred_eq_label,prob_sum_close_to_one_ratio,alpha_in_range_ratio,accuracy,aligned_slide_ratio,scale_values,class_values,rank_min,rank_max,concept_text_nonempty_ratio,entry_count,has_required_keys_ratio,low_shape_summary,high_shape_summary,has_nan,has_inf
+slide_prediction_evidence,ok,194.0,True,,True,1.0,1.0,0.9278350515463918,,,,,,,,,,,,
+slide_top_concepts,ok,3880.0,,,,,,,1.0,"high,low","0,1",1.0,5.0,1.0,,,,,,
+region_concept_evidence,ok,,,,,,,,1.0,,,,,,194.0,1.0,"(2, 16, 12):194","(2, 16, 12):194",False,False
