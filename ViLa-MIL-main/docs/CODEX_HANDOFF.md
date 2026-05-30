@@ -248,3 +248,28 @@
     - `results_stage9/stage13_rce_evidence_export/region_concept_evidence.pkl`
 - Next suggested step:
   - Step14: concept-class graph or evidence visualization
+
+## Step13c: Stage13 Evidence Quality Check
+
+- Modified files:
+  - `scripts/analysis/check_stage13_rce_evidence_quality.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/check_stage13_rce_evidence_quality.py`
+- Checked evidence files:
+  - `results_stage9/stage13_rce_evidence_export/slide_prediction_evidence.csv`
+  - `results_stage9/stage13_rce_evidence_export/slide_top_concepts.csv`
+  - `results_stage9/stage13_rce_evidence_export/region_concept_evidence.pkl`
+  - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_export_report.md`
+- Generated quality-check outputs:
+  - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_quality_report.md`
+  - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_quality_summary.csv`
+  - `results_stage9/stage13_rce_evidence_export/stage13_top_concept_frequency.csv`
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Outcome:
+  - Small-sample evidence files were aligned by `slide_id`, tensor shapes were consistent, and no NaN/Inf issues were detected.
+- Next suggested step:
+  - Step14: concept-class graph or evidence visualization, or a larger fold0 export if broader evidence coverage is needed first

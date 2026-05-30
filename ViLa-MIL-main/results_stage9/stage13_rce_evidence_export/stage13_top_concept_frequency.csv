@@ -1,0 +1,32 @@
+scale,class_id,concept_id,concept_text,count
+high,0,adeno_atypical_glands_high,A high magnification histopathology image showing atypical gland-forming tumor cells with pseudostratified nuclei.,10
+high,0,adeno_fused_glands_high,A high magnification histopathology image showing fused back-to-back adenocarcinoma glands with little intervening stroma.,10
+high,0,adeno_micropapillary_high,A high magnification histopathology image showing small floating clusters of adenocarcinoma cells without fibrovascular cores.,10
+high,0,adeno_papillary_high,A high magnification histopathology image showing adenocarcinoma cells lining fibrovascular cores.,10
+high,1,nonadeno_fibrosis_inflammation_high,A high magnification histopathology image showing fibrosis and chronic inflammatory infiltrates without adenocarcinoma cells.,10
+low,0,adeno_alveolar_replacement_low,A low magnification histopathology image showing atypical adenocarcinoma glands replacing pre-existing alveolar structures.,10
+low,0,adeno_lepidic,A low magnification histopathology image showing lung adenocarcinoma with lepidic growth pattern.,10
+low,0,adeno_mucinous,A low magnification histopathology image showing mucinous lung adenocarcinoma with extracellular mucin pools.,10
+low,1,nonadeno_fibroinflammatory_low,A low magnification histopathology image showing a fibroinflammatory lung lesion with scarring and no malignant gland formation.,10
+low,1,nonadeno_hamartoma_low,A low magnification histopathology image showing pulmonary hamartoma with cartilage and benign mesenchymal components.,10
+low,1,nonadeno_metastatic_low,A low magnification histopathology image showing metastatic tumor in the lung without primary lung adenocarcinoma morphology.,10
+low,1,nonadeno_solid_nests_low,A low magnification histopathology image showing solid non-gland-forming tumor nests without adenocarcinoma-type acinar structures.,10
+low,0,adeno_cribriform_low,A low magnification histopathology image showing lung adenocarcinoma with cribriform glandular architecture.,9
+low,0,adeno_glandular_infiltration_low,A low magnification histopathology image showing infiltrative gland-forming lung adenocarcinoma replacing alveolated lung parenchyma.,9
+high,1,nonadeno_hamartoma_high,A high magnification histopathology image showing benign cartilage and respiratory epithelium in pulmonary hamartoma.,7
+high,0,adeno_hobnail_high,A high magnification histopathology image showing hobnail-like adenocarcinoma cells lining alveolar spaces.,6
+high,1,nonadeno_inflammatory_high,"A high magnification histopathology image showing inflammatory cells, granulomas, or fibrosis without adenocarcinoma morphology.",6
+high,1,nonadeno_nuclear_molding_high,A high magnification histopathology image showing neuroendocrine tumor cells with nuclear molding and scant cytoplasm.,5
+low,1,nonadeno_benign_reactive_low,A low magnification histopathology image showing benign reactive lung tissue changes without adenocarcinoma morphology.,5
+high,0,adeno_mucinous_high,A high magnification histopathology image showing adenocarcinoma cells with mucin production and mucinous cytoplasm.,4
+high,1,nonadeno_chondromyxoid_matrix_high,A high magnification histopathology image showing chondromyxoid matrix and benign stromal elements in pulmonary hamartoma.,4
+high,1,nonadeno_intercellular_bridges_high,A high magnification histopathology image showing squamous cell carcinoma with intercellular bridges.,4
+high,1,nonadeno_keratinization_high,A high magnification histopathology image showing squamous cell carcinoma with keratinization and keratin pearls.,4
+low,1,nonadeno_inflammatory_low,A low magnification histopathology image showing inflammatory or granulomatous lung lesion without malignant glandular structures.,4
+high,1,nonadeno_dense_eosinophilic_cytoplasm_high,A high magnification histopathology image showing squamous carcinoma cells with dense eosinophilic cytoplasm and distinct cell borders.,3
+high,1,nonadeno_spindle_atypia_high,A high magnification histopathology image showing atypical spindle tumor cells without gland formation or mucin production.,3
+high,1,nonadeno_neuroendocrine_high,A high magnification histopathology image showing neuroendocrine tumor cells with salt-and-pepper chromatin.,2
+low,0,adeno_multifocal_glandular_low,A low magnification histopathology image showing multifocal irregular glandular proliferation consistent with lung adenocarcinoma.,2
+high,1,nonadeno_chondroid_matrix_high,A high magnification histopathology image showing chondroid or myxochondroid matrix characteristic of hamartomatous morphology.,1
+high,1,nonadeno_sarcomatoid_high,A high magnification histopathology image showing spindle-shaped malignant tumor cells.,1
+low,1,nonadeno_organoid_neuroendocrine_low,A low magnification histopathology image showing organoid nests and trabeculae consistent with neuroendocrine morphology.,1
