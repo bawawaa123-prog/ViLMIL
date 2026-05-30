@@ -112,6 +112,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_low_visual_logits = None
         self.last_high_visual_logits = None
         self.last_visual_logits = None
+        self.last_low_region_concept_sim = None
+        self.last_high_region_concept_sim = None
+        self.last_low_region_features = None
+        self.last_high_region_features = None
 
         self._initialize_concept_prompt_pool(config)
 
@@ -176,7 +180,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             weight_logits = weight_logits + self.rce_concept_prior_strength * concept_prior.unsqueeze(0)
         prompt_weights = F.softmax(weight_logits, dim=-1)
         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
-        return logits_scale, prompt_weights, prompt_evidence
+        return logits_scale, prompt_weights, prompt_evidence, sim
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         del coord_s, coords_l, slide_id
@@ -200,12 +204,12 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
         high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
 
-        logits_low, low_prompt_weights, low_prompt_evidence = self._compute_scale_logits(
+        logits_low, low_prompt_weights, low_prompt_evidence, low_region_concept_sim = self._compute_scale_logits(
             low_region_features,
             self.low_prompt_features.to(x_s.device),
             concept_prior=low_concept_prior,
         )
-        logits_high, high_prompt_weights, high_prompt_evidence = self._compute_scale_logits(
+        logits_high, high_prompt_weights, high_prompt_evidence, high_region_concept_sim = self._compute_scale_logits(
             high_region_features,
             self.high_prompt_features.to(x_s.device),
             concept_prior=high_concept_prior,
@@ -261,6 +265,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
         self.last_low_prompt_evidence = low_prompt_evidence.detach().cpu()
         self.last_high_prompt_evidence = high_prompt_evidence.detach().cpu()
+        self.last_low_region_concept_sim = low_region_concept_sim.detach().cpu()
+        self.last_high_region_concept_sim = high_region_concept_sim.detach().cpu()
+        self.last_low_region_features = low_region_features.detach().cpu()
+        self.last_high_region_features = high_region_features.detach().cpu()
         self.last_final_logits = final_logits.detach().cpu()
 
         loss = self.loss_ce(final_logits, label)

@@ -217,3 +217,34 @@
   - Current recommended RCE variant is `RCE-MIL v3 prior_calib + visual_residual_init=0.05` (`RCE-v3-VR-a005`).
 - Next suggested step:
   - Step13: RCE region-concept evidence export
+
+## Step13: RCE Region-Concept Evidence Export
+
+- Modified files:
+  - `models/model_RCE_MIL_BiomedCLIP.py`
+  - `scripts/analysis/export_stage13_rce_evidence.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/export_stage13_rce_evidence.py`
+- Added export-only model attributes:
+  - `last_low_region_concept_sim`
+  - `last_high_region_concept_sim`
+  - `last_low_region_features`
+  - `last_high_region_features`
+- Default compatibility:
+  - Yes. Forward return values, logits, loss, `Y_prob`, and `Y_hat` are unchanged; new attributes are detach/cpu export buffers only.
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Small-sample export run:
+  - Attempted `--fold 0 --split test --max_slides 10`
+  - Script exited safely with warnings because local BiomedCLIP cache / HF access was unavailable
+- Generated outputs:
+  - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_export_report.md`
+  - When checkpoint + data + BiomedCLIP cache are available, the script also writes:
+    - `results_stage9/stage13_rce_evidence_export/slide_prediction_evidence.csv`
+    - `results_stage9/stage13_rce_evidence_export/slide_top_concepts.csv`
+    - `results_stage9/stage13_rce_evidence_export/region_concept_evidence.pkl`
+- Next suggested step:
+  - Step14: concept-class graph or evidence visualization
