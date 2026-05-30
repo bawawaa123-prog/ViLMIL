@@ -273,3 +273,30 @@
   - Small-sample evidence files were aligned by `slide_id`, tensor shapes were consistent, and no NaN/Inf issues were detected.
 - Next suggested step:
   - Step14: concept-class graph or evidence visualization, or a larger fold0 export if broader evidence coverage is needed first
+
+## Step14: Post-hoc Concept-Class Evidence Graph
+
+- Modified files:
+  - `scripts/analysis/build_stage14_concept_class_graph.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/build_stage14_concept_class_graph.py`
+- Read Step13d evidence files:
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_prediction_evidence.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_top_concepts.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/region_concept_evidence.pkl`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/stage13_rce_evidence_quality_report.md`
+- Generated graph outputs:
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_edges.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_nodes.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_graph.json`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_report.md`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_summary.csv`
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Outcome:
+  - Built a post-hoc concept-to-class evidence graph using evidence score, prompt weight, rank, label, and prediction correctness rather than frequency alone.
+- Next suggested step:
+  - Step15: evidence visualization, or a learnable concept-class graph prototype if you want to move beyond post-hoc analysis
