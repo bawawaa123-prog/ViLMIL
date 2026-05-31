@@ -1,0 +1,9 @@
+slide_id,label,pred,correct,class_name_true,class_name_pred,true_prob,pred_prob,confidence_margin,selection_reason
+25024688B2,0,0,1,Adenocarcinoma,Adenocarcinoma,0.9999945163726808,0.9999945163726808,0.9999889989308032,correct_high_confidence
+2475022-B,0,0,1,Adenocarcinoma,Adenocarcinoma,0.999991774559021,0.999991774559021,0.9999835460157556,correct_high_confidence
+25024310B3,0,0,1,Adenocarcinoma,Adenocarcinoma,0.9999914169311525,0.9999914169311525,0.999982807989909,correct_high_confidence
+25001929B3,0,1,0,Adenocarcinoma,NonAdenocarcinoma,0.0001641251874389,0.9998358488082886,0.9996717236208497,incorrect_high_confidence
+25028514B,1,1,1,NonAdenocarcinoma,NonAdenocarcinoma,0.9999990463256836,0.9999990463256836,0.9999980631055223,correct_high_confidence
+25025087B,1,1,1,NonAdenocarcinoma,NonAdenocarcinoma,0.999998927116394,0.999998927116394,0.9999978490693593,correct_high_confidence
+25045625B1,1,1,1,NonAdenocarcinoma,NonAdenocarcinoma,0.9999984502792358,0.9999984502792358,0.9999969488391116,correct_high_confidence
+25023972B3,1,0,0,NonAdenocarcinoma,Adenocarcinoma,0.0007841127808205,0.999215841293335,0.9984317285125145,incorrect_high_confidence

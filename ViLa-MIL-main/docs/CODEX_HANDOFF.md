@@ -300,3 +300,39 @@
   - Built a post-hoc concept-to-class evidence graph using evidence score, prompt weight, rank, label, and prediction correctness rather than frequency alone.
 - Next suggested step:
   - Step15: evidence visualization, or a learnable concept-class graph prototype if you want to move beyond post-hoc analysis
+
+## Step15: RCE Evidence Visualization
+
+- Modified files:
+  - `scripts/analysis/visualize_stage15_rce_evidence.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/visualize_stage15_rce_evidence.py`
+- Read upstream inputs:
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_prediction_evidence.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_top_concepts.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/region_concept_evidence.pkl`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_edges.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_graph.json`
+- Generated visualization outputs:
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_selected_slides.csv`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_slide_evidence_paths.csv`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_visualization_summary.csv`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_rce_evidence_visualization_report.md`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/figures/top_concept_class_edges_by_class.png`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/figures/top_concept_class_edges_by_scale.png`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/figures/selected_slide_probability_overview.png`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/figures/slide_*_predclass_region_concept_heatmap.png`
+- Visualization behavior:
+  - Selects representative correct high-confidence slides for each true label and includes a small number of incorrect high-confidence cases when available.
+  - Builds `slide -> region -> concept -> class` evidence-path rows by combining Step13 concept evidence with Step14 edge strengths and predicted-class region peaks from the pickle tensors.
+  - Produces post-hoc plots only; no model change, no training, and no feature extraction.
+- Checks run:
+  - `python -m py_compile scripts/analysis/visualize_stage15_rce_evidence.py`
+  - `python scripts/analysis/visualize_stage15_rce_evidence.py`
+- Outcome:
+  - Step15 ran successfully on fold0 full-export inputs and produced `8` selected slides, `54` evidence-path rows, `3` overview PNG figures, and `8` slide-level heatmaps.
+- Notes:
+  - Runtime showed local matplotlib/font cache warnings in the sandbox environment, but the visualization outputs were still generated successfully.
+- Next suggested step:
+  - Review the selected failure-case slides and decide whether the next step should emphasize richer per-slide narrative summaries or more structured region-level ranking diagnostics.
