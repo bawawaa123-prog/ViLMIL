@@ -336,3 +336,40 @@
   - Runtime showed local matplotlib/font cache warnings in the sandbox environment, but the visualization outputs were still generated successfully.
 - Next suggested step:
   - Review the selected failure-case slides and decide whether the next step should emphasize richer per-slide narrative summaries or more structured region-level ranking diagnostics.
+
+## Step16: Failure-Case Evidence Narrative Summary
+
+- Modified files:
+  - `scripts/analysis/build_stage16_failure_case_narratives.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/build_stage16_failure_case_narratives.py`
+- Read upstream inputs:
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_selected_slides.csv`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_slide_evidence_paths.csv`
+  - `results_stage9/stage15_rce_evidence_visualization_fold0/stage15_visualization_summary.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_prediction_evidence.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_top_concepts.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_edges.csv`
+- Generated narrative outputs:
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_selected_slide_narratives.csv`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_failure_cases.csv`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_success_cases.csv`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_case_narrative_report.md`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_case_narrative_summary.csv`
+- Narrative behavior:
+  - Generates a per-slide narrative summary for all Step15 selected slides with probabilities, selection reason, low/high-scale concept evidence, and strongest evidence paths.
+  - Separates incorrect slides into a failure-case table with error direction, predicted-vs-true concept gaps, low/high-scale relation, and a machine-generated failure hypothesis.
+  - Separates correct slides into a success-case table showing whether both scales support the predicted class and whether the strongest support aligns with Step14 top edges.
+- Checks run:
+  - `python -m py_compile scripts/analysis/build_stage16_failure_case_narratives.py`
+  - `python scripts/analysis/build_stage16_failure_case_narratives.py`
+- Outcome:
+  - Step16 ran successfully on the existing fold0 Step15/13/14 artifacts and produced `8` slide narratives, `2` failure cases, and `6` success cases with no warnings.
+  - Failure narratives highlighted one cross-scale wrong-class drift case (`Adenocarcinoma -> NonAdenocarcinoma`) and one high-scale-dominant conflict case (`NonAdenocarcinoma -> Adenocarcinoma`).
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Next suggested step:
+  - Step17 learnable concept-class graph prototype, or Step17 cross-scale evidence conflict analysis if you want to focus on why one scale overrides the other in failure cases.
