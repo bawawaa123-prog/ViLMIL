@@ -373,3 +373,43 @@
   - No feature extraction
 - Next suggested step:
   - Step17 learnable concept-class graph prototype, or Step17 cross-scale evidence conflict analysis if you want to focus on why one scale overrides the other in failure cases.
+
+## Step17: Cross-Scale Evidence Conflict Analysis
+
+- Modified files:
+  - `scripts/analysis/analyze_stage17_cross_scale_conflicts.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/analyze_stage17_cross_scale_conflicts.py`
+- Read upstream inputs:
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_prediction_evidence.csv`
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_top_concepts.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_edges.csv`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_failure_cases.csv`
+  - `results_stage9/stage16_failure_case_narratives_fold0/stage16_selected_slide_narratives.csv`
+- Generated outputs:
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_cross_scale_slide_scores.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_conflict_type_summary.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_failure_pattern_cases.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_scale_conflict_report.md`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_cross_scale_summary.csv`
+- Analysis behavior:
+  - Aggregates slide-level scale/class support from top concept paths using `evidence_score * prompt_weight * edge_strength * (1 / rank)`.
+  - Produces per-slide low/high support classes, signed margins, agreement flags, and conflict-type labels over the full fold0 test export.
+  - Summarizes conflict-type distributions by correctness, true label, and predicted label, and maps Step16 failure cases back into the full-slide conflict taxonomy.
+- Checks run:
+  - `python -m py_compile scripts/analysis/analyze_stage17_cross_scale_conflicts.py`
+  - `python scripts/analysis/analyze_stage17_cross_scale_conflicts.py`
+- Outcome:
+  - Step17 analyzed `194` fold0 test slides with `0` warnings.
+  - Low/high support agreement rate was `0.4381`.
+  - Incorrect slides were dominated by `consistent_wrong_class_drift` (`8/14`) and `high_scale_dominant_wrong` (`5/14`).
+  - Step16 failure cases mapped cleanly:
+    - `25001929B3` -> `consistent_wrong_class_drift`
+    - `25023972B3` -> `high_scale_dominant_wrong`
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Next suggested step:
+  - Step18 cross-scale evidence graph prototype, or Step18 learnable concept-class graph prototype if you want to move from post-hoc analysis toward an explicit graph-based mechanism.

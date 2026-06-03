@@ -1,0 +1,19 @@
+section,metric,value,note
+inputs,slide_count,194.0,
+overall,low_high_agreement_rate,0.4381443298969072,
+overall,incorrect_count,14.0,
+overall,consistent_correct_support,50.0,
+overall,consistent_wrong_class_drift,8.0,
+overall,high_scale_dominant_correct,103.0,
+overall,high_scale_dominant_wrong,5.0,
+overall,low_scale_dominant_correct,1.0,
+overall,low_scale_dominant_wrong,0.0,
+overall,weak_or_mixed_conflict,27.0,
+failure_patterns,high_scale_dominant_wrong_slides,5.0,"[""25019273B"", ""25023972B3"", ""25027723B4"", ""25033447B4"", ""25057865B1""]"
+failure_patterns,consistent_wrong_class_drift_slides,8.0,"[""2471884-B2"", ""2485275-B2"", ""2487558-B2"", ""25015087B2"", ""25015422B"", ""25023687B2"", ""25023977B2"", ""25001929B3""]"
+step16_mapping,mapped_failure_case_count,2.0,
+step16_mapping,mapped_failure_case_match_count,2.0,
+quality,warning_count,0.0,
+outputs,stage17_cross_scale_slide_scores.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_cross_scale_slide_scores.csv
+outputs,stage17_conflict_type_summary.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_conflict_type_summary.csv
+outputs,stage17_failure_pattern_cases.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_failure_pattern_cases.csv
