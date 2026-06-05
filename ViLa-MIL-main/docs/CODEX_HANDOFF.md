@@ -413,3 +413,48 @@
   - No feature extraction
 - Next suggested step:
   - Step18 cross-scale evidence graph prototype, or Step18 learnable concept-class graph prototype if you want to move from post-hoc analysis toward an explicit graph-based mechanism.
+
+## Step18: Post-hoc Cross-Scale Evidence Graph Prototype
+
+- Modified files:
+  - `scripts/analysis/build_stage18_cross_scale_evidence_graph.py`
+  - `docs/CODEX_HANDOFF.md`
+- Added script:
+  - `scripts/analysis/build_stage18_cross_scale_evidence_graph.py`
+- Read upstream inputs:
+  - `results_stage9/stage13_rce_evidence_export_fold0_test_full/slide_top_concepts.csv`
+  - `results_stage9/stage14_concept_class_graph_fold0/stage14_concept_class_edges.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_cross_scale_slide_scores.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_conflict_type_summary.csv`
+  - `results_stage9/stage17_cross_scale_conflict_analysis_fold0/stage17_failure_pattern_cases.csv`
+- Generated outputs:
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_nodes.csv`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_edges.csv`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_low_high_concept_pairs.csv`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_conflict_pattern_edges.csv`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_graph.json`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_graph_report.md`
+  - `results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_graph_summary.csv`
+- Graph behavior:
+  - Builds `low_concept`, `high_concept`, `class`, and `conflict_type` nodes.
+  - Builds three edge families:
+    - `concept_to_class` edges from Step14 class-support statistics
+    - `low_high_pair` edges from Step17 slide-level support concepts and conflict types
+    - `conflict_to_class` edges summarizing which classes each conflict type predicts toward
+  - Aggregates pair statistics including co-occurrence count/rate, mean joint evidence, correct/incorrect counts, dominant conflict type, high-scale override rate, and wrong-class drift rate.
+- Checks run:
+  - `python -m py_compile scripts/analysis/build_stage18_cross_scale_evidence_graph.py`
+  - `python scripts/analysis/build_stage18_cross_scale_evidence_graph.py`
+- Outcome:
+  - Step18 ran successfully on fold0 full-export artifacts with `194` slides analyzed and `0` warnings.
+  - Produced `50` nodes, `246` combined edges, and `195` retained low/high concept-pair edges.
+  - High-scale override graph patterns concentrated around low nonadeno concepts such as `nonadeno_hamartoma_low` / `nonadeno_fibroinflammatory_low` paired with high adeno concepts such as `adeno_papillary_high` / `adeno_atypical_glands_high`.
+  - Wrong-class drift graph patterns showed recurring low/high nonadeno concept-pair associations, and Step17 failure cases remained interpretable in graph form:
+    - `25001929B3` -> low `nonadeno_hamartoma_low` paired with high `nonadeno_intercellular_bridges_high`
+    - `25023972B3` -> low `nonadeno_hamartoma_low` paired with high `adeno_papillary_high`
+- Training / 5-fold / feature extraction:
+  - No training run
+  - No 5-fold run
+  - No feature extraction
+- Next suggested step:
+  - Step19 learnable cross-scale graph module prototype, or Step19 learnable concept-class graph module prototype if you want to convert the post-hoc graph patterns into trainable structure.

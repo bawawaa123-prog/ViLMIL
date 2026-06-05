@@ -1,0 +1,21 @@
+section,metric,value,note
+inputs,slide_count,194.0,
+graph,concept_class_edges,42.0,
+graph,low_high_pair_edges,195.0,
+graph,conflict_pattern_edges,9.0,
+quality,warning_count,0.0,
+override_pairs,pair,1.0,nonadeno_hamartoma_low <-> adeno_papillary_high
+override_pairs,pair,1.0,nonadeno_fibroinflammatory_low <-> adeno_papillary_high
+override_pairs,pair,1.0,nonadeno_hamartoma_low <-> adeno_atypical_glands_high
+override_pairs,pair,1.0,nonadeno_hamartoma_low <-> adeno_fused_glands_high
+override_pairs,pair,1.0,nonadeno_hamartoma_low <-> adeno_micropapillary_high
+drift_pairs,pair,0.2857142857142857,nonadeno_inflammatory_low <-> nonadeno_hamartoma_high
+drift_pairs,pair,0.2727272727272727,nonadeno_benign_reactive_low <-> nonadeno_hamartoma_high
+drift_pairs,pair,0.25,nonadeno_fibroinflammatory_low <-> nonadeno_hamartoma_high
+drift_pairs,pair,0.25,nonadeno_sarcomatoid_low <-> nonadeno_hamartoma_high
+drift_pairs,pair,0.23529411764705882,nonadeno_solid_nests_low <-> nonadeno_spindle_atypia_high
+outputs,stage18_cross_scale_nodes.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_nodes.csv
+outputs,stage18_cross_scale_edges.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_edges.csv
+outputs,stage18_low_high_concept_pairs.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_low_high_concept_pairs.csv
+outputs,stage18_conflict_pattern_edges.csv,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_conflict_pattern_edges.csv
+outputs,stage18_cross_scale_graph.json,1.0,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage9/stage18_cross_scale_evidence_graph_fold0/stage18_cross_scale_graph.json
