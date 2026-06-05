@@ -82,6 +82,15 @@ parser.add_argument("--rce_logit_scale_init", type=float, default=10.0)
 parser.add_argument("--rce_concept_prior_strength", type=float, default=1.0)
 parser.add_argument("--rce_use_visual_residual", action="store_true", default=False)
 parser.add_argument("--rce_visual_residual_init", type=float, default=0.1)
+parser.add_argument("--rce_use_cross_scale_graph", action="store_true", default=False)
+parser.add_argument("--rce_cross_scale_graph_init", type=float, default=0.05)
+parser.add_argument(
+    "--rce_cross_scale_graph_norm",
+    type=str,
+    choices=["sqrt", "none"],
+    default="sqrt",
+    help="normalization for the learnable cross-scale graph residual.",
+)
 parser.add_argument(
     "--scale_mode",
     type=str,
@@ -264,6 +273,9 @@ settings = {
     "rce_concept_prior_strength": args.rce_concept_prior_strength,
     "rce_use_visual_residual": args.rce_use_visual_residual,
     "rce_visual_residual_init": args.rce_visual_residual_init,
+    "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
+    "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
+    "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,
     "scale_mode": args.scale_mode,
     "scale_fusion_mode": args.scale_fusion_mode,
     "scale_gate_hidden_dim": args.scale_gate_hidden_dim,

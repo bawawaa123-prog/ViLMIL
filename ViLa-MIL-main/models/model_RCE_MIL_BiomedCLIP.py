@@ -5,6 +5,7 @@ Minimal Region-Concept Evidence MIL with BiomedCLIP text encoder.
 
 from __future__ import absolute_import, division, print_function
 
+import math
 import logging
 import os
 
@@ -40,9 +41,16 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_concept_prior_strength = float(getattr(config, "rce_concept_prior_strength", 1.0))
         self.rce_use_visual_residual = bool(getattr(config, "rce_use_visual_residual", False))
         self.rce_visual_residual_init = float(getattr(config, "rce_visual_residual_init", 0.1))
+        self.rce_use_cross_scale_graph = bool(getattr(config, "rce_use_cross_scale_graph", False))
+        self.rce_cross_scale_graph_init = float(getattr(config, "rce_cross_scale_graph_init", 0.05))
+        self.rce_cross_scale_graph_norm = str(getattr(config, "rce_cross_scale_graph_norm", "sqrt"))
 
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
+        if self.rce_cross_scale_graph_norm not in {"sqrt", "none"}:
+            raise ValueError(
+                f"Unsupported rce_cross_scale_graph_norm: {self.rce_cross_scale_graph_norm}"
+            )
 
         if int(getattr(config, "input_size", self.input_size)) != self.input_size:
             raise ValueError(f"RCE_MIL_BiomedCLIP expects input_size=512, got {getattr(config, 'input_size', None)}")
@@ -103,6 +111,9 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             init = min(max(self.rce_visual_residual_init, 1e-4), 1.0 - 1e-4)
             self.rce_visual_residual_alpha = nn.Parameter(torch.logit(torch.tensor(init, dtype=torch.float32)))
 
+        self.rce_cross_scale_graph_adj = None
+        self.rce_cross_scale_graph_alpha = None
+
         self.last_low_prompt_weights = None
         self.last_high_prompt_weights = None
         self.last_low_prompt_evidence = None
@@ -116,8 +127,16 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_high_region_concept_sim = None
         self.last_low_region_features = None
         self.last_high_region_features = None
+        self.last_cross_scale_logits = None
+        self.last_cross_scale_alpha = None
+        self.last_cross_scale_adj = None
 
         self._initialize_concept_prompt_pool(config)
+        if self.rce_use_cross_scale_graph and self.scale_mode != "dual":
+            logger.warning(
+                "rce_use_cross_scale_graph=True but scale_mode=%s; cross-scale graph will be skipped.",
+                self.scale_mode,
+            )
 
     def _initialize_concept_prompt_pool(self, config):
         low_prompt_features, high_prompt_features, _, _, _, _ = build_concept_prompt_bundle(
@@ -137,6 +156,18 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             )
             self.high_concept_prior = nn.Parameter(
                 torch.zeros(self.num_classes, high_prompt_features.shape[1], dtype=torch.float32)
+            )
+        if self.rce_use_cross_scale_graph:
+            self.rce_cross_scale_graph_adj = nn.Parameter(
+                torch.zeros(
+                    self.num_classes,
+                    low_prompt_features.shape[1],
+                    high_prompt_features.shape[1],
+                    dtype=torch.float32,
+                )
+            )
+            self.rce_cross_scale_graph_alpha = nn.Parameter(
+                torch.tensor(self.rce_cross_scale_graph_init, dtype=torch.float32)
             )
         print(
             f"[ConceptPromptPool] enabled for RCE_MIL_BiomedCLIP | "
@@ -181,6 +212,19 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         prompt_weights = F.softmax(weight_logits, dim=-1)
         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
         return logits_scale, prompt_weights, prompt_evidence, sim
+
+    def _compute_cross_scale_logits(self, low_prompt_evidence, high_prompt_evidence):
+        effective_adj = torch.tanh(self.rce_cross_scale_graph_adj)
+        cross_scale_logits = torch.einsum(
+            "bcl,clh,bch->bc",
+            low_prompt_evidence.float(),
+            effective_adj,
+            high_prompt_evidence.float(),
+        )
+        if self.rce_cross_scale_graph_norm == "sqrt":
+            norm = math.sqrt(float(low_prompt_evidence.size(-1) * high_prompt_evidence.size(-1)))
+            cross_scale_logits = cross_scale_logits / max(norm, 1.0)
+        return cross_scale_logits, effective_adj
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         del coord_s, coords_l, slide_id
@@ -256,6 +300,21 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_low_visual_logits = None
             self.last_high_visual_logits = None
             self.last_visual_logits = None
+
+        if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
+            cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
+                low_prompt_evidence,
+                high_prompt_evidence,
+            )
+            alpha = self.rce_cross_scale_graph_alpha
+            final_logits = final_logits + alpha * cross_scale_logits
+            self.last_cross_scale_logits = cross_scale_logits.detach().cpu()
+            self.last_cross_scale_alpha = alpha.detach().cpu()
+            self.last_cross_scale_adj = effective_adj.detach().cpu()
+        else:
+            self.last_cross_scale_logits = None
+            self.last_cross_scale_alpha = None
+            self.last_cross_scale_adj = None
 
         if self.rce_use_logit_calibration:
             scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)

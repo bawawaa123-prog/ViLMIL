@@ -207,6 +207,9 @@ def train(datasets, cur, args):
         config.rce_concept_prior_strength = float(getattr(args, 'rce_concept_prior_strength', 1.0))
         config.rce_use_visual_residual = bool(getattr(args, 'rce_use_visual_residual', False))
         config.rce_visual_residual_init = float(getattr(args, 'rce_visual_residual_init', 0.1))
+        config.rce_use_cross_scale_graph = bool(getattr(args, 'rce_use_cross_scale_graph', False))
+        config.rce_cross_scale_graph_init = float(getattr(args, 'rce_cross_scale_graph_init', 0.05))
+        config.rce_cross_scale_graph_norm = str(getattr(args, 'rce_cross_scale_graph_norm', 'sqrt'))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
 

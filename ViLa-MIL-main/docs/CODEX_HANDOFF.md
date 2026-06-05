@@ -458,3 +458,69 @@
   - No feature extraction
 - Next suggested step:
   - Step19 learnable cross-scale graph module prototype, or Step19 learnable concept-class graph module prototype if you want to convert the post-hoc graph patterns into trainable structure.
+
+## 2026-06-05 - Step19: Learnable Cross-Scale Graph Module Prototype
+
+### Goal
+- Add an optional learnable cross-scale graph residual to `RCE_MIL_BiomedCLIP` for low/high concept evidence interaction.
+- Keep old RCE base / v2 / v3 / PEPS behavior unchanged by default.
+- Add a fold0 testing smoke script for the new RCE-v4 / CSG prototype.
+
+### Files changed
+- `main.py`: added CLI flags and experiment settings export for the cross-scale graph prototype.
+- `utils/core_utils.py`: passed new cross-scale graph options into the RCE config.
+- `models/model_RCE_MIL_BiomedCLIP.py`: added the optional learnable adjacency residual and debug exports.
+- `scripts/experiments/run_stage19_rce_v4_csg_smoke.sh`: added a Stage19 fold0 testing smoke script based on the RCE-v3-VR-a005 setup.
+- `docs/CODEX_HANDOFF.md`: appended this Step19 record.
+
+### Behavior / tensor flow
+- New optional args:
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_init`
+  - `--rce_cross_scale_graph_norm`
+- When enabled in `scale_mode=dual`, the model builds a learnable adjacency with shape `num_classes x num_low_concepts x num_high_concepts`.
+- The residual path computes:
+  - `effective_adj = tanh(adjacency)`
+  - `cross_scale_logits = einsum(low_prompt_evidence, effective_adj, high_prompt_evidence)`
+  - optional normalization by `sqrt(num_low_concepts * num_high_concepts)`
+  - `final_logits = final_logits + alpha * cross_scale_logits`
+- `alpha` is a learnable scalar initialized from `rce_cross_scale_graph_init`.
+- Debug exports were added:
+  - `last_cross_scale_logits`
+  - `last_cross_scale_alpha`
+  - `last_cross_scale_adj`
+- Safe behavior:
+  - default is off
+  - if `scale_mode` is `low_only` or `high_only`, the cross-scale graph is skipped even if the flag is on
+  - `forward` return values and loss/probability formats are unchanged
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/main.py`: passed
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`: passed
+- `python -m py_compile ViLa-MIL-main/models/model_RCE_MIL_BiomedCLIP.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage19_rce_v4_csg_smoke.sh`: passed
+- `bash scripts/experiments/run_stage19_rce_v4_csg_smoke.sh`: passed
+
+### Commands not run
+- No long training beyond the requested smoke run
+- No 5-fold run
+- No feature extraction
+
+### Results / observations
+- The Stage19 smoke run completed successfully through fold0 train / val / test with:
+  - task `task_adenocarcinoma`
+  - `--testing`
+  - `--max_epochs 1`
+  - output dir `results_stage19/rce_v4_csg_smoke_s1`
+- The enabled configuration used the RCE-v3-VR-a005 base plus:
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_init 0.05`
+- No shape mismatch was observed with the new cross-scale residual path.
+- Smoke metrics:
+  - test `AUC=0.5833`
+  - test `ACC=0.2105`
+  - test `F1=0.1739`
+  - balanced `ACC=0.5000`
+
+### Next suggested step
+- Inspect `last_cross_scale_logits` / `last_cross_scale_adj` on a few slides to verify whether learned cross-scale interactions resemble the Step18 post-hoc graph patterns before scheduling a non-testing fold0 pilot.
