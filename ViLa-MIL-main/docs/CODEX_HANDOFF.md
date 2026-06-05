@@ -524,3 +524,77 @@
 
 ### Next suggested step
 - Inspect `last_cross_scale_logits` / `last_cross_scale_adj` on a few slides to verify whether learned cross-scale interactions resemble the Step18 post-hoc graph patterns before scheduling a non-testing fold0 pilot.
+
+## 2026-06-05 - Step20: CSG Smoke Artifact Inspection
+
+### Goal
+- Inspect the Step19 smoke checkpoint for learnable cross-scale graph artifacts only.
+- Verify `rce_cross_scale_graph_adj` / `rce_cross_scale_graph_alpha` presence, shape, and value range.
+- Compare top learned low/high concept pairs against Step18 post-hoc cross-scale graph patterns.
+
+### Files changed
+- `scripts/analysis/inspect_stage20_csg_smoke_artifacts.py`: added a lightweight checkpoint inspection script with graceful handling for missing inputs.
+- `docs/CODEX_HANDOFF.md`: appended this Step20 record.
+
+### Behavior / tensor flow
+- Default checkpoint search order:
+  - `results_stage19/rce_v4_csg_smoke_s1/s_0_checkpoint.pt`
+  - `results_stage19/rce_v4_csg_smoke_s1/s_1_checkpoint.pt`
+  - `results_stage19/rce_v4_csg_smoke_s1/checkpoint.pt`
+- Reads from `state_dict` with or without `module.` prefix:
+  - `rce_cross_scale_graph_adj`
+  - `rce_cross_scale_graph_alpha`
+- Computes:
+  - adjacency shape check
+  - `NaN` / `Inf` check
+  - raw `adj` stats
+  - `tanh(adj)` stats
+  - alpha value check
+- Exports per-class top absolute learned low/high concept pairs and lightweight exact-text overlap against Step18 pair patterns.
+- Missing inputs emit warnings and still produce a report instead of crashing.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/inspect_stage20_csg_smoke_artifacts.py`: passed
+- `/home/ljh/anaconda3/envs/vila_mil/bin/python ViLa-MIL-main/scripts/analysis/inspect_stage20_csg_smoke_artifacts.py`: passed
+
+### Commands not run
+- No training run
+- No 5-fold run
+- No feature extraction
+- No Step19 smoke re-run
+
+### Results / observations
+- Generated outputs under:
+  - `results_stage20/stage20_csg_smoke_inspection/`
+- Output files:
+  - `stage20_csg_adj_stats.csv`
+  - `stage20_csg_top_learned_pairs.csv`
+  - `stage20_csg_step18_overlap.csv`
+  - `stage20_csg_smoke_inspection_report.md`
+  - `stage20_csg_smoke_inspection_summary.csv`
+- Checkpoint selected:
+  - `results_stage19/rce_v4_csg_smoke_s1/s_0_checkpoint.pt`
+- Parameter presence:
+  - `rce_cross_scale_graph_adj`: found
+  - `rce_cross_scale_graph_alpha`: found
+- Shape check:
+  - adjacency shape = `(2, 12, 12)`
+  - expected shape = `(2, 12, 12)`
+  - shape matched expected `num_classes x num_low_concepts x num_high_concepts`
+- Global value summary:
+  - raw `adj`: `min=-0.002617`, `max=0.002605`, `mean=-0.001261`, `std=0.001254`, `abs_max=0.002617`
+  - `tanh(adj)`: effectively identical at smoke scale
+  - alpha: `0.050335`
+- Pattern inspection:
+  - Learned top pairs were dominated by class-consistent adeno/adeno and nonadeno/nonadeno pairs after the short smoke run.
+  - Exact-text overlap with Step18 post-hoc pairs was limited but non-zero:
+    - `step18_top_mean_joint_evidence`: overlap `3`
+    - `step18_high_scale_override`: overlap `0`
+    - `step18_wrong_class_drift`: overlap `2`
+  - The overlaps came from class `1` nonadeno learned pairs; no class `0` overlap appeared in the top learned-pair slice.
+- Interpretation:
+  - The adjacency is present, finite, shape-correct, and non-zero, but still very small as expected for `--testing` + `1 epoch`.
+  - Step20 does not judge model quality or final graph usefulness.
+
+### Next suggested step
+- Step21 non-testing fold0 pilot, because the cross-scale graph parameters exist and basic smoke artifact stats look normal; the smoke run is too short to say much more about learned structure.
