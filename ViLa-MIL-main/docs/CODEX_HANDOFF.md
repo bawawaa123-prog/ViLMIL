@@ -598,3 +598,68 @@
 
 ### Next suggested step
 - Step21 non-testing fold0 pilot, because the cross-scale graph parameters exist and basic smoke artifact stats look normal; the smoke run is too short to say much more about learned structure.
+
+## 2026-06-05 - Step21: RCE-v4-CSG Fold0 Non-Testing Pilot Script
+
+### Goal
+- Add a fold0 non-testing pilot script for the RCE-v4 cross-scale graph variant.
+- Keep the Stage21 script aligned with the current best RCE-v3-VR-a005 baseline and only add the learnable CSG switches.
+
+### Files changed
+- `scripts/experiments/run_stage21_rce_v4_csg_pilot_fold0.sh`: added a configurable fold0 pilot launcher for RCE-v4-CSG.
+- `docs/CODEX_HANDOFF.md`: appended this Step21 record.
+
+### Behavior / script config
+- Default environment-variable overrides:
+  - `PYTHON_BIN`
+  - `DATA_ROOT_DIR`
+  - `RESULTS_DIR`
+  - `SEED`
+  - `MAX_EPOCHS`
+  - `FOLD`
+- Additional path/runtime overrides retained:
+  - `VARIANT`
+  - `SPLIT_DIR`
+  - `TEXT_PROMPT_PATH`
+  - `CONCEPT12_PATH`
+  - `HF_HUB_OFFLINE_FLAG`
+  - `TRANSFORMERS_OFFLINE_FLAG`
+- Default run shape:
+  - `FOLD=0`
+  - `MAX_EPOCHS=20`
+  - `SEED=1`
+  - `RESULTS_DIR=results_stage21`
+  - no `--testing`
+- Supported `VARIANT` values:
+  - `csg_a005`: `--rce_cross_scale_graph_init 0.05`
+  - `csg_a01`: `--rce_cross_scale_graph_init 0.1`
+  - `all`: runs `csg_a005` then `csg_a01`
+- Fixed exp codes:
+  - `rce_v4_csg_a005_pilot_fold0_e20`
+  - `rce_v4_csg_a01_pilot_fold0_e20`
+- The script prints:
+  - current `VARIANT`
+  - `RESULTS_DIR`
+  - `EXP_CODE`
+  - `FOLD`
+  - `MAX_EPOCHS`
+  - `SEED`
+  - full command line before execution
+
+### Checks run
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage21_rce_v4_csg_pilot_fold0.sh`: passed
+
+### Commands not run
+- No pilot training run
+- No 5-fold run
+- No feature extraction
+
+### Results / observations
+- The script is ready for a non-testing fold0 pilot using the RCE-v3-VR-a005 base config plus:
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_init <variant>`
+  - `--rce_cross_scale_graph_norm sqrt`
+- No model, dataset, analysis script, or historical result directory was modified in this step.
+
+### Next suggested step
+- Run the Stage21 pilot script with `VARIANT=csg_a005` first, then compare against `csg_a01` if needed.
