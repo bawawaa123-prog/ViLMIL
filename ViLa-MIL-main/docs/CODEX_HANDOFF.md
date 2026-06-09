@@ -815,3 +815,61 @@
   - `VARIANT=rq16 bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
   - `VARIANT=rq32 bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
   - `VARIANT=all bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
+
+## 2026-06-09 - Step24: Stage22/Stage23 RCE-v4-CSG Summary Analysis and Launcher Cleanup
+
+### Goal
+- Clean up the Stage22 and Stage23 launcher formatting without changing experiment semantics.
+- Add a read-only analysis script to summarize Stage22 CSG init results and Stage23 region query number sensitivity.
+
+### Files changed
+- `scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`: moved the inclusive `k_end` note outside the bash array and kept the launcher as a readable multi-line script.
+- `scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`: moved the inclusive `k_end` note outside the bash array and kept the launcher as a readable multi-line script.
+- `scripts/analysis/build_stage24_rce_v4_csg_summary.py`: added a read-only Stage24 summary builder for Stage22, Stage23, and optional Stage9 reference comparisons.
+- `docs/CODEX_HANDOFF.md`: appended this Step24 record.
+
+### Behavior / script config
+- The Stage24 analysis script reads:
+  - `results_stage22/rce_v4_csg_a005_5fold_e20_s1/fold_summary.csv`
+  - `results_stage22/rce_v4_csg_a01_5fold_e20_s1/fold_summary.csv`
+  - `results_stage23/rce_v4_csg_a01_rq8_5fold_e20_s1/fold_summary.csv`
+  - `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/fold_summary.csv`
+  - `results_stage23/rce_v4_csg_a01_rq32_5fold_e20_s1/fold_summary.csv`
+  - optional `results_stage9/stage9_rce_final_analysis/rce_stage9_main_comparison.csv`
+- Supported environment-variable overrides:
+  - `RESULTS_STAGE22_DIR`
+  - `RESULTS_STAGE23_DIR`
+  - `STAGE9_ANALYSIS_CSV`
+  - `OUTPUT_DIR`
+- Generated outputs under:
+  - `results_stage24/stage24_rce_v4_csg_summary/`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage24_rce_v4_csg_summary.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`: passed
+- `python ViLa-MIL-main/scripts/analysis/build_stage24_rce_v4_csg_summary.py`: passed
+
+### Commands not run
+- No training run
+- No 5-fold evaluation run
+- No feature extraction
+
+### Results / observations
+- Generated output files:
+  - `results_stage24/stage24_rce_v4_csg_summary/stage24_stage22_csg_init_summary.csv`
+  - `results_stage24/stage24_rce_v4_csg_summary/stage24_stage23_region_query_summary.csv`
+  - `results_stage24/stage24_rce_v4_csg_summary/stage24_metric_deltas.csv`
+  - `results_stage24/stage24_rce_v4_csg_summary/stage24_rce_v4_csg_summary_report.md`
+- Stage22 core conclusion:
+  - `csg_a01` outperformed `csg_a005` on the main 5-fold summary metrics and is the preferred CSG init branch.
+- Stage23 core conclusion:
+  - `rq16` outperformed both `rq8` and `rq32` on the main 5-fold summary metrics and remains the preferred region query count.
+- Current recommended main configuration:
+  - `RCE-v4-CSG-a01-rq16`
+- Follow-on default:
+  - continue to use `prototype_number=16` for DEG-MIL by default.
+- This step did not modify any model file, `main.py`, or `utils/core_utils.py`.
+
+### Next suggested step
+- Use `RCE-v4-CSG-a01-rq16` as the Stage24 main configuration for the next DEG-MIL step and keep `prototype_number=16` as the default.

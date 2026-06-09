@@ -18,6 +18,11 @@ TRANSFORMERS_OFFLINE_FLAG="${TRANSFORMERS_OFFLINE_FLAG:-1}"
 
 cd "${ROOT_DIR}"
 
+# main.py treats --k_end as inclusive, so a true 5-fold run uses folds 0..4.
+K_FOLDS=5
+K_START=0
+K_END=4
+
 print_command() {
   local -a cmd=("$@")
   printf "[Cmd] "
@@ -59,10 +64,9 @@ run_variant() {
     --concept_prompt_path "${CONCEPT12_PATH}"
     --prompt_ensemble_mode embedding_mean
     --scale_mode dual
-    --k 5
-    --k_start 0
-    # main.py treats --k_end as inclusive, so 5-fold means folds 0..4.
-    --k_end 4
+    --k "${K_FOLDS}"
+    --k_start "${K_START}"
+    --k_end "${K_END}"
     --max_epochs "${MAX_EPOCHS}"
     --seed "${SEED}"
     --prototype_number 16
@@ -90,9 +94,9 @@ run_variant() {
   echo "[Run] VARIANT=${variant}"
   echo "[Run] RESULTS_DIR=${RESULTS_DIR}"
   echo "[Run] EXP_CODE=${exp_code}"
-  echo "[Run] K=5"
-  echo "[Run] K_START=0"
-  echo "[Run] K_END=4"
+  echo "[Run] K=${K_FOLDS}"
+  echo "[Run] K_START=${K_START}"
+  echo "[Run] K_END=${K_END}"
   echo "[Run] MAX_EPOCHS=${MAX_EPOCHS}"
   echo "[Run] SEED=${SEED}"
   print_command env "${env_vars[@]}" "${cmd[@]}"
