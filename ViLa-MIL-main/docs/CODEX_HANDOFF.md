@@ -663,3 +663,73 @@
 
 ### Next suggested step
 - Run the Stage21 pilot script with `VARIANT=csg_a005` first, then compare against `csg_a01` if needed.
+
+## 2026-06-09 - Step22: RCE-v4-CSG 5-Fold Formal Script
+
+### Goal
+- Add the formal 5-fold launcher for the RCE-v4 cross-scale graph variant without changing any model or training code.
+
+### Files changed
+- `scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`: added a configurable 5-fold launcher for the current RCE-v4-CSG setup.
+- `docs/CODEX_HANDOFF.md`: appended this Step22 record.
+
+### Behavior / script config
+- Default environment-variable overrides:
+  - `PYTHON_BIN`
+  - `DATA_ROOT_DIR`
+  - `RESULTS_DIR`
+  - `SEED`
+  - `MAX_EPOCHS`
+- Additional path/runtime overrides retained:
+  - `VARIANT`
+  - `SPLIT_DIR`
+  - `TEXT_PROMPT_PATH`
+  - `CONCEPT12_PATH`
+  - `HF_HUB_OFFLINE_FLAG`
+  - `TRANSFORMERS_OFFLINE_FLAG`
+- Fixed model/config switches:
+  - `--model_type RCE_MIL_BiomedCLIP`
+  - `--scale_mode dual`
+  - `--data_folder_s features_biomedclip_5x`
+  - `--data_folder_l features_biomedclip_20x`
+  - `--use_concept_prompt_pool`
+  - `--concept_prompt_path dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json` via `CONCEPT12_PATH`
+  - `--prototype_number 16`
+  - `--rce_use_logit_calibration`
+  - `--rce_use_concept_prior`
+  - `--rce_use_visual_residual`
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_norm sqrt`
+- Fixed 5-fold run shape:
+  - `--k 5`
+  - `--k_start 0`
+  - `--k_end 4`
+  - `RESULTS_DIR=results_stage22`
+  - `MAX_EPOCHS=20`
+  - `SEED=1`
+- Supported `VARIANT` values:
+  - `csg_a005`: `--rce_cross_scale_graph_init 0.05`
+  - `csg_a01`: `--rce_cross_scale_graph_init 0.1`
+  - `all`: runs both variants in sequence
+- Fixed exp codes:
+  - `rce_v4_csg_a005_5fold_e20`
+  - `rce_v4_csg_a01_5fold_e20`
+
+### Checks run
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`: passed
+
+### Commands not run
+- No 5-fold training run
+- No pilot run
+- No feature extraction
+
+### Results / observations
+- The new script follows the Stage21 pilot structure but switches to formal 5-fold execution with the same RCE-v4-CSG core settings.
+- During follow-up debugging, confirmed that `main.py` treats `--k_end` as inclusive, so a true 5-fold run must use `--k_start 0 --k_end 4`; using `--k_end 5` incorrectly attempts a sixth fold and looks for `splits_5.csv`.
+- This step only added the launcher and documentation; it did not modify `main.py`, `utils/core_utils.py`, or any model file.
+
+### Next suggested step
+- User runs one of:
+  - `VARIANT=csg_a005 bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
+  - `VARIANT=csg_a01 bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
+  - `VARIANT=all bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
