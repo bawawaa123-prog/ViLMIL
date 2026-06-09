@@ -923,3 +923,67 @@
 
 ### Next suggested step
 - Step26: add Spatial Region Graph on top of the DEG skeleton.
+
+## 2026-06-09 - Step26: Spatial Region Graph For DEG-MIL
+
+### Goal
+- Add an optional Spatial Region Graph to `DEG_MIL_BiomedCLIP` while keeping the Step25 skeleton behavior unchanged when the graph flag is off.
+
+### Files changed
+- `models/model_DEG_MIL_BiomedCLIP.py`: added optional same-scale Spatial Region Graph logic and new debug exports.
+- `main.py`: added DEG region graph argparse parameters and settings logging.
+- `utils/core_utils.py`: passed DEG region graph config fields into `DEG_MIL_BiomedCLIP`.
+- `scripts/experiments/run_stage26_deg_region_graph_smoke.sh`: added a smoke launcher for the DEG Spatial Region Graph path.
+- `docs/CODEX_HANDOFF.md`: appended this Step26 record.
+
+### Behavior / tensor flow
+- Current graph scope:
+  - low-scale region graph
+  - high-scale region graph
+- Current graph exclusions:
+  - no cross-scale region graph
+  - no concept graph
+  - no region-concept bipartite graph
+- When `deg_use_region_graph=False`, `DEG_MIL_BiomedCLIP` stays aligned with the Step25 skeleton path.
+- When `deg_use_region_graph=True`:
+  - the model first computes Step25 low/high region features and region coordinates
+  - saves graph-pre-update features to:
+    - `last_low_region_features_before_graph`
+    - `last_high_region_features_before_graph`
+  - builds per-scale kNN adjacency from region coordinates
+  - applies residual message passing with row-normalized adjacency and per-scale projection/norm
+  - uses graph-updated region features for downstream region-concept evidence, visual residual, and cross-scale graph logits
+- New argparse/config parameters:
+  - `--deg_use_region_graph`
+  - `--deg_region_graph_k`
+  - `--deg_region_graph_alpha`
+- New debug attributes:
+  - `last_low_region_adj`
+  - `last_high_region_adj`
+  - `last_low_region_graph_alpha`
+  - `last_high_region_graph_alpha`
+  - `last_low_region_features_before_graph`
+  - `last_high_region_features_before_graph`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`: passed
+- `python -m py_compile ViLa-MIL-main/main.py`: passed
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage26_deg_region_graph_smoke.sh`: passed
+- `bash ViLa-MIL-main/scripts/experiments/run_stage26_deg_region_graph_smoke.sh`: passed
+
+### Commands not run
+- No formal 5-fold training run
+- No feature extraction
+
+### Results / observations
+- `main.py` now accepts the DEG region graph flags and records them in experiment settings.
+- `utils/core_utils.py` now forwards the DEG region graph settings through the existing DEG config path.
+- The original `models/model_RCE_MIL_BiomedCLIP.py` file was not modified.
+- Smoke run status:
+  - executed successfully
+  - results directory: `results_stage26/deg_region_graph_smoke_s1`
+  - smoke metrics are only a short-path sanity check and should not be treated as model-quality evidence
+
+### Next suggested step
+- If the Step26 smoke passes, either run a Step27 5-fold pilot for DEG region graph or extend the model with cross-scale region graph reasoning.

@@ -216,6 +216,9 @@ def train(datasets, cur, args):
         config.rce_use_cross_scale_graph = bool(getattr(args, 'rce_use_cross_scale_graph', False))
         config.rce_cross_scale_graph_init = float(getattr(args, 'rce_cross_scale_graph_init', 0.05))
         config.rce_cross_scale_graph_norm = str(getattr(args, 'rce_cross_scale_graph_norm', 'sqrt'))
+        config.deg_use_region_graph = bool(getattr(args, 'deg_use_region_graph', False))
+        config.deg_region_graph_k = int(getattr(args, 'deg_region_graph_k', 4))
+        config.deg_region_graph_alpha = float(getattr(args, 'deg_region_graph_alpha', 0.1))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
 

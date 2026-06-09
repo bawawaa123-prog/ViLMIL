@@ -91,6 +91,9 @@ parser.add_argument(
     default="sqrt",
     help="normalization for the learnable cross-scale graph residual.",
 )
+parser.add_argument("--deg_use_region_graph", action="store_true", default=False)
+parser.add_argument("--deg_region_graph_k", type=int, default=4)
+parser.add_argument("--deg_region_graph_alpha", type=float, default=0.1)
 parser.add_argument(
     "--scale_mode",
     type=str,
@@ -276,6 +279,9 @@ settings = {
     "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
     "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
     "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,
+    "deg_use_region_graph": args.deg_use_region_graph,
+    "deg_region_graph_k": args.deg_region_graph_k,
+    "deg_region_graph_alpha": args.deg_region_graph_alpha,
     "scale_mode": args.scale_mode,
     "scale_fusion_mode": args.scale_fusion_mode,
     "scale_gate_hidden_dim": args.scale_gate_hidden_dim,

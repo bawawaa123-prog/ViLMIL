@@ -10,6 +10,7 @@ Step25 keeps the logits path aligned with RCE-v4-CSG-a01-rq16 and only adds:
 from __future__ import absolute_import, division, print_function
 
 import torch
+import torch.nn as nn
 from torch.nn import functional as F
 
 from .model_RCE_MIL_BiomedCLIP import RCE_MIL_BiomedCLIP
@@ -23,10 +24,31 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         model_path="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
     ):
         super().__init__(config=config, num_classes=num_classes, model_path=model_path)
+        self.deg_use_region_graph = bool(getattr(config, "deg_use_region_graph", False))
+        self.deg_region_graph_k = int(getattr(config, "deg_region_graph_k", 4))
+        self.deg_region_graph_alpha = float(getattr(config, "deg_region_graph_alpha", 0.1))
+
+        if self.deg_use_region_graph:
+            self.low_region_graph_proj = nn.Linear(self.input_size, self.input_size)
+            self.high_region_graph_proj = nn.Linear(self.input_size, self.input_size)
+            self.low_region_graph_norm = nn.LayerNorm(self.input_size)
+            self.high_region_graph_norm = nn.LayerNorm(self.input_size)
+        else:
+            self.low_region_graph_proj = None
+            self.high_region_graph_proj = None
+            self.low_region_graph_norm = None
+            self.high_region_graph_norm = None
+
         self.last_low_region_attn = None
         self.last_high_region_attn = None
         self.last_low_region_coords = None
         self.last_high_region_coords = None
+        self.last_low_region_adj = None
+        self.last_high_region_adj = None
+        self.last_low_region_graph_alpha = None
+        self.last_high_region_graph_alpha = None
+        self.last_low_region_features_before_graph = None
+        self.last_high_region_features_before_graph = None
         self.last_slide_id = None
 
     def _prepare_patch_features_for_attention(self, patch_features):
@@ -118,6 +140,43 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             return [self._detach_slide_id(item) for item in slide_id]
         return slide_id
 
+    def _build_region_knn_adj(self, region_coords):
+        if region_coords is None or region_coords.dim() != 3 or region_coords.size(-1) < 2:
+            return None
+        if not torch.isfinite(region_coords).all():
+            return None
+
+        _, num_regions, _ = region_coords.shape
+        if num_regions <= 1:
+            return None
+
+        k = min(max(self.deg_region_graph_k, 0), num_regions - 1)
+        if k <= 0:
+            return None
+
+        pairwise_distance = torch.cdist(region_coords.float(), region_coords.float(), p=2)
+        diag_mask = torch.eye(num_regions, device=pairwise_distance.device, dtype=torch.bool).unsqueeze(0)
+        pairwise_distance = pairwise_distance.masked_fill(diag_mask, float("inf"))
+        neighbor_indices = torch.topk(pairwise_distance, k=k, dim=-1, largest=False).indices
+
+        adjacency = torch.zeros_like(pairwise_distance)
+        adjacency.scatter_(-1, neighbor_indices, 1.0)
+        adjacency = adjacency / adjacency.sum(dim=-1, keepdim=True).clamp_min(1.0)
+        return adjacency
+
+    def _apply_region_graph(self, region_features, region_coords, graph_proj, graph_norm):
+        if not self.deg_use_region_graph or graph_proj is None or graph_norm is None:
+            return region_features, None
+
+        adjacency = self._build_region_knn_adj(region_coords)
+        if adjacency is None:
+            return region_features, None
+
+        neighbor_context = torch.bmm(adjacency.to(region_features.dtype), region_features)
+        updated_region_features = region_features + self.deg_region_graph_alpha * graph_proj(neighbor_context)
+        updated_region_features = graph_norm(updated_region_features)
+        return updated_region_features, adjacency
+
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         low_patches = x_s.float()
         high_patches = x_l.float()
@@ -137,6 +196,25 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
 
         low_region_coords = self._compute_region_coords(low_attn_weights, coord_s)
         high_region_coords = self._compute_region_coords(high_attn_weights, coords_l)
+        low_region_features_before_graph = low_region_features
+        high_region_features_before_graph = high_region_features
+
+        if self.deg_use_region_graph:
+            low_region_features, low_region_adj = self._apply_region_graph(
+                low_region_features,
+                low_region_coords,
+                self.low_region_graph_proj,
+                self.low_region_graph_norm,
+            )
+            high_region_features, high_region_adj = self._apply_region_graph(
+                high_region_features,
+                high_region_coords,
+                self.high_region_graph_proj,
+                self.high_region_graph_norm,
+            )
+        else:
+            low_region_adj = None
+            high_region_adj = None
 
         low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
         high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
@@ -221,6 +299,8 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_high_region_concept_sim = high_region_concept_sim.detach().cpu()
         self.last_low_region_features = low_region_features.detach().cpu()
         self.last_high_region_features = high_region_features.detach().cpu()
+        self.last_low_region_features_before_graph = low_region_features_before_graph.detach().cpu()
+        self.last_high_region_features_before_graph = high_region_features_before_graph.detach().cpu()
         self.last_low_region_attn = (
             low_attn_weights.detach().cpu() if low_attn_weights is not None else None
         )
@@ -233,6 +313,15 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_high_region_coords = (
             high_region_coords.detach().cpu() if high_region_coords is not None else None
         )
+        self.last_low_region_adj = low_region_adj.detach().cpu() if low_region_adj is not None else None
+        self.last_high_region_adj = high_region_adj.detach().cpu() if high_region_adj is not None else None
+        if self.deg_use_region_graph:
+            graph_alpha_cpu = torch.tensor(self.deg_region_graph_alpha, dtype=torch.float32)
+            self.last_low_region_graph_alpha = graph_alpha_cpu
+            self.last_high_region_graph_alpha = graph_alpha_cpu.clone()
+        else:
+            self.last_low_region_graph_alpha = None
+            self.last_high_region_graph_alpha = None
         self.last_slide_id = self._detach_slide_id(slide_id)
         self.last_final_logits = final_logits.detach().cpu()
 
