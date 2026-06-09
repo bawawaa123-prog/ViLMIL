@@ -873,3 +873,53 @@
 
 ### Next suggested step
 - Use `RCE-v4-CSG-a01-rq16` as the Stage24 main configuration for the next DEG-MIL step and keep `prototype_number=16` as the default.
+
+## 2026-06-09 - Step25: DEG-MIL Skeleton With Region Coordinate Export
+
+### Goal
+- Add a new `DEG_MIL_BiomedCLIP` skeleton model that stays aligned with the current `RCE-v4-CSG-a01-rq16` logits path.
+- Export region attention and attention-weighted region coordinates without changing the original RCE model behavior.
+
+### Files changed
+- `models/model_DEG_MIL_BiomedCLIP.py`: added the new DEG skeleton model.
+- `main.py`: added `DEG_MIL_BiomedCLIP` to `--model_type` choices.
+- `utils/core_utils.py`: added model initialization support for `DEG_MIL_BiomedCLIP`.
+- `scripts/experiments/run_stage25_deg_skeleton_smoke.sh`: added a DEG skeleton smoke launcher.
+- `docs/CODEX_HANDOFF.md`: appended this Step25 record.
+
+### Behavior / tensor flow
+- `DEG_MIL_BiomedCLIP` inherits from `RCE_MIL_BiomedCLIP` and keeps the same main logits path, concept prior path, visual residual path, logit calibration path, and cross-scale graph path.
+- Step25 does not add graph reasoning, region graph message passing, or concept graph message passing.
+- The only new Step25 behavior is:
+  - keep low/high normalized region attention weights
+  - compute low/high attention-weighted region coordinates from input patch coords
+  - export these debug attributes:
+    - `last_low_region_attn`
+    - `last_high_region_attn`
+    - `last_low_region_coords`
+    - `last_high_region_coords`
+    - `last_slide_id`
+- Existing RCE-style debug exports remain available in the DEG skeleton.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`: passed
+- `python -m py_compile ViLa-MIL-main/main.py`: passed
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage25_deg_skeleton_smoke.sh`: passed
+- `bash ViLa-MIL-main/scripts/experiments/run_stage25_deg_skeleton_smoke.sh`: passed
+
+### Commands not run
+- No formal 5-fold training run
+- No feature extraction
+
+### Results / observations
+- `main.py` now accepts `--model_type DEG_MIL_BiomedCLIP`.
+- `utils/core_utils.py` now routes `DEG_MIL_BiomedCLIP` through the same config fields currently used by `RCE_MIL_BiomedCLIP`.
+- The original `models/model_RCE_MIL_BiomedCLIP.py` file was not modified.
+- Smoke run status:
+  - executed successfully
+  - results directory: `results_stage25/deg_skeleton_smoke_s1`
+  - smoke metrics are only a short-path sanity check and should not be treated as model-quality evidence
+
+### Next suggested step
+- Step26: add Spatial Region Graph on top of the DEG skeleton.
