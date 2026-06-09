@@ -733,3 +733,85 @@
   - `VARIANT=csg_a005 bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
   - `VARIANT=csg_a01 bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
   - `VARIANT=all bash scripts/experiments/run_stage22_rce_v4_csg_5fold.sh`
+
+## 2026-06-09 - Step23: RCE-v4-CSG Region Query Number Sensitivity 5-Fold Script
+
+### Goal
+- Add a formal 5-fold experiment launcher to compare region query number sensitivity for the current RCE-v4-CSG main candidate.
+
+### Files changed
+- `scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`: added a configurable 5-fold launcher for region query number sensitivity.
+- `docs/CODEX_HANDOFF.md`: appended this Step23 record.
+
+### Behavior / script config
+- Experiment purpose:
+  - region query number sensitivity under the current RCE-v4-CSG setup
+- Default environment-variable overrides:
+  - `PYTHON_BIN`
+  - `DATA_ROOT_DIR`
+  - `RESULTS_DIR`
+  - `SEED`
+  - `MAX_EPOCHS`
+- Additional path/runtime overrides retained:
+  - `VARIANT`
+  - `SPLIT_DIR`
+  - `TEXT_PROMPT_PATH`
+  - `CONCEPT12_PATH`
+  - `HF_HUB_OFFLINE_FLAG`
+  - `TRANSFORMERS_OFFLINE_FLAG`
+- Fixed model/config switches:
+  - `--model_type RCE_MIL_BiomedCLIP`
+  - `--scale_mode dual`
+  - `--data_folder_s features_biomedclip_5x`
+  - `--data_folder_l features_biomedclip_20x`
+  - `--use_concept_prompt_pool`
+  - `--concept_prompt_path dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json` via `CONCEPT12_PATH`
+  - `--rce_use_logit_calibration`
+  - `--rce_use_concept_prior`
+  - `--rce_use_visual_residual`
+  - `--rce_visual_residual_init 0.05`
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_init 0.1`
+  - `--rce_cross_scale_graph_norm sqrt`
+- Why fix `CSG init=0.1`:
+  - Step22 established `csg_a01` as the current RCE-v4-CSG main candidate, so Step23 only sweeps region query count on that branch.
+- Fixed 5-fold run shape:
+  - `--k 5`
+  - `--k_start 0`
+  - `--k_end 4`
+  - `RESULTS_DIR=results_stage23`
+  - `MAX_EPOCHS=20`
+  - `SEED=1`
+- Supported `VARIANT` values:
+  - `rq8`
+  - `rq16`
+  - `rq32`
+  - `all`
+- Prototype settings:
+  - `rq8`: `--prototype_number 8`
+  - `rq16`: `--prototype_number 16`
+  - `rq32`: `--prototype_number 32`
+- Exp code bases and resulting default output directories:
+  - `rq8`: exp code `rce_v4_csg_a01_rq8_5fold_e20`, output directory `rce_v4_csg_a01_rq8_5fold_e20_s1`
+  - `rq16`: exp code `rce_v4_csg_a01_rq16_5fold_e20`, output directory `rce_v4_csg_a01_rq16_5fold_e20_s1`
+  - `rq32`: exp code `rce_v4_csg_a01_rq32_5fold_e20`, output directory `rce_v4_csg_a01_rq32_5fold_e20_s1`
+
+### Checks run
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`: passed
+
+### Commands not run
+- No 5-fold training run
+- No pilot run
+- No feature extraction
+
+### Results / observations
+- The new script keeps the full Stage22 RCE-v4-CSG config fixed and only changes `--prototype_number` across three variants.
+- The script preserves the inclusive `k_end` correction from Step22 and therefore uses folds `0..4` instead of attempting a nonexistent sixth split.
+- This step did not modify `main.py`, `utils/core_utils.py`, or any model file.
+
+### Next suggested step
+- User runs one of:
+  - `VARIANT=rq8 bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
+  - `VARIANT=rq16 bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
+  - `VARIANT=rq32 bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
+  - `VARIANT=all bash scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh`
