@@ -987,3 +987,81 @@
 
 ### Next suggested step
 - If the Step26 smoke passes, either run a Step27 5-fold pilot for DEG region graph or extend the model with cross-scale region graph reasoning.
+
+## 2026-06-09 - Step27: DEG Spatial Region Graph 5-Fold Ablation Script
+
+### Goal
+- Add a formal 5-fold launcher to evaluate whether the DEG Spatial Region Graph is useful and how sensitive it is to the kNN neighbor count.
+
+### Files changed
+- `scripts/experiments/run_stage27_deg_region_graph_5fold.sh`: added a configurable 5-fold DEG region-graph ablation launcher.
+- `docs/CODEX_HANDOFF.md`: appended this Step27 record.
+
+### Behavior / script config
+- Experiment purpose:
+  - formally evaluate whether Spatial Region Graph helps over the DEG skeleton path
+  - compare different kNN neighborhood sizes under the current DEG main configuration
+- Fixed base configuration:
+  - `--model_type DEG_MIL_BiomedCLIP`
+  - `--scale_mode dual`
+  - `--data_folder_s features_biomedclip_5x`
+  - `--data_folder_l features_biomedclip_20x`
+  - `--use_concept_prompt_pool`
+  - `--concept_prompt_path dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json` via `CONCEPT12_PATH`
+  - `--prototype_number 16`
+  - `--rce_use_logit_calibration`
+  - `--rce_use_concept_prior`
+  - `--rce_use_visual_residual`
+  - `--rce_visual_residual_init 0.05`
+  - `--rce_use_cross_scale_graph`
+  - `--rce_cross_scale_graph_init 0.1`
+  - `--rce_cross_scale_graph_norm sqrt`
+  - `--deg_region_graph_alpha 0.1` for graph-enabled variants
+- Why keep `prototype_number=16` and `rce_cross_scale_graph_init=0.1` fixed:
+  - Step24 recommended `prototype_number=16` as the DEG default.
+  - Step22 recommended `csg_a01` (`rce_cross_scale_graph_init=0.1`) as the preferred CSG branch.
+- Fixed 5-fold run shape:
+  - `--k 5`
+  - `--k_start 0`
+  - `--k_end 4`
+  - `RESULTS_DIR=results_stage27`
+  - `MAX_EPOCHS=20`
+  - `SEED=1`
+- Supported `VARIANT` values:
+  - `skeleton`: no `--deg_use_region_graph`
+  - `rg_k2`: `--deg_use_region_graph --deg_region_graph_k 2 --deg_region_graph_alpha 0.1`
+  - `rg_k4`: `--deg_use_region_graph --deg_region_graph_k 4 --deg_region_graph_alpha 0.1`
+  - `rg_k8`: `--deg_use_region_graph --deg_region_graph_k 8 --deg_region_graph_alpha 0.1`
+  - `all`: runs all four variants in sequence
+- Exp code bases and resulting default output directories:
+  - `skeleton`: exp code `deg_skeleton_5fold_e20`, output directory `deg_skeleton_5fold_e20_s1`
+  - `rg_k2`: exp code `deg_region_graph_k2_a01_5fold_e20`, output directory `deg_region_graph_k2_a01_5fold_e20_s1`
+  - `rg_k4`: exp code `deg_region_graph_k4_a01_5fold_e20`, output directory `deg_region_graph_k4_a01_5fold_e20_s1`
+  - `rg_k8`: exp code `deg_region_graph_k8_a01_5fold_e20`, output directory `deg_region_graph_k8_a01_5fold_e20_s1`
+
+### Checks run
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage27_deg_region_graph_5fold.sh`: passed
+
+### Commands not run
+- No formal 5-fold training run
+- No feature extraction
+
+### Results / observations
+- The script prints:
+  - current `VARIANT`
+  - `PROTOTYPE_NUMBER`
+  - `CSG_INIT`
+  - `REGION_GRAPH_K`
+  - `REGION_GRAPH_ALPHA`
+  - `RESULTS_DIR`
+  - `EXP_CODE`
+  - full command line before execution
+- This step only added the Stage27 launcher and documentation; it did not modify any model file, dataset file, `main.py`, or `utils/core_utils.py`.
+
+### Next suggested step
+- User runs one of:
+  - `VARIANT=skeleton bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
+  - `VARIANT=rg_k2 bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
+  - `VARIANT=rg_k4 bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
+  - `VARIANT=rg_k8 bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
+  - `VARIANT=all bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
