@@ -219,6 +219,9 @@ def train(datasets, cur, args):
         config.deg_use_region_graph = bool(getattr(args, 'deg_use_region_graph', False))
         config.deg_region_graph_k = int(getattr(args, 'deg_region_graph_k', 4))
         config.deg_region_graph_alpha = float(getattr(args, 'deg_region_graph_alpha', 0.1))
+        config.deg_use_concept_graph = bool(getattr(args, 'deg_use_concept_graph', False))
+        config.deg_concept_graph_topk = int(getattr(args, 'deg_concept_graph_topk', 4))
+        config.deg_concept_graph_alpha = float(getattr(args, 'deg_concept_graph_alpha', 0.05))
         config.scale_mode = str(getattr(args, 'scale_mode', 'dual'))
         config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
 

@@ -13,15 +13,27 @@ Step26 adds an optional same-scale Spatial Region Graph:
 The Spatial Region Graph operates on aggregated region tokens rather than raw patch
 graphs. Region coordinates are attention-weighted patch-coordinate centroids derived
 from the learned region attention maps.
+
+Step29 adds an optional same-scale Concept Prompt Graph:
+- low concept graph
+- high concept graph
+
+The Concept Prompt Graph is built independently inside each class and scale over the
+existing concept prompt pool. It updates prompt features before region-concept
+evidence aggregation and keeps the existing RCE cross-scale graph path unchanged.
 """
 
 from __future__ import absolute_import, division, print_function
+
+import logging
 
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
 from .model_RCE_MIL_BiomedCLIP import RCE_MIL_BiomedCLIP
+
+logger = logging.getLogger(__name__)
 
 
 class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
@@ -35,6 +47,9 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.deg_use_region_graph = bool(getattr(config, "deg_use_region_graph", False))
         self.deg_region_graph_k = int(getattr(config, "deg_region_graph_k", 4))
         self.deg_region_graph_alpha = float(getattr(config, "deg_region_graph_alpha", 0.1))
+        self.deg_use_concept_graph = bool(getattr(config, "deg_use_concept_graph", False))
+        self.deg_concept_graph_topk = int(getattr(config, "deg_concept_graph_topk", 4))
+        self.deg_concept_graph_alpha = float(getattr(config, "deg_concept_graph_alpha", 0.05))
 
         if self.deg_use_region_graph:
             self.low_region_graph_proj = nn.Linear(self.input_size, self.input_size)
@@ -47,6 +62,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             self.low_region_graph_norm = None
             self.high_region_graph_norm = None
 
+        if self.deg_use_concept_graph:
+            self.low_concept_graph_proj = nn.Linear(self.input_size, self.input_size)
+            self.high_concept_graph_proj = nn.Linear(self.input_size, self.input_size)
+            self.low_concept_graph_norm = nn.LayerNorm(self.input_size)
+            self.high_concept_graph_norm = nn.LayerNorm(self.input_size)
+        else:
+            self.low_concept_graph_proj = None
+            self.high_concept_graph_proj = None
+            self.low_concept_graph_norm = None
+            self.high_concept_graph_norm = None
+
         self.last_low_region_attn = None
         self.last_high_region_attn = None
         self.last_low_region_coords = None
@@ -57,6 +83,14 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_high_region_graph_alpha = None
         self.last_low_region_features_before_graph = None
         self.last_high_region_features_before_graph = None
+        self.last_low_concept_adj = None
+        self.last_high_concept_adj = None
+        self.last_low_prompt_features_before_graph = None
+        self.last_high_prompt_features_before_graph = None
+        self.last_low_prompt_features_after_graph = None
+        self.last_high_prompt_features_after_graph = None
+        self.last_low_concept_graph_alpha = None
+        self.last_high_concept_graph_alpha = None
         self.last_slide_id = None
 
     def _prepare_patch_features_for_attention(self, patch_features):
@@ -185,6 +219,60 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         updated_region_features = graph_norm(updated_region_features)
         return updated_region_features, adjacency
 
+    def _build_concept_knn_adj(self, prompt_features, topk):
+        if prompt_features is None or prompt_features.dim() != 3:
+            return None
+        if prompt_features.size(-1) != self.input_size:
+            return None
+        if not torch.isfinite(prompt_features).all():
+            return None
+
+        _, num_prompts, _ = prompt_features.shape
+        if num_prompts <= 1:
+            return None
+
+        k = min(max(int(topk), 0), num_prompts - 1)
+        if k <= 0:
+            return None
+
+        normalized_prompts = F.normalize(prompt_features.float(), dim=-1)
+        similarity = torch.bmm(normalized_prompts, normalized_prompts.transpose(1, 2))
+        diag_mask = torch.eye(num_prompts, device=similarity.device, dtype=torch.bool).unsqueeze(0)
+        similarity = similarity.masked_fill(diag_mask, float("-inf"))
+        neighbor_indices = torch.topk(similarity, k=k, dim=-1, largest=True).indices
+
+        adjacency = torch.zeros_like(similarity)
+        adjacency.scatter_(-1, neighbor_indices, 1.0)
+        adjacency = adjacency / adjacency.sum(dim=-1, keepdim=True).clamp_min(1.0)
+        return adjacency
+
+    def _apply_concept_graph(self, prompt_features, graph_proj, graph_norm, scale_name):
+        if not self.deg_use_concept_graph or graph_proj is None or graph_norm is None:
+            return prompt_features, None
+        if prompt_features is None or prompt_features.dim() != 3:
+            logger.warning(
+                "deg_use_concept_graph=True but %s prompt features are invalid; skipping concept graph.",
+                scale_name,
+            )
+            return prompt_features, None
+        if prompt_features.size(-1) != self.input_size:
+            logger.warning(
+                "deg_use_concept_graph=True but %s prompt feature dim=%s (expected %s); skipping concept graph.",
+                scale_name,
+                prompt_features.size(-1),
+                self.input_size,
+            )
+            return prompt_features, None
+
+        adjacency = self._build_concept_knn_adj(prompt_features, self.deg_concept_graph_topk)
+        if adjacency is None:
+            return prompt_features, None
+
+        concept_context = torch.bmm(adjacency.to(prompt_features.dtype), prompt_features)
+        updated_prompt_features = prompt_features + self.deg_concept_graph_alpha * graph_proj(concept_context)
+        updated_prompt_features = graph_norm(updated_prompt_features)
+        return updated_prompt_features, adjacency
+
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         low_patches = x_s.float()
         high_patches = x_l.float()
@@ -224,17 +312,39 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             low_region_adj = None
             high_region_adj = None
 
+        low_prompt_features = self.low_prompt_features.to(x_s.device)
+        high_prompt_features = self.high_prompt_features.to(x_s.device)
+        low_prompt_features_before_graph = low_prompt_features
+        high_prompt_features_before_graph = high_prompt_features
+
+        if self.deg_use_concept_graph:
+            low_prompt_features, low_concept_adj = self._apply_concept_graph(
+                low_prompt_features,
+                self.low_concept_graph_proj,
+                self.low_concept_graph_norm,
+                scale_name="low",
+            )
+            high_prompt_features, high_concept_adj = self._apply_concept_graph(
+                high_prompt_features,
+                self.high_concept_graph_proj,
+                self.high_concept_graph_norm,
+                scale_name="high",
+            )
+        else:
+            low_concept_adj = None
+            high_concept_adj = None
+
         low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
         high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
 
         logits_low, low_prompt_weights, low_prompt_evidence, low_region_concept_sim = self._compute_scale_logits(
             low_region_features,
-            self.low_prompt_features.to(x_s.device),
+            low_prompt_features,
             concept_prior=low_concept_prior,
         )
         logits_high, high_prompt_weights, high_prompt_evidence, high_region_concept_sim = self._compute_scale_logits(
             high_region_features,
-            self.high_prompt_features.to(x_s.device),
+            high_prompt_features,
             concept_prior=high_concept_prior,
         )
 
@@ -309,6 +419,10 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_high_region_features = high_region_features.detach().cpu()
         self.last_low_region_features_before_graph = low_region_features_before_graph.detach().cpu()
         self.last_high_region_features_before_graph = high_region_features_before_graph.detach().cpu()
+        self.last_low_prompt_features_before_graph = low_prompt_features_before_graph.detach().cpu()
+        self.last_high_prompt_features_before_graph = high_prompt_features_before_graph.detach().cpu()
+        self.last_low_prompt_features_after_graph = low_prompt_features.detach().cpu()
+        self.last_high_prompt_features_after_graph = high_prompt_features.detach().cpu()
         self.last_low_region_attn = (
             low_attn_weights.detach().cpu() if low_attn_weights is not None else None
         )
@@ -323,6 +437,8 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         )
         self.last_low_region_adj = low_region_adj.detach().cpu() if low_region_adj is not None else None
         self.last_high_region_adj = high_region_adj.detach().cpu() if high_region_adj is not None else None
+        self.last_low_concept_adj = low_concept_adj.detach().cpu() if low_concept_adj is not None else None
+        self.last_high_concept_adj = high_concept_adj.detach().cpu() if high_concept_adj is not None else None
         if self.deg_use_region_graph:
             graph_alpha_cpu = torch.tensor(self.deg_region_graph_alpha, dtype=torch.float32)
             self.last_low_region_graph_alpha = graph_alpha_cpu
@@ -330,6 +446,13 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         else:
             self.last_low_region_graph_alpha = None
             self.last_high_region_graph_alpha = None
+        if self.deg_use_concept_graph:
+            graph_alpha_cpu = torch.tensor(self.deg_concept_graph_alpha, dtype=torch.float32)
+            self.last_low_concept_graph_alpha = graph_alpha_cpu
+            self.last_high_concept_graph_alpha = graph_alpha_cpu.clone()
+        else:
+            self.last_low_concept_graph_alpha = None
+            self.last_high_concept_graph_alpha = None
         self.last_slide_id = self._detach_slide_id(slide_id)
         self.last_final_logits = final_logits.detach().cpu()
 

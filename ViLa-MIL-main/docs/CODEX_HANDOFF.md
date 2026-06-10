@@ -1119,3 +1119,57 @@
 
 ### Next suggested step
 - Keep `RCE-v4-CSG-a01-rq16 / DEG skeleton` as the main line, and only revisit Region Graph after adding a more stable gated or zero-init design.
+
+## 2026-06-10 - Step29: DEG Concept Prompt Graph Smoke
+
+### Goal
+- Add an optional Concept Prompt Graph to `DEG_MIL_BiomedCLIP` for intra-class / intra-scale prompt-pool message passing only.
+- Expose Step29 Concept Graph args in `main.py` and pass them through `utils/core_utils.py`.
+- Add a smoke launcher that enables Concept Prompt Graph without enabling Spatial Region Graph.
+
+### Files changed
+- `models/model_DEG_MIL_BiomedCLIP.py`: added optional low/high Concept Prompt Graph modules, safe class-wise top-k adjacency construction, prompt-feature debug exports, and prompt-side graph application before region-concept evidence and existing cross-scale graph logic.
+- `main.py`: added `--deg_use_concept_graph`, `--deg_concept_graph_topk`, and `--deg_concept_graph_alpha`, and recorded them in the printed run settings.
+- `utils/core_utils.py`: passed the new DEG Concept Graph args into the `DEG_MIL_BiomedCLIP` config.
+- `scripts/experiments/run_stage29_deg_concept_graph_smoke.sh`: added the Step29 smoke launcher using the current DEG/RCE main config, `--testing`, fold0-only, and Concept Prompt Graph enabled with Spatial Region Graph left off.
+- `docs/CODEX_HANDOFF.md`: appended this Step29 record.
+
+### Behavior / tensor flow
+- The new prompt graph only operates on `low_prompt_features` and `high_prompt_features` with shape `[C, P, D]`.
+- Graph construction is intra-class and intra-scale only; it does not mix classes, does not replace the existing RCE cross-scale graph, does not add cross-scale concept graph replacement, and does not add a region-concept bipartite graph.
+- For each class and scale, prompt features are normalized, cosine similarity is used to choose top-k neighbors, self-loops are masked, and the row-normalized adjacency is used for a residual prompt update before `_compute_scale_logits()`.
+- When `deg_use_concept_graph=False`, the DEG path falls back to the Step28 / DEG skeleton prompt flow.
+- Added debug attributes:
+  - `last_low_concept_adj`
+  - `last_high_concept_adj`
+  - `last_low_prompt_features_before_graph`
+  - `last_high_prompt_features_before_graph`
+  - `last_low_prompt_features_after_graph`
+  - `last_high_prompt_features_after_graph`
+  - `last_low_concept_graph_alpha`
+  - `last_high_concept_graph_alpha`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`: passed
+- `python -m py_compile ViLa-MIL-main/main.py`: passed
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage29_deg_concept_graph_smoke.sh`: passed
+
+### Commands not run
+- No formal 5-fold training was run.
+- No feature extraction was run.
+- No dataset files were modified.
+
+### Results / observations
+- Smoke command run:
+  - `bash ViLa-MIL-main/scripts/experiments/run_stage29_deg_concept_graph_smoke.sh`
+- Smoke outcome:
+  - Completed successfully through train / val / test on fold0-only testing mode.
+- Smoke results directory:
+  - `results_stage29/deg_concept_graph_smoke_s1`
+- Final smoke test metrics:
+  - `AUC=0.5833`, `ACC=0.2105`, `F1=0.1739`, `Balanced ACC=0.5000`, `Sensitivity=1.0000`, `Specificity=0.0000`, `PR-AUC=0.3375`
+- The smoke run confirms that the new Concept Prompt Graph args, prompt update path, existing RCE cross-scale graph path, and DEG training/eval loop are all compatible in the Step29 configuration.
+
+### Next suggested step
+- If the Step29 smoke path is accepted, proceed to Step30: Concept Prompt Graph 5-fold ablation / sensitivity on top of the current DEG skeleton-style configuration.

@@ -94,6 +94,9 @@ parser.add_argument(
 parser.add_argument("--deg_use_region_graph", action="store_true", default=False)
 parser.add_argument("--deg_region_graph_k", type=int, default=4)
 parser.add_argument("--deg_region_graph_alpha", type=float, default=0.1)
+parser.add_argument("--deg_use_concept_graph", action="store_true", default=False)
+parser.add_argument("--deg_concept_graph_topk", type=int, default=4)
+parser.add_argument("--deg_concept_graph_alpha", type=float, default=0.05)
 parser.add_argument(
     "--scale_mode",
     type=str,
@@ -282,6 +285,9 @@ settings = {
     "deg_use_region_graph": args.deg_use_region_graph,
     "deg_region_graph_k": args.deg_region_graph_k,
     "deg_region_graph_alpha": args.deg_region_graph_alpha,
+    "deg_use_concept_graph": args.deg_use_concept_graph,
+    "deg_concept_graph_topk": args.deg_concept_graph_topk,
+    "deg_concept_graph_alpha": args.deg_concept_graph_alpha,
     "scale_mode": args.scale_mode,
     "scale_fusion_mode": args.scale_fusion_mode,
     "scale_gate_hidden_dim": args.scale_gate_hidden_dim,
