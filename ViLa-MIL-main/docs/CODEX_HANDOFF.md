@@ -1247,3 +1247,61 @@
 
 ### Next suggested step
 - After the user runs the Stage30 launcher, compare the 5-fold summaries against the Step28 / DEG skeleton baseline to decide whether Concept Prompt Graph should remain on the main branch or only as an ablation line.
+
+## 2026-06-10 - Step31: Stage30 Concept Prompt Graph Summary And Cleanup
+
+### Goal
+- Add a read-only Stage31 analysis script for the Stage30 Concept Prompt Graph 5-fold ablations.
+- Clean up the Stage30 launcher formatting without changing experiment semantics.
+
+### Files changed
+- `scripts/analysis/build_stage31_deg_concept_graph_summary.py`: added a read-only Stage31 summary builder for Stage30 Concept Prompt Graph results.
+- `scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`: cleaned up variant-list handling and launcher formatting without changing parameters, variant names, output directories, or experiment semantics.
+- `docs/CODEX_HANDOFF.md`: appended this Step31 record.
+
+### Behavior / script config
+- The Stage31 analysis script reads:
+  - `results_stage30/deg_skeleton_cg_ablation_5fold_e20_s1/fold_summary.csv`
+  - `results_stage30/deg_concept_graph_k2_a005_5fold_e20_s1/fold_summary.csv`
+  - `results_stage30/deg_concept_graph_k4_a005_5fold_e20_s1/fold_summary.csv`
+  - `results_stage30/deg_concept_graph_k8_a005_5fold_e20_s1/fold_summary.csv`
+- Supported environment-variable overrides:
+  - `RESULTS_STAGE30_DIR`
+  - `OUTPUT_DIR`
+- Generated outputs under:
+  - `results_stage31/stage31_deg_concept_graph_summary/`
+- Generated files:
+  - `stage31_deg_concept_graph_summary.csv`
+  - `stage31_deg_concept_graph_metric_deltas.csv`
+  - `stage31_deg_concept_graph_report.md`
+- The analysis script is warning-tolerant: missing or malformed result CSVs produce graceful warnings and still allow partial report generation.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage31_deg_concept_graph_summary.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`: passed
+- `python ViLa-MIL-main/scripts/analysis/build_stage31_deg_concept_graph_summary.py`: passed
+
+### Commands not run
+- No training run
+- No 5-fold evaluation run
+- No feature extraction
+- No model computation logic change
+
+### Results / observations
+- Stage30 core conclusion:
+  - `skeleton` remains the best main configuration.
+  - `cg_k2_a005`, `cg_k4_a005`, and `cg_k8_a005` all remain below `skeleton`.
+  - `cg_k8_a005` is the closest Concept Prompt Graph variant on `test_auc` / `pr_auc`, but it still trails `skeleton` on `sensitivity`, `test_f1`, and `balanced_acc`.
+  - the current Concept Prompt Graph should not be treated as a mainline performance module.
+- Current main line remains:
+  - `RCE-v4-CSG-a01-rq16 / DEG skeleton`
+- Combined interpretation across Stage27/28 and Stage30:
+  - both Spatial Region Graph and Concept Prompt Graph suggest that directly stacking ordinary feature-level message passing can weaken already-learned evidence discrimination.
+- Recommended follow-up direction:
+  - do not prioritize more ordinary region/concept feature graphs right now.
+  - prioritize evidence export / interpretability first.
+  - if adding a new module, prefer evidence-level gated residual or evidence consistency loss over plain graph message passing.
+- This step did not run training and did not modify any model computation file.
+
+### Next suggested step
+- Keep `RCE-v4-CSG-a01-rq16 / DEG skeleton` as the main line and shift the next iteration toward evidence-level analysis or lighter evidence-side control modules instead of more feature-graph stacking.

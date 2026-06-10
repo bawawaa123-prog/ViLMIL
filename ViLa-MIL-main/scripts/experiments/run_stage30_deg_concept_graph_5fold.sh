@@ -22,6 +22,8 @@ K_END=4
 PROTOTYPE_NUMBER=16
 CSG_INIT=0.1
 CONCEPT_GRAPH_ALPHA=0.05
+SUPPORTED_VARIANTS=(skeleton cg_k2_a005 cg_k4_a005 cg_k8_a005 all)
+RUN_ALL_VARIANTS=(skeleton cg_k2_a005 cg_k4_a005 cg_k8_a005)
 
 cd "${ROOT_DIR}"
 
@@ -30,6 +32,10 @@ print_command() {
   printf "[Cmd] "
   printf "%q " "${cmd[@]}"
   printf "\n"
+}
+
+print_supported_variants_error() {
+  echo "[Error] Supported VARIANT values: ${SUPPORTED_VARIANTS[*]}" >&2
 }
 
 run_variant() {
@@ -79,7 +85,7 @@ run_variant() {
       ;;
     *)
       echo "[Error] Unsupported variant: ${variant}" >&2
-      echo "[Error] Supported VARIANT values: skeleton, cg_k2_a005, cg_k4_a005, cg_k8_a005, all" >&2
+      print_supported_variants_error
       exit 1
       ;;
   esac
@@ -153,14 +159,13 @@ case "${VARIANT}" in
     run_variant "${VARIANT}"
     ;;
   all)
-    run_variant skeleton
-    run_variant cg_k2_a005
-    run_variant cg_k4_a005
-    run_variant cg_k8_a005
+    for variant in "${RUN_ALL_VARIANTS[@]}"; do
+      run_variant "${variant}"
+    done
     ;;
   *)
     echo "[Error] Unsupported VARIANT: ${VARIANT}" >&2
-    echo "[Error] Supported VARIANT values: skeleton, cg_k2_a005, cg_k4_a005, cg_k8_a005, all" >&2
+    print_supported_variants_error
     exit 1
     ;;
 esac
