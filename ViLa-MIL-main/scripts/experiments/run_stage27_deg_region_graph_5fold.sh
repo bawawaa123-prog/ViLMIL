@@ -76,8 +76,7 @@ run_variant() {
       ;;
   esac
 
-  local -a cmd=(
-    "${PYTHON_BIN}" "${ROOT_DIR}/main.py"
+  local -a common_args=(
     --task task_adenocarcinoma
     --model_type DEG_MIL_BiomedCLIP
     --mode transformer
@@ -107,6 +106,11 @@ run_variant() {
     --rce_use_cross_scale_graph
     --rce_cross_scale_graph_init "${CSG_INIT}"
     --rce_cross_scale_graph_norm sqrt
+  )
+
+  local -a cmd=(
+    "${PYTHON_BIN}" "${ROOT_DIR}/main.py"
+    "${common_args[@]}"
     "${variant_args[@]}"
   )
 

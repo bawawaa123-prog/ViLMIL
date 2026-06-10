@@ -1065,3 +1065,57 @@
   - `VARIANT=rg_k4 bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
   - `VARIANT=rg_k8 bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
   - `VARIANT=all bash scripts/experiments/run_stage27_deg_region_graph_5fold.sh`
+
+## 2026-06-10 - Step28: Stage27 DEG Spatial Region Graph Summary And Cleanup
+
+### Goal
+- Add a read-only Stage28 analysis script for the Stage27 DEG Spatial Region Graph ablations.
+- Clean up the Stage27 launcher formatting without changing experiment semantics.
+- Update the DEG model docstring to document the Step25 and Step26 scope.
+
+### Files changed
+- `scripts/analysis/build_stage28_deg_region_graph_summary.py`: added a read-only Stage28 summary builder for Stage27 DEG region-graph results.
+- `scripts/experiments/run_stage27_deg_region_graph_5fold.sh`: reformatted the launcher into clearer common/variant argument blocks without changing parameters or behavior.
+- `models/model_DEG_MIL_BiomedCLIP.py`: updated the top-level docstring only.
+- `docs/CODEX_HANDOFF.md`: appended this Step28 record.
+
+### Behavior / script config
+- The Stage28 analysis script reads:
+  - `results_stage27/deg_skeleton_5fold_e20_s1/fold_summary.csv`
+  - `results_stage27/deg_region_graph_k2_a01_5fold_e20_s1/fold_summary.csv`
+  - `results_stage27/deg_region_graph_k4_a01_5fold_e20_s1/fold_summary.csv`
+  - `results_stage27/deg_region_graph_k8_a01_5fold_e20_s1/fold_summary.csv`
+- Supported environment-variable overrides:
+  - `RESULTS_STAGE27_DIR`
+  - `OUTPUT_DIR`
+- Generated outputs under:
+  - `results_stage28/stage28_deg_region_graph_summary/`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage28_deg_region_graph_summary.py`: passed
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage27_deg_region_graph_5fold.sh`: passed
+- `python ViLa-MIL-main/scripts/analysis/build_stage28_deg_region_graph_summary.py`: passed
+
+### Commands not run
+- No training run
+- No 5-fold evaluation run
+- No feature extraction
+
+### Results / observations
+- Generated output files:
+  - `results_stage28/stage28_deg_region_graph_summary/stage28_deg_region_graph_summary.csv`
+  - `results_stage28/stage28_deg_region_graph_summary/stage28_deg_region_graph_metric_deltas.csv`
+  - `results_stage28/stage28_deg_region_graph_summary/stage28_deg_region_graph_report.md`
+- Stage27 core conclusion:
+  - `skeleton` remains the strongest main configuration.
+  - `rg_k2`, `rg_k4`, and `rg_k8` all remain below `skeleton`.
+  - `rg_k8` is the closest graph variant on mean `test_auc`, but still trails `skeleton` and is not consistently best on the other main metrics.
+  - the current Spatial Region Graph should not be treated as the main performance module.
+- Follow-up guidance:
+  - not recommended to directly build current cross-scale region graph on top of this Region Graph version.
+  - more promising follow-ups are a gated/zero-init Region Graph or a higher-priority Concept Prompt Graph line.
+- This step did not run training and did not modify model computation logic.
+
+### Next suggested step
+- Keep `RCE-v4-CSG-a01-rq16 / DEG skeleton` as the main line, and only revisit Region Graph after adding a more stable gated or zero-init design.

@@ -2,9 +2,17 @@
 """
 DEG-MIL skeleton built on top of the current RCE-MIL BiomedCLIP implementation.
 
-Step25 keeps the logits path aligned with RCE-v4-CSG-a01-rq16 and only adds:
+Step25 keeps the logits path aligned with RCE-v4-CSG-a01-rq16 and adds:
 - exported low/high region attention weights
 - estimated low/high region coordinates from attention-weighted patch coords
+
+Step26 adds an optional same-scale Spatial Region Graph:
+- low region graph
+- high region graph
+
+The Spatial Region Graph operates on aggregated region tokens rather than raw patch
+graphs. Region coordinates are attention-weighted patch-coordinate centroids derived
+from the learned region attention maps.
 """
 
 from __future__ import absolute_import, division, print_function
