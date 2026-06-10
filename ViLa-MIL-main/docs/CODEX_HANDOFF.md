@@ -1173,3 +1173,77 @@
 
 ### Next suggested step
 - If the Step29 smoke path is accepted, proceed to Step30: Concept Prompt Graph 5-fold ablation / sensitivity on top of the current DEG skeleton-style configuration.
+
+## 2026-06-10 - Step30: DEG Concept Prompt Graph 5-Fold Ablation Script
+
+### Goal
+- Add a Stage30 5-fold launcher to formally evaluate whether the Step29 Concept Prompt Graph improves over the current DEG skeleton / `RCE-v4-CSG-a01-rq16` style main line.
+- Keep the sweep focused on Concept Prompt Graph top-k sensitivity only, with `alpha=0.05` fixed.
+
+### Files changed
+- `scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`: added the Stage30 5-fold launcher with `skeleton`, `cg_k2_a005`, `cg_k4_a005`, `cg_k8_a005`, and `all` variants.
+- `docs/CODEX_HANDOFF.md`: appended this Step30 record.
+
+### Behavior / script config
+- Fixed main configuration across all variants:
+  - `model_type=DEG_MIL_BiomedCLIP`
+  - `scale_mode=dual`
+  - `data_folder_s=features_biomedclip_5x`
+  - `data_folder_l=features_biomedclip_20x`
+  - `use_concept_prompt_pool=True`
+  - `concept_prompt_path=dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json`
+  - `prototype_number=16`
+  - `rce_use_logit_calibration=True`
+  - `rce_use_concept_prior=True`
+  - `rce_use_visual_residual=True`
+  - `rce_visual_residual_init=0.05`
+  - `rce_use_cross_scale_graph=True`
+  - `rce_cross_scale_graph_init=0.1`
+  - `rce_cross_scale_graph_norm=sqrt`
+- `prototype_number=16` and `rce_cross_scale_graph_init=0.1` stay fixed because Step30 is intended to isolate the Concept Prompt Graph effect on top of the current main DEG/RCE setting rather than reopen unrelated hyperparameters.
+- `deg_use_region_graph` stays off for all Step30 variants because Stage28 already showed the current Spatial Region Graph is not the preferred main branch, and Step30 is meant to evaluate prompt-side graph reasoning only.
+- Concept Prompt Graph remains intra-class / intra-scale only. This script does not add cross-scale region graph, cross-scale concept-graph replacement, or region-concept bipartite graph settings.
+- Supported variants:
+  - `skeleton`: no Concept Prompt Graph flag; control run against the current DEG skeleton line.
+  - `cg_k2_a005`: `--deg_use_concept_graph --deg_concept_graph_topk 2 --deg_concept_graph_alpha 0.05`
+  - `cg_k4_a005`: `--deg_use_concept_graph --deg_concept_graph_topk 4 --deg_concept_graph_alpha 0.05`
+  - `cg_k8_a005`: `--deg_use_concept_graph --deg_concept_graph_topk 8 --deg_concept_graph_alpha 0.05`
+  - `all`: runs the four variants above sequentially.
+- Fold and epoch setup:
+  - `k=5`
+  - `k_start=0`
+  - `k_end=4`
+  - `max_epochs=20`
+  - `seed=1`
+- The script prints:
+  - `VARIANT`
+  - whether Concept Prompt Graph is enabled
+  - Concept Prompt Graph `topk`
+  - Concept Prompt Graph `alpha`
+  - `PROTOTYPE_NUMBER`
+  - `CSG_INIT`
+  - `RESULTS_DIR`
+  - `EXP_CODE`
+  - full command line before execution
+- To avoid duplicated seed suffixes in output paths, the script keeps `exp_code` as the base name and relies on `main.py` to append `_s${SEED}`.
+
+### Checks run
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`: passed
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage29_deg_concept_graph_smoke.sh`: passed
+
+### Commands not run
+- No formal 5-fold training run was executed in this step.
+- No smoke run was executed in this step.
+- No model computation logic was modified in this step.
+
+### Results / observations
+- Stage30 only adds the formal 5-fold launcher and documentation; it does not modify `models/model_DEG_MIL_BiomedCLIP.py`, `models/model_RCE_MIL_BiomedCLIP.py`, dataset files, or existing results.
+- Recommended user commands:
+  - `cd /xiangmu/ViLMIL/ViLa-MIL-main && VARIANT=skeleton bash scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`
+  - `cd /xiangmu/ViLMIL/ViLa-MIL-main && VARIANT=cg_k2_a005 bash scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`
+  - `cd /xiangmu/ViLMIL/ViLa-MIL-main && VARIANT=cg_k4_a005 bash scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`
+  - `cd /xiangmu/ViLMIL/ViLa-MIL-main && VARIANT=cg_k8_a005 bash scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`
+  - `cd /xiangmu/ViLMIL/ViLa-MIL-main && VARIANT=all bash scripts/experiments/run_stage30_deg_concept_graph_5fold.sh`
+
+### Next suggested step
+- After the user runs the Stage30 launcher, compare the 5-fold summaries against the Step28 / DEG skeleton baseline to decide whether Concept Prompt Graph should remain on the main branch or only as an ablation line.
