@@ -1305,3 +1305,89 @@
 
 ### Next suggested step
 - Keep `RCE-v4-CSG-a01-rq16 / DEG skeleton` as the main line and shift the next iteration toward evidence-level analysis or lighter evidence-side control modules instead of more feature-graph stacking.
+
+## 2026-06-13 - Step32: Evidence Export For Current Main Model
+
+### Goal
+- Add a read-only Step32 evidence export path for the current main configuration `RCE-v4-CSG-a01-rq16 / DEG skeleton`.
+- Export slide-level prediction summaries, prompt evidence, CSG pair evidence, and error-case subsets without changing any training or model computation logic.
+
+### Files changed
+- `scripts/analysis/export_stage32_rce_v4_csg_evidence.py`: added the Step32 evidence exporter for the current main model.
+- `scripts/analysis/run_stage32_export_evidence.sh`: added an optional launcher with environment-variable overrides for fold/split/results/checkpoint paths.
+- `docs/CODEX_HANDOFF.md`: appended this Step32 record.
+
+### Behavior / script config
+- Default input priority:
+  - `results_stage30/deg_skeleton_cg_ablation_5fold_e20_s1/`
+  - fallback: `results_stage22/rce_v4_csg_a01_5fold_e20_s1/`
+- Default model path:
+  - `DEG_MIL_BiomedCLIP`
+  - with `deg_use_region_graph=False`
+  - with `deg_use_concept_graph=False`
+- Forced mainline config equivalence:
+  - `scale_mode=dual`
+  - `prototype_number=16`
+  - `use_concept_prompt_pool=True`
+  - `rce_use_concept_prior=True`
+  - `rce_use_visual_residual=True`
+  - `rce_visual_residual_init=0.05`
+  - `rce_use_logit_calibration=True`
+  - `rce_use_cross_scale_graph=True`
+  - `rce_cross_scale_graph_init=0.1`
+  - `rce_cross_scale_graph_norm=sqrt`
+- Exported outputs under:
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/`
+- Generated files:
+  - `stage32_slide_evidence_summary.csv`
+  - `stage32_top_concepts_long.csv`
+  - `stage32_top_csg_pairs.csv`
+  - `stage32_error_cases.csv`
+  - `stage32_manifest.json`
+  - `stage32_evidence_export_report.md`
+- The exporter is warning-tolerant:
+  - missing checkpoint / split / optional debug attributes produce graceful warnings and a report instead of hard crashing.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/export_stage32_rce_v4_csg_evidence.py`: passed
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage32_export_evidence.sh`: passed
+- `/home/ljh/anaconda3/envs/vila_mil/bin/python ViLa-MIL-main/scripts/analysis/export_stage32_rce_v4_csg_evidence.py --fold 0 --split test`: passed
+
+### Commands not run
+- No training run
+- No 5-fold evaluation run
+- No feature extraction
+- No model computation file change
+
+### Results / observations
+- Step32 only adds read-only evidence export tooling and does not modify:
+  - `models/model_RCE_MIL_BiomedCLIP.py`
+  - `models/model_DEG_MIL_BiomedCLIP.py`
+  - `main.py`
+  - `utils/core_utils.py`
+  - dataset files
+  - Stage22/23/24/25/26/27/28/29/30/31 result directories
+- Verified fold0 test export outputs:
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_slide_evidence_summary.csv`
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_top_concepts_long.csv`
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_top_csg_pairs.csv`
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_error_cases.csv`
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_manifest.json`
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/stage32_evidence_export_report.md`
+- Verified fold0 test export metrics:
+  - `AUC=0.9757`
+  - `ACC=0.9072`
+  - `F1=0.8988`
+  - `Balanced ACC=0.9077`
+  - `PR-AUC=0.9548`
+- Verified fold0 test export counts:
+  - `194` slides exported
+  - `176` correct
+  - `18` error cases
+- The exporter is designed to support later evidence-side work:
+  - evidence failure / conflict analysis
+  - evidence-level gated residual
+  - evidence consistency / margin objectives
+
+### Next suggested step
+- Run the Step32 exporter on fold0 test first, inspect the top concepts / top CSG pairs / error cases, then move to Step33 evidence failure and conflict analysis.
