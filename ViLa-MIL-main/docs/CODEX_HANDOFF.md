@@ -1486,3 +1486,64 @@
 
 ### Next suggested step
 - Step34 should implement evidence-level gated residual fusion, starting with a scalar visual gate before trying slide-adaptive gating, and Step35 can follow with high-scale margin control or low-high consistency loss if the Step34 gate does not remove the dominant error patterns.
+
+## 2026-06-14 - Step34: Visual Evidence-Level Gate smoke
+
+### Files changed
+- `main.py`: added CLI args for the optional visual evidence gate.
+- `utils/core_utils.py`: passed the new gate args into `DEG_MIL_BiomedCLIP` config.
+- `models/model_DEG_MIL_BiomedCLIP.py`: added the scalar visual evidence gate and export buffers for gated visual residual diagnostics.
+- `scripts/experiments/run_stage34_visual_gate_smoke.sh`: added the Stage34 smoke launcher.
+- `docs/CODEX_HANDOFF.md`: appended this Step34 record.
+
+### Added args
+- `--rce_use_visual_evidence_gate`
+- `--rce_visual_gate_init`
+
+### Behavior
+- Step34 only changes `DEG_MIL_BiomedCLIP` visual residual fusion.
+- Legacy behavior is preserved when `--rce_use_visual_evidence_gate` is not set:
+  - `final_logits = final_logits + alpha * visual_logits`
+- Gated behavior when enabled:
+  - `visual_residual_contribution = alpha * visual_logits`
+  - `gate = sigmoid(rce_visual_evidence_gate)`
+  - `final_logits = final_logits + gate * visual_residual_contribution`
+- `rce_visual_gate_init` is clamped to `[1e-6, 1 - 1e-6]` before `torch.logit(...)`, so `0.00 / 0.01 / 0.05 / 1.0` stay numerically safe.
+- If `rce_use_visual_evidence_gate=True` but `rce_use_visual_residual=False`, the model logs a warning and the gate does not affect forward.
+- Added forward export buffers:
+  - `last_visual_evidence_gate`
+  - `last_visual_residual_contribution`
+  - `last_visual_gated_contribution`
+- Existing Step32/Step33 evidence fields remain intact.
+
+### Smoke variants
+- `gate0`: `--rce_use_visual_evidence_gate --rce_visual_gate_init 0.00`
+- `gate001`: `--rce_use_visual_evidence_gate --rce_visual_gate_init 0.01`
+- `gate005`: `--rce_use_visual_evidence_gate --rce_visual_gate_init 0.05`
+- `all`: runs `gate0`, `gate001`, and `gate005` in sequence
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/main.py`
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage34_visual_gate_smoke.sh`
+- `VARIANT=gate001 bash ViLa-MIL-main/scripts/experiments/run_stage34_visual_gate_smoke.sh`
+
+### Commands not run
+- No 5-fold evaluation run
+- No dataset file change
+
+### Smoke run result
+- Output directory:
+  - `results_stage34/stage34_visual_gate_smoke_gate001_s1`
+- Fold0 / 1 epoch / testing metrics:
+  - `AUC=0.5000`
+  - `ACC=0.2105`
+  - `F1=0.1739`
+  - `Balanced ACC=0.5000`
+  - `Sensitivity=1.0000`
+  - `Specificity=0.0000`
+- This smoke run confirms the Stage34 gate path executes end-to-end with the requested DEG skeleton configuration and does not replace formal 5-fold comparison.
+
+### Next suggested step
+- Step35: Visual Gate 5-fold，比较 skeleton、gate0、gate001、gate005、no_visual_residual，并观察 AUC/ACC/F1/Balanced ACC/Sensitivity 以及 visual_residual_override 是否减少。

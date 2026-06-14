@@ -44,12 +44,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         model_path="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
     ):
         super().__init__(config=config, num_classes=num_classes, model_path=model_path)
+        self.rce_use_visual_evidence_gate = bool(getattr(config, "rce_use_visual_evidence_gate", False))
+        self.rce_visual_gate_init = float(getattr(config, "rce_visual_gate_init", 1.0))
         self.deg_use_region_graph = bool(getattr(config, "deg_use_region_graph", False))
         self.deg_region_graph_k = int(getattr(config, "deg_region_graph_k", 4))
         self.deg_region_graph_alpha = float(getattr(config, "deg_region_graph_alpha", 0.1))
         self.deg_use_concept_graph = bool(getattr(config, "deg_use_concept_graph", False))
         self.deg_concept_graph_topk = int(getattr(config, "deg_concept_graph_topk", 4))
         self.deg_concept_graph_alpha = float(getattr(config, "deg_concept_graph_alpha", 0.05))
+        self.rce_visual_evidence_gate = nn.Parameter(
+            self._sigmoid_init_to_logit(self.rce_visual_gate_init)
+        )
 
         if self.deg_use_region_graph:
             self.low_region_graph_proj = nn.Linear(self.input_size, self.input_size)
@@ -92,6 +97,20 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_low_concept_graph_alpha = None
         self.last_high_concept_graph_alpha = None
         self.last_slide_id = None
+        self.last_visual_evidence_gate = None
+        self.last_visual_residual_contribution = None
+        self.last_visual_gated_contribution = None
+
+        if self.rce_use_visual_evidence_gate and not self.rce_use_visual_residual:
+            logger.warning(
+                "rce_use_visual_evidence_gate=True but rce_use_visual_residual=False; "
+                "visual evidence gate will be ignored."
+            )
+
+    @staticmethod
+    def _sigmoid_init_to_logit(init_value):
+        init = min(max(float(init_value), 1e-6), 1.0 - 1e-6)
+        return torch.logit(torch.tensor(init, dtype=torch.float32))
 
     def _prepare_patch_features_for_attention(self, patch_features):
         if patch_features.dim() == 2:
@@ -375,7 +394,14 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
 
         if self.rce_use_visual_residual:
             alpha = torch.sigmoid(self.rce_visual_residual_alpha)
-            final_logits = final_logits + alpha * visual_logits
+            visual_residual_contribution = alpha * visual_logits
+            if self.rce_use_visual_evidence_gate:
+                gate = torch.sigmoid(self.rce_visual_evidence_gate)
+                visual_gated_contribution = gate * visual_residual_contribution
+            else:
+                gate = torch.ones_like(alpha)
+                visual_gated_contribution = visual_residual_contribution
+            final_logits = final_logits + visual_gated_contribution
             self.last_visual_residual_alpha = alpha.detach().cpu()
             self.last_low_visual_logits = (
                 low_visual_logits.detach().cpu() if low_visual_logits is not None else None
@@ -384,11 +410,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
                 high_visual_logits.detach().cpu() if high_visual_logits is not None else None
             )
             self.last_visual_logits = visual_logits.detach().cpu()
+            self.last_visual_evidence_gate = gate.detach().cpu()
+            self.last_visual_residual_contribution = visual_residual_contribution.detach().cpu()
+            self.last_visual_gated_contribution = visual_gated_contribution.detach().cpu()
         else:
             self.last_visual_residual_alpha = None
             self.last_low_visual_logits = None
             self.last_high_visual_logits = None
             self.last_visual_logits = None
+            self.last_visual_evidence_gate = None
+            self.last_visual_residual_contribution = None
+            self.last_visual_gated_contribution = None
 
         if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
             cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
