@@ -84,6 +84,9 @@ parser.add_argument("--rce_use_visual_residual", action="store_true", default=Fa
 parser.add_argument("--rce_visual_residual_init", type=float, default=0.1)
 parser.add_argument("--rce_use_visual_evidence_gate", action="store_true", default=False)
 parser.add_argument("--rce_visual_gate_init", type=float, default=1.0)
+parser.add_argument("--rce_use_low_high_consistency_loss", action="store_true", default=False)
+parser.add_argument("--rce_lh_consistency_lambda", type=float, default=0.0)
+parser.add_argument("--rce_lh_consistency_margin", type=float, default=0.0)
 parser.add_argument("--rce_use_cross_scale_graph", action="store_true", default=False)
 parser.add_argument("--rce_cross_scale_graph_init", type=float, default=0.05)
 parser.add_argument(
@@ -283,6 +286,9 @@ settings = {
     "rce_visual_residual_init": args.rce_visual_residual_init,
     "rce_use_visual_evidence_gate": args.rce_use_visual_evidence_gate,
     "rce_visual_gate_init": args.rce_visual_gate_init,
+    "rce_use_low_high_consistency_loss": args.rce_use_low_high_consistency_loss,
+    "rce_lh_consistency_lambda": args.rce_lh_consistency_lambda,
+    "rce_lh_consistency_margin": args.rce_lh_consistency_margin,
     "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
     "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
     "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,

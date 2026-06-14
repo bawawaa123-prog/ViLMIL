@@ -21,6 +21,9 @@ Step29 adds an optional same-scale Concept Prompt Graph:
 The Concept Prompt Graph is built independently inside each class and scale over the
 existing concept prompt pool. It updates prompt features before region-concept
 evidence aggregation and keeps the existing RCE cross-scale graph path unchanged.
+
+Step36 adds an optional low-high evidence consistency auxiliary loss for the dual-scale
+DEG skeleton without changing the default logits path.
 """
 
 from __future__ import absolute_import, division, print_function
@@ -46,6 +49,11 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         super().__init__(config=config, num_classes=num_classes, model_path=model_path)
         self.rce_use_visual_evidence_gate = bool(getattr(config, "rce_use_visual_evidence_gate", False))
         self.rce_visual_gate_init = float(getattr(config, "rce_visual_gate_init", 1.0))
+        self.rce_use_low_high_consistency_loss = bool(
+            getattr(config, "rce_use_low_high_consistency_loss", False)
+        )
+        self.rce_lh_consistency_lambda = float(getattr(config, "rce_lh_consistency_lambda", 0.0))
+        self.rce_lh_consistency_margin = float(getattr(config, "rce_lh_consistency_margin", 0.0))
         self.deg_use_region_graph = bool(getattr(config, "deg_use_region_graph", False))
         self.deg_region_graph_k = int(getattr(config, "deg_region_graph_k", 4))
         self.deg_region_graph_alpha = float(getattr(config, "deg_region_graph_alpha", 0.1))
@@ -100,17 +108,40 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_visual_evidence_gate = None
         self.last_visual_residual_contribution = None
         self.last_visual_gated_contribution = None
+        self.last_low_scale_logits = None
+        self.last_high_scale_logits = None
+        self.last_low_true_wrong_margin = None
+        self.last_high_true_wrong_margin = None
+        self.last_lh_margin_gap = None
+        self.last_lh_consistency_loss = None
+        self.last_total_loss = None
 
         if self.rce_use_visual_evidence_gate and not self.rce_use_visual_residual:
             logger.warning(
                 "rce_use_visual_evidence_gate=True but rce_use_visual_residual=False; "
                 "visual evidence gate will be ignored."
             )
+        if self.rce_use_low_high_consistency_loss and self.scale_mode != "dual":
+            logger.warning(
+                "rce_use_low_high_consistency_loss=True but scale_mode=%s; "
+                "low-high consistency loss will be skipped.",
+                self.scale_mode,
+            )
 
     @staticmethod
     def _sigmoid_init_to_logit(init_value):
         init = min(max(float(init_value), 1e-6), 1.0 - 1e-6)
         return torch.logit(torch.tensor(init, dtype=torch.float32))
+
+    @staticmethod
+    def _true_vs_wrong_margin(logits, label):
+        true_logit = logits.gather(1, label.view(-1, 1)).squeeze(1)
+        wrong_logits = logits.masked_fill(
+            F.one_hot(label, num_classes=logits.size(1)).bool(),
+            float("-inf"),
+        )
+        max_wrong_logit = wrong_logits.max(dim=1).values
+        return true_logit - max_wrong_logit
 
     def _prepare_patch_features_for_attention(self, patch_features):
         if patch_features.dim() == 2:
@@ -366,6 +397,8 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             high_prompt_features,
             concept_prior=high_concept_prior,
         )
+        self.last_low_scale_logits = logits_low.detach().cpu()
+        self.last_high_scale_logits = logits_high.detach().cpu()
 
         low_visual_logits = None
         high_visual_logits = None
@@ -441,6 +474,22 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)
             final_logits = final_logits * scale + self.rce_class_bias
 
+        ce_loss = self.loss_ce(final_logits, label)
+        lh_consistency_loss = ce_loss.new_zeros(())
+        low_margin = None
+        high_margin = None
+        lh_margin_gap = None
+        loss = ce_loss
+        if self.scale_mode == "dual" and self.rce_use_low_high_consistency_loss:
+            low_margin = self._true_vs_wrong_margin(logits_low, label)
+            high_margin = self._true_vs_wrong_margin(logits_high, label)
+            margin = logits_low.new_tensor(self.rce_lh_consistency_margin)
+            low_loss = F.relu(margin - low_margin)
+            high_loss = F.relu(margin - high_margin)
+            lh_consistency_loss = (low_loss + high_loss).mean()
+            lh_margin_gap = torch.abs(low_margin - high_margin)
+            loss = ce_loss + self.rce_lh_consistency_lambda * lh_consistency_loss
+
         self.last_low_prompt_weights = low_prompt_weights.detach().cpu()
         self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
         self.last_low_prompt_evidence = low_prompt_evidence.detach().cpu()
@@ -487,8 +536,11 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             self.last_high_concept_graph_alpha = None
         self.last_slide_id = self._detach_slide_id(slide_id)
         self.last_final_logits = final_logits.detach().cpu()
-
-        loss = self.loss_ce(final_logits, label)
+        self.last_low_true_wrong_margin = low_margin.detach().cpu() if low_margin is not None else None
+        self.last_high_true_wrong_margin = high_margin.detach().cpu() if high_margin is not None else None
+        self.last_lh_margin_gap = lh_margin_gap.detach().cpu() if lh_margin_gap is not None else None
+        self.last_lh_consistency_loss = lh_consistency_loss.detach().cpu()
+        self.last_total_loss = loss.detach().cpu()
         Y_prob = F.softmax(final_logits, dim=1)
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]
         return Y_prob, Y_hat, loss

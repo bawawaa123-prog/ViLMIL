@@ -1640,3 +1640,101 @@
 
 ### Next suggested step
 - 如果 Step35 找到优于 skeleton 或 sensitivity/specificity 更均衡的 gate variant，则 Step36 对最佳 gate variant 做 Step32/33 风格的 evidence re-export 和 failure analysis，检查 visual_residual_override 是否下降。如果所有 gate variant 都不如 skeleton，则保留 visual gate 为 negative/diagnostic ablation，下一步转向 Low-High Evidence Consistency Loss。
+
+## 2026-06-14 - Step36: Low-High Evidence Consistency Loss smoke
+
+### Files changed
+- `main.py`: added Step36 CLI switches.
+- `utils/core_utils.py`: passed the Step36 switches into `DEG_MIL_BiomedCLIP` config.
+- `models/model_DEG_MIL_BiomedCLIP.py`: added the optional low-high consistency auxiliary loss and diagnostics export.
+- `scripts/experiments/run_stage36_lh_consistency_smoke.sh`: added the Stage36 smoke launcher.
+- `scripts/analysis/check_stage36_lh_consistency_integrity.py`: added the Stage36 integrity audit.
+- `docs/CODEX_HANDOFF.md`: appended this Step36 record.
+
+### Added args
+- `--rce_use_low_high_consistency_loss`
+- `--rce_lh_consistency_lambda`
+- `--rce_lh_consistency_margin`
+- Defaults:
+  - `rce_use_low_high_consistency_loss = False`
+  - `rce_lh_consistency_lambda = 0.0`
+  - `rce_lh_consistency_margin = 0.0`
+
+### Loss definition
+- Scope: `DEG_MIL_BiomedCLIP` only.
+- Active only when:
+  - `scale_mode == dual`
+  - `rce_use_low_high_consistency_loss == True`
+- Margin helper:
+  - true-class logit minus the max wrong-class logit, computed independently for `logits_low` and `logits_high`
+- Auxiliary loss:
+  - `low_loss = relu(margin - low_margin)`
+  - `high_loss = relu(margin - high_margin)`
+  - `lh_consistency_loss = mean(low_loss + high_loss)`
+- Final training loss:
+  - `loss = ce_loss + lambda * lh_consistency_loss`
+- Default-off behavior:
+  - `loss` remains the original CE loss path
+  - `final_logits` computation is unchanged
+  - no region graph / concept graph / visual gate behavior is modified
+
+### Exported diagnostics
+- `last_low_scale_logits`
+- `last_high_scale_logits`
+- `last_low_true_wrong_margin`
+- `last_high_true_wrong_margin`
+- `last_lh_margin_gap`
+- `last_lh_consistency_loss`
+- `last_total_loss`
+
+### Smoke variants
+- `lh_l001_m0`
+- `lh_l005_m0`
+- `lh_l001_m005`
+- `lh_l005_m005`
+- `all`
+
+### How to run
+- Integrity audit:
+  - `python ViLa-MIL-main/scripts/analysis/check_stage36_lh_consistency_integrity.py`
+- Single smoke variant:
+  - `cd ViLa-MIL-main`
+  - `VARIANT=lh_l001_m005 bash scripts/experiments/run_stage36_lh_consistency_smoke.sh`
+- Run all smoke variants:
+  - `cd ViLa-MIL-main`
+  - `VARIANT=all bash scripts/experiments/run_stage36_lh_consistency_smoke.sh`
+
+### Expected result directories
+- `results_stage36/stage36_lh_consistency_smoke_lh_l001_m0_s1`
+- `results_stage36/stage36_lh_consistency_smoke_lh_l005_m0_s1`
+- `results_stage36/stage36_lh_consistency_smoke_lh_l001_m005_s1`
+- `results_stage36/stage36_lh_consistency_smoke_lh_l005_m005_s1`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/main.py`
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/check_stage36_lh_consistency_integrity.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage36_lh_consistency_smoke.sh`
+- `python ViLa-MIL-main/scripts/analysis/check_stage36_lh_consistency_integrity.py`
+- `cd ViLa-MIL-main && bash scripts/experiments/run_stage36_lh_consistency_smoke.sh`
+
+### Commands not run
+- No `VARIANT=all` multi-variant smoke sweep
+- No 5-fold Step36 evaluation
+- No evidence re-export / failure analysis
+
+### Smoke run result
+- Output directory:
+  - `results_stage36/stage36_lh_consistency_smoke_lh_l001_m0_s1`
+- Fold0 / 1 epoch / testing metrics:
+  - `AUC=0.5833`
+  - `ACC=0.2105`
+  - `F1=0.1739`
+  - `Balanced ACC=0.5000`
+  - `Sensitivity=1.0000`
+  - `Specificity=0.0000`
+  - `PR-AUC=0.3375`
+
+### Next suggested step
+- 跑 `lh_l005_m0`、`lh_l001_m005`、`lh_l005_m005` 三个 smoke 变体，先看是否有比 `lh_l001_m0` 更稳定的 validation/test 方向；若 smoke 没有明显异常，再进入 5-fold 比较。
