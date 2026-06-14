@@ -1,0 +1,30 @@
+{
+  "best_test_auc_variant": "gate1",
+  "best_balanced_acc_variant": "gate1",
+  "best_sens_spec_balance_variant": "gate1",
+  "no_visual_residual_clearly_lower_than_skeleton": null,
+  "no_visual_residual_deltas": {
+    "test_auc_delta": null,
+    "test_f1_delta": null,
+    "balanced_acc_delta": null,
+    "sensitivity_delta": null,
+    "specificity_delta": null
+  },
+  "gate1_close_to_skeleton": null,
+  "gate1_requires_gate_check": null,
+  "gate1_deltas": {
+    "test_auc_delta": null,
+    "test_f1_delta": null,
+    "balanced_acc_delta": null,
+    "sensitivity_delta": null,
+    "specificity_delta": null
+  },
+  "specificity_collapse_variants": [],
+  "recommend_step36_evidence_reexport_and_failure_analysis": false,
+  "recommend_low_high_evidence_consistency_loss": false,
+  "notes": [
+    "Best test_auc variant: gate1 (0.970407).",
+    "Best balanced_acc variant: gate1 (0.787642).",
+    "Most balanced sensitivity/specificity variant: gate1 (gap=0.393466)."
+  ]
+}

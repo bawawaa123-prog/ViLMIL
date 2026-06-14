@@ -1547,3 +1547,96 @@
 
 ### Next suggested step
 - Step35: Visual Gate 5-fold，比较 skeleton、gate0、gate001、gate005、no_visual_residual，并观察 AUC/ACC/F1/Balanced ACC/Sensitivity 以及 visual_residual_override 是否减少。
+
+## 2026-06-14 - Step35: Visual Gate 5-fold + Integrity Audit + Summary
+
+### Files changed
+- `scripts/analysis/check_stage35_visual_gate_integrity.py`: added the Step35 visual-gate integrity audit.
+- `scripts/experiments/run_stage35_visual_gate_5fold.sh`: added the Stage35 5-fold launcher.
+- `scripts/analysis/build_stage35_visual_gate_summary.py`: added the Stage35 result summarizer and recommender.
+- `docs/CODEX_HANDOFF.md`: appended this Step35 record.
+
+### Integrity checks
+- Confirms `main.py` contains:
+  - `--rce_use_visual_evidence_gate`
+  - `--rce_visual_gate_init`
+- Confirms `utils/core_utils.py` passes both args into `DEG_MIL_BiomedCLIP`.
+- Confirms `models/model_DEG_MIL_BiomedCLIP.py` contains:
+  - `rce_use_visual_evidence_gate`
+  - `rce_visual_evidence_gate`
+  - `last_visual_evidence_gate`
+  - `last_visual_residual_contribution`
+  - `last_visual_gated_contribution`
+- Confirms the forward path keeps:
+  - `visual_residual_contribution = alpha * visual_logits`
+  - `gate = sigmoid(rce_visual_evidence_gate)`
+  - `visual_gated_contribution = gate * visual_residual_contribution`
+  - `final_logits += visual_gated_contribution`
+- Confirms the gate-off path stays equivalent to the original skeleton by falling back to ungated visual residual contribution.
+
+### Variants
+- `skeleton`
+- `no_visual_residual`
+- `gate0`
+- `gate001`
+- `gate005`
+- `gate05`
+- `gate1`
+- `all`
+
+### Expected result directories
+- `results_stage35/visual_gate_skeleton_5fold_e20_s1`
+- `results_stage35/visual_gate_no_visual_residual_5fold_e20_s1`
+- `results_stage35/visual_gate_gate0_5fold_e20_s1`
+- `results_stage35/visual_gate_gate001_5fold_e20_s1`
+- `results_stage35/visual_gate_gate005_5fold_e20_s1`
+- `results_stage35/visual_gate_gate05_5fold_e20_s1`
+- `results_stage35/visual_gate_gate1_5fold_e20_s1`
+
+### How to run
+- Integrity audit:
+  - `python ViLa-MIL-main/scripts/analysis/check_stage35_visual_gate_integrity.py`
+- Single variant 5-fold:
+  - `cd ViLa-MIL-main`
+  - `VARIANT=skeleton bash scripts/experiments/run_stage35_visual_gate_5fold.sh`
+- Short Step35 smoke:
+  - `cd ViLa-MIL-main`
+  - `MAX_EPOCHS=1 K_START=0 K_END=0 VARIANT=gate1 bash scripts/experiments/run_stage35_visual_gate_5fold.sh`
+- Summary after 5-fold results exist:
+  - `python ViLa-MIL-main/scripts/analysis/build_stage35_visual_gate_summary.py`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/main.py`
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/check_stage35_visual_gate_integrity.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage35_visual_gate_summary.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage35_visual_gate_5fold.sh`
+- `python ViLa-MIL-main/scripts/analysis/check_stage35_visual_gate_integrity.py`
+- `cd ViLa-MIL-main && MAX_EPOCHS=1 K_START=0 K_END=0 VARIANT=gate1 bash scripts/experiments/run_stage35_visual_gate_5fold.sh`
+- `cd ViLa-MIL-main && MAX_EPOCHS_FILTER=1 SEED_FILTER=1 python scripts/analysis/build_stage35_visual_gate_summary.py`
+
+### Commands not run
+- Formal `VARIANT=all` 5-fold
+- Any full 5-fold gate sweep
+
+### Smoke run result
+- Output directory:
+  - `results_stage35/visual_gate_gate1_5fold_e1_s1`
+- Fold0 / 1 epoch metrics:
+  - `AUC=0.9704`
+  - `ACC=0.8505`
+  - `F1=0.8129`
+  - `Balanced ACC=0.7876`
+  - `Sensitivity=0.5909`
+  - `Specificity=0.9844`
+  - `PR-AUC=0.9427`
+- Partial summary check:
+  - `results_stage35/stage35_visual_gate_summary/stage35_visual_gate_summary.csv`
+  - `results_stage35/stage35_visual_gate_summary/stage35_visual_gate_metric_deltas.csv`
+  - `results_stage35/stage35_visual_gate_summary/stage35_visual_gate_rankings.csv`
+  - `results_stage35/stage35_visual_gate_summary/stage35_visual_gate_report.md`
+  - `results_stage35/stage35_visual_gate_summary/stage35_recommendations.json`
+
+### Next suggested step
+- 如果 Step35 找到优于 skeleton 或 sensitivity/specificity 更均衡的 gate variant，则 Step36 对最佳 gate variant 做 Step32/33 风格的 evidence re-export 和 failure analysis，检查 visual_residual_override 是否下降。如果所有 gate variant 都不如 skeleton，则保留 visual gate 为 negative/diagnostic ablation，下一步转向 Low-High Evidence Consistency Loss。

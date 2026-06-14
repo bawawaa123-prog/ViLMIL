@@ -1,0 +1,7 @@
+comparison,variant,reference_variant,current_status,reference_status,test_auc_delta,test_acc_delta,test_f1_delta,balanced_acc_delta,sensitivity_delta,specificity_delta,pr_auc_delta,sens_spec_gap_delta,sens_spec_min_delta
+no_visual_residual - skeleton,no_visual_residual,skeleton,missing,missing,,,,,,,,,
+gate0 - skeleton,gate0,skeleton,missing,missing,,,,,,,,,
+gate001 - skeleton,gate001,skeleton,missing,missing,,,,,,,,,
+gate005 - skeleton,gate005,skeleton,missing,missing,,,,,,,,,
+gate05 - skeleton,gate05,skeleton,missing,missing,,,,,,,,,
+gate1 - skeleton,gate1,skeleton,ok,missing,,,,,,,,,

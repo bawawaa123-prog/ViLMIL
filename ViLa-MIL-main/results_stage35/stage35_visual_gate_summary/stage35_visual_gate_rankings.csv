@@ -1,0 +1,8 @@
+variant,method,status,test_auc_mean,test_acc_mean,test_f1_mean,balanced_acc_mean,sensitivity_mean,specificity_mean,pr_auc_mean,sens_spec_gap,sens_spec_min,test_auc_rank,test_acc_rank,test_f1_rank,balanced_acc_rank,sensitivity_rank,specificity_rank,pr_auc_rank,sens_spec_gap_rank,sens_spec_min_rank,overall_rank_score,overall_rank
+gate1,Visual gate init 1.00,ok,0.970407196969697,0.8505154639175257,0.8128845578208668,0.7876420454545454,0.5909090909090909,0.984375,0.9426680791225204,0.39346590909090906,0.5909090909090909,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,7.0,1.0
+gate0,Visual gate init 0.00,missing,,,,,,,,,,,,,,,,,,,,
+gate001,Visual gate init 0.01,missing,,,,,,,,,,,,,,,,,,,,
+gate005,Visual gate init 0.05,missing,,,,,,,,,,,,,,,,,,,,
+gate05,Visual gate init 0.50,missing,,,,,,,,,,,,,,,,,,,,
+no_visual_residual,No visual residual,missing,,,,,,,,,,,,,,,,,,,,
+skeleton,DEG skeleton,missing,,,,,,,,,,,,,,,,,,,,

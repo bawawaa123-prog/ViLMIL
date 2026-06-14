@@ -1,0 +1,8 @@
+variant,method,visual_residual,visual_gate,gate_init,matched_epochs,matched_seed,source_path,status,num_rows,test_auc_mean,test_auc_std,test_auc_formatted,test_acc_mean,test_acc_std,test_acc_formatted,test_f1_mean,test_f1_std,test_f1_formatted,balanced_acc_mean,balanced_acc_std,balanced_acc_formatted,sensitivity_mean,sensitivity_std,sensitivity_formatted,specificity_mean,specificity_std,specificity_formatted,pr_auc_mean,pr_auc_std,pr_auc_formatted,sens_spec_gap,sens_spec_min
+skeleton,DEG skeleton,on,off,off,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+no_visual_residual,No visual residual,off,off,off,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+gate0,Visual gate init 0.00,on,on,0.00,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+gate001,Visual gate init 0.01,on,on,0.01,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+gate005,Visual gate init 0.05,on,on,0.05,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+gate05,Visual gate init 0.50,on,on,0.50,,,,missing,0,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,,NA,,
+gate1,Visual gate init 1.00,on,on,1.00,1.0,1.0,results_stage35/visual_gate_gate1_5fold_e1_s1/fold_summary.csv,ok,1,0.970407196969697,0.0,0.970407 ± 0.000000,0.8505154639175257,0.0,0.850515 ± 0.000000,0.8128845578208668,0.0,0.812885 ± 0.000000,0.7876420454545454,0.0,0.787642 ± 0.000000,0.5909090909090909,0.0,0.590909 ± 0.000000,0.984375,0.0,0.984375 ± 0.000000,0.9426680791225204,0.0,0.942668 ± 0.000000,0.39346590909090906,0.5909090909090909
