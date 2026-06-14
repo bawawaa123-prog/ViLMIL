@@ -1738,3 +1738,73 @@
 
 ### Next suggested step
 - 跑 `lh_l005_m0`、`lh_l001_m005`、`lh_l005_m005` 三个 smoke 变体，先看是否有比 `lh_l001_m0` 更稳定的 validation/test 方向；若 smoke 没有明显异常，再进入 5-fold 比较。
+
+## 2026-06-14 - Step37: Low-High Consistency 5-fold + Summary
+
+### Files changed
+- `scripts/experiments/run_stage37_lh_consistency_5fold.sh`: added the formal Stage37 5-fold launcher.
+- `scripts/analysis/build_stage37_lh_consistency_summary.py`: added the Stage37 summary/ranking/recommendation builder.
+- `scripts/analysis/check_stage37_lh_consistency_5fold_integrity.py`: added the Stage37 run-script and summary-script integrity audit.
+- `docs/CODEX_HANDOFF.md`: appended this Step37 record.
+
+### Variants
+- `skeleton`: DEG skeleton control; does not pass `--rce_use_low_high_consistency_loss`.
+- `lh_l0001_m0`: lambda `0.001`, margin `0.00`.
+- `lh_l0005_m0`: lambda `0.005`, margin `0.00`.
+- `lh_l001_m0`: lambda `0.01`, margin `0.00`.
+- `lh_l0005_m002`: lambda `0.005`, margin `0.02`.
+- `lh_l001_m002`: lambda `0.01`, margin `0.02`.
+- `lh_l001_m005`: lambda `0.01`, margin `0.05`.
+- `lh_l005_m0`: lambda `0.05`, margin `0.00`.
+- `lh_l005_m005`: lambda `0.05`, margin `0.05`.
+- `all`: runs all variants in sequence; not run automatically.
+
+### Expected result directories
+- `results_stage37/lh_consistency_skeleton_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l0001_m0_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l0005_m0_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l001_m0_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l0005_m002_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l001_m002_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l001_m005_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l005_m0_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l005_m005_5fold_e20_s1`
+
+### Summary outputs
+- `results_stage37/stage37_lh_consistency_summary/stage37_lh_consistency_summary.csv`
+- `results_stage37/stage37_lh_consistency_summary/stage37_lh_consistency_metric_deltas.csv`
+- `results_stage37/stage37_lh_consistency_summary/stage37_lh_consistency_rankings.csv`
+- `results_stage37/stage37_lh_consistency_summary/stage37_lh_consistency_report.md`
+- `results_stage37/stage37_lh_consistency_summary/stage37_recommendations.json`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage37_lh_consistency_summary.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/check_stage37_lh_consistency_5fold_integrity.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage37_lh_consistency_5fold.sh`
+- `python ViLa-MIL-main/scripts/analysis/check_stage37_lh_consistency_5fold_integrity.py`
+- `cd ViLa-MIL-main && MAX_EPOCHS=1 K_START=0 K_END=0 VARIANT=lh_l0005_m0 bash scripts/experiments/run_stage37_lh_consistency_5fold.sh`
+- `cd ViLa-MIL-main && MAX_EPOCHS_FILTER=1 SEED_FILTER=1 python scripts/analysis/build_stage37_lh_consistency_summary.py`
+
+### Commands not run
+- Formal `VARIANT=all` 5-fold.
+- Any full e20 5-fold Stage37 sweep.
+- Step38 evidence re-export / failure analysis.
+- Any model-body logic change.
+
+### Short smoke result
+- Output directory:
+  - `results_stage37/lh_consistency_lh_l0005_m0_5fold_e1_s1`
+- Fold0 / 1 epoch metrics:
+  - `AUC=0.9705`
+  - `ACC=0.8505`
+  - `F1=0.8129`
+  - `Balanced ACC=0.7876`
+  - `Sensitivity=0.5909`
+  - `Specificity=0.9844`
+  - `PR-AUC=0.9429`
+- Partial summary check:
+  - Only `lh_l0005_m0` e1 was loaded; `skeleton` and other variants were expectedly marked `missing`.
+  - This validates summary generation but is not a formal Step37 conclusion.
+
+### Next suggested step
+- 如果 Step37 找到优于 skeleton 或 sensitivity/specificity 更均衡的 consistency variant，则 Step38 对最佳 variant 做 Step32/33 风格的 evidence re-export + failure analysis，重点检查 low_high_conflict 是否下降。如果所有 consistency variants 都不如 skeleton，则保留 Step36/37 为 negative diagnostic ablation，下一步转向 Prompt Reliability / Refined Prompt Pool。

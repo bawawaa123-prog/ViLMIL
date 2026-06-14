@@ -1,0 +1,19 @@
+{
+  "best_test_auc_variant": "skeleton",
+  "best_balanced_acc_variant": "lh_l001_m0",
+  "best_sens_spec_balance_variant": "skeleton",
+  "variants_clearly_better_than_skeleton": [],
+  "any_variant_clearly_better_than_skeleton": false,
+  "light_lambda_stability": {
+    "light_variants_loaded": 3,
+    "medium_strong_variants_loaded": 3,
+    "light_more_stable": false,
+    "light_score": 1.8113527799887463,
+    "medium_strong_score": 1.8197426896328424
+  },
+  "specificity_collapse_variants": [],
+  "sensitivity_collapse_variants": [],
+  "all_variants_below_skeleton": false,
+  "recommend_step38_evidence_reexport_failure_analysis": false,
+  "recommend_negative_ablation": false
+}
