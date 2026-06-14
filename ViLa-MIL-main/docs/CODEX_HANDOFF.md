@@ -1391,3 +1391,98 @@
 
 ### Next suggested step
 - Run the Step32 exporter on fold0 test first, inspect the top concepts / top CSG pairs / error cases, then move to Step33 evidence failure and conflict analysis.
+
+## 2026-06-13 - Step33: Evidence Failure / Conflict Analysis
+
+### Goal
+- Add a read-only Step33 analysis path for diagnosing error cases, evidence-source conflicts, visual residual dominance, and CSG weakness from Step32 evidence exports.
+
+### Files changed
+- `scripts/analysis/build_stage33_evidence_failure_analysis.py`: added the Step33 evidence failure/conflict analyzer.
+- `scripts/analysis/run_stage33_evidence_failure_analysis.sh`: added an optional launcher with environment-variable overrides for input/output paths and thresholds.
+- `docs/CODEX_HANDOFF.md`: appended this Step33 record.
+
+### Behavior / script config
+- Default input directory:
+  - `results_stage32/stage32_rce_v4_csg_evidence_export/`
+- Default output directory:
+  - `results_stage33/stage33_evidence_failure_analysis/`
+- Read Step32 files:
+  - `stage32_slide_evidence_summary.csv`
+  - `stage32_top_concepts_long.csv`
+  - `stage32_top_csg_pairs.csv`
+  - `stage32_error_cases.csv`
+  - `stage32_manifest.json`
+  - optional `stage32_evidence_export_report.md`
+- Generated files:
+  - `stage33_slide_failure_labels.csv`
+  - `stage33_error_failure_cases.csv`
+  - `stage33_evidence_source_stats.csv`
+  - `stage33_low_high_conflict_summary.csv`
+  - `stage33_visual_residual_diagnostics.csv`
+  - `stage33_csg_diagnostics.csv`
+  - `stage33_prompt_confusion_summary.csv`
+  - `stage33_prompt_reliability_preview.csv`
+  - `stage33_failure_type_counts.csv`
+  - `stage33_recommendations.json`
+  - `stage33_evidence_failure_report.md`
+- Important diagnosis convention:
+  - visual and CSG dominance are computed from effective residual contribution:
+    - `visual_alpha * visual_margin`
+    - `csg_alpha * csg_margin`
+  - this avoids overstating raw residual logits when comparing them against low/high concept margins.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage33_evidence_failure_analysis.py`: passed
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage33_evidence_failure_analysis.sh`: passed
+- `/home/ljh/anaconda3/envs/vila_mil/bin/python ViLa-MIL-main/scripts/analysis/build_stage33_evidence_failure_analysis.py`: passed
+
+### Commands not run
+- No training run
+- No 5-fold evaluation run
+- No feature extraction
+- No model computation file change
+
+### Results / observations
+- Step33 only adds read-only analysis tooling and does not modify:
+  - `models/model_RCE_MIL_BiomedCLIP.py`
+  - `models/model_DEG_MIL_BiomedCLIP.py`
+  - `main.py`
+  - `utils/core_utils.py`
+  - dataset files
+  - Stage22/23/24/25/26/27/28/29/30/31/32 result files
+- Verified Step33 input set:
+  - reads the exported Step32 fold0/test evidence from `results_stage32/stage32_rce_v4_csg_evidence_export/`
+- Verified Step33 output set:
+  - all requested Stage33 CSV / JSON / Markdown files were generated under `results_stage33/stage33_evidence_failure_analysis/`
+- Core fold0/test counts:
+  - `194` slides
+  - `176` correct
+  - `18` error
+- Primary failure counts:
+  - `visual_residual_override`: `13 / 18`
+  - `low_high_conflict`: `4 / 18`
+  - `concept_wrong_class_drift`: `1 / 18`
+- Visual residual diagnosis:
+  - after alpha-scaling, mean visual source ratio is still high at about `0.8286`
+  - visual supports the wrong class on `100%` of error slides
+  - Step34 should compare a scalar visual gate first, with init around `0.00` or `0.01`
+- CSG diagnosis:
+  - effective mean abs CSG margin is about `0.000037`
+  - raw mean abs CSG margin is about `0.000377`
+  - mean top pair score is about `0.000009`
+  - current conclusion is that CSG is present but far weaker than low/high concept evidence and the visual residual on exported fold0/test evidence
+  - pair-export mismatch does not appear to be the main issue on this fold
+- Low/high conflict diagnosis:
+  - conflict on `10 / 18` error slides
+  - both low and high support the wrong class on `7 / 18` error slides
+  - high-scale wrong-class dominance appears often enough to justify later high-branch margin control
+- Prompt confusion preview:
+  - `salt-and-pepper chromatin` is the clearest high-risk error concept on the exported fold0/test evidence
+- Step34 recommendation:
+  - start with evidence-level scalar gating for the visual residual
+  - compare `gate_init=0.00` vs `0.01` vs current-equivalent `0.05`
+  - keep CSG gate only as a secondary ablation while visual gating is tested
+
+### Next suggested step
+- Step34 should implement evidence-level gated residual fusion, starting with a scalar visual gate before trying slide-adaptive gating, and Step35 can follow with high-scale margin control or low-high consistency loss if the Step34 gate does not remove the dominant error patterns.
