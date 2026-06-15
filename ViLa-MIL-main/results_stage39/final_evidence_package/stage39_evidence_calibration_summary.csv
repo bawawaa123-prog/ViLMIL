@@ -1,0 +1,2 @@
+comparison,fixed_cases,regressed_cases,persistent_errors,low_high_conflict_skeleton,low_high_conflict_lh,low_high_conflict_delta,both_support_wrong_skeleton,both_support_wrong_lh,both_support_wrong_delta,visual_residual_override_skeleton,visual_residual_override_lh,visual_residual_override_delta,auc_delta,pr_auc_delta,acc_delta,f1_delta,balanced_acc_delta,sensitivity_delta,specificity_delta
+lh_l001_m0 vs skeleton,6,2,12,10,8,-2,7,5,-2,13,14,1,-0.00390625,-0.0033756863861579,0.0206185567010309,0.0208433382740448,0.0119554924242424,-0.0151515151515151,0.0390625

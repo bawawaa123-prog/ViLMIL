@@ -1,0 +1,73 @@
+{
+  "recommended_default_model": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "secondary_tradeoff_variant": "RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",
+  "reason": "skeleton has stronger AUC/PR-AUC and remains the most robust default. lh_l001_m0 reduces fold0/test errors and low-high conflict but increases visual_residual_override and slightly reduces AUC/PR-AUC.",
+  "default_model_is_final_main_model": true,
+  "lh_l001_m0_is_final_main_model": false,
+  "lh_l001_m0_role": "secondary evidence-calibration trade-off variant",
+  "ablation_conclusions": [
+    {
+      "topic": "CSG strength",
+      "paper_ready_conclusion": "CSG a01 > CSG a005"
+    },
+    {
+      "topic": "Region query count",
+      "paper_ready_conclusion": "rq16 > rq8"
+    },
+    {
+      "topic": "Region query count",
+      "paper_ready_conclusion": "rq16 > rq32"
+    },
+    {
+      "topic": "Spatial Region Graph",
+      "paper_ready_conclusion": "Spatial Region Graph did not outperform skeleton"
+    },
+    {
+      "topic": "Concept Prompt Graph",
+      "paper_ready_conclusion": "Concept Prompt Graph did not outperform skeleton"
+    },
+    {
+      "topic": "Scalar Visual Gate",
+      "paper_ready_conclusion": "Scalar Visual Gate did not outperform skeleton"
+    },
+    {
+      "topic": "Low-High Consistency",
+      "paper_ready_conclusion": "Low-High Consistency is a trade-off variant"
+    }
+  ],
+  "evidence_calibration": {
+    "comparison": "lh_l001_m0 vs skeleton",
+    "fixed_cases": 6,
+    "regressed_cases": 2,
+    "persistent_errors": 12,
+    "low_high_conflict_skeleton": 10,
+    "low_high_conflict_lh": 8,
+    "low_high_conflict_delta": -2,
+    "both_support_wrong_skeleton": 7,
+    "both_support_wrong_lh": 5,
+    "both_support_wrong_delta": -2,
+    "visual_residual_override_skeleton": 13,
+    "visual_residual_override_lh": 14,
+    "visual_residual_override_delta": 1,
+    "auc_delta": -0.00390625,
+    "pr_auc_delta": -0.0033756863861579,
+    "acc_delta": 0.0206185567010309,
+    "f1_delta": 0.0208433382740448,
+    "balanced_acc_delta": 0.0119554924242424,
+    "sensitivity_delta": -0.0151515151515151,
+    "specificity_delta": 0.0390625
+  },
+  "innovation_points": [
+    "Region-Concept Evidence Learning",
+    "Cross-Scale Concept Evidence Reasoning",
+    "Evidence Source Decomposition and Failure Diagnosis",
+    "Evidence Calibration Analysis"
+  ],
+  "warnings": [
+    "Stage35 summary CSV exists but does not contain the expected full e20 skeleton/gate rows; using raw fold_summary.csv files instead.",
+    "results_stage38/evidence_export_skeleton_fold0_test/stage32_top_concepts_per_slide.csv is missing; Step39 falls back to stage32_slide_evidence_summary.csv top concept fields.",
+    "results_stage38/evidence_export_lh_l001_m0_fold0_test/stage32_top_concepts_per_slide.csv is missing; Step39 falls back to stage32_slide_evidence_summary.csv top concept fields.",
+    "results_stage38/evidence_export_skeleton_fold0_test/stage32_top_csg_pairs_per_slide.csv is missing; Step39 falls back to stage32_slide_evidence_summary.csv top CSG pair fields.",
+    "results_stage38/evidence_export_lh_l001_m0_fold0_test/stage32_top_csg_pairs_per_slide.csv is missing; Step39 falls back to stage32_slide_evidence_summary.csv top CSG pair fields."
+  ]
+}

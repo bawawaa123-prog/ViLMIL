@@ -1,0 +1,9 @@
+group,metric,skeleton_value,lh_value,delta,interpretation
+overlap,fixed_cases,,,6.0,lh_l001_m0 fixes 6 skeleton errors
+overlap,regressed_cases,,,2.0,lh_l001_m0 introduces 2 new errors
+overlap,persistent_errors,,,12.0,12 errors remain wrong for both variants
+failure_type,low_high_conflict,10.0,8.0,-2.0,conflict decreases under low-high consistency
+failure_type,both_support_wrong,7.0,5.0,-2.0,joint wrong support decreases under low-high consistency
+failure_type,visual_residual_override,13.0,14.0,1.0,visual override slightly increases under low-high consistency
+metric_delta,test_auc,,,-0.00390625,AUC drops slightly
+metric_delta,pr_auc,,,-0.0033756863861579,PR-AUC drops slightly

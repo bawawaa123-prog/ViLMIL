@@ -1878,3 +1878,57 @@
 
 ### Next suggested step
 - 如果 Step38 证明 lh_l001_m0 明确减少 low_high_conflict 且 fixed cases 多于 regressed cases，则 Step39 做 final model evidence visualization / paper-ready figures。否则 Step39 转向 Prompt Reliability / Refined Prompt Pool，或直接固定 skeleton 为最终主模型并整理论文主图。
+
+## 2026-06-15 - Step39: Final Evidence Package and Paper-Ready Summary
+
+### Files changed
+- `scripts/analysis/build_stage39_final_evidence_package.py`: added the Step39 final aggregation/report builder.
+- `scripts/analysis/run_stage39_final_evidence_package.sh`: added the Step39 runner with configurable input/output paths.
+- `docs/CODEX_HANDOFF.md`: appended this Step39 record.
+
+### Input result dirs
+- `results_stage24/stage24_rce_v4_csg_summary/`
+- `results_stage28/stage28_deg_region_graph_summary/`
+- `results_stage31/stage31_deg_concept_graph_summary/`
+- `results_stage35/`
+- `results_stage37/stage37_lh_consistency_summary/`
+- `results_stage38/stage38_lh_consistency_failure_comparison/`
+- `results_stage38/evidence_export_skeleton_fold0_test/`
+- `results_stage38/evidence_export_lh_l001_m0_fold0_test/`
+
+### Generated outputs
+- `results_stage39/final_evidence_package/stage39_final_model_recommendation.json`
+- `results_stage39/final_evidence_package/stage39_final_performance_summary.csv`
+- `results_stage39/final_evidence_package/stage39_ablation_summary.csv`
+- `results_stage39/final_evidence_package/stage39_negative_ablation_summary.csv`
+- `results_stage39/final_evidence_package/stage39_evidence_calibration_summary.csv`
+- `results_stage39/final_evidence_package/stage39_failure_comparison_summary.csv`
+- `results_stage39/final_evidence_package/stage39_fixed_regressed_persistent_cases.csv`
+- `results_stage39/final_evidence_package/stage39_top_concepts_for_examples.csv`
+- `results_stage39/final_evidence_package/stage39_top_csg_pairs_for_examples.csv`
+- `results_stage39/final_evidence_package/stage39_final_innovation_points.md`
+- `results_stage39/final_evidence_package/stage39_paper_ready_summary.md`
+- `results_stage39/final_evidence_package/stage39_final_next_steps.md`
+
+### Final recommendation
+- Recommended default model:
+  - `RCE-v4-CSG-a01-rq16 / DEG skeleton`
+- Secondary trade-off variant:
+  - `RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0`
+- Reason:
+  - `skeleton` keeps the stronger AUC / PR-AUC and remains the most robust default.
+  - `lh_l001_m0` reduces fold0/test errors and low-high conflict, but increases `visual_residual_override` and slightly reduces AUC / PR-AUC.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage39_final_evidence_package.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage39_final_evidence_package.sh`
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage39_final_evidence_package.sh`
+
+### Commands not run
+- No training command.
+- No model-body logic modification.
+- No region graph / concept graph / visual evidence gate experiment rerun.
+- No new evidence export beyond existing Step38 inputs.
+
+### Next suggested step
+- Step40：根据 stage39_paper_ready_summary.md 生成最终论文主图/方法图说明、实验表格说明和答辩汇报材料。如果还要继续模型创新，可以转向 Prompt Reliability / Refined Prompt Pool，但不建议再盲目堆 graph 或 gate。
