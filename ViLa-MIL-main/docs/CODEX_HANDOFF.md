@@ -2179,3 +2179,154 @@
   - anchors 已能选满，`candidate_top_l=64` 当前够用；若后续扩大 bbox 后仍偏少，再增加到 `128`。
 - Step43 前建议先做 Step42b：
   - `bbox_expand / proposal_radius` child coverage sweep，目标是把 `median_used_child_count` 提升到 `>=4`，再进入 HCRC-Light。
+
+## 2026-06-15 - Step42b: CGSP Child Coverage Sweep
+
+### Step 名称
+- `CGSP Child Coverage Sweep`
+
+### 目标
+- 不训练模型、不修改模型前向逻辑，基于 Step42 的 CGSP anchor selection 做系统 sweep。
+- 重点比较：
+  - `bbox_containment`
+  - `center_radius`
+  - `bbox_then_nearest`
+- 判断 high child 覆盖不足是否能通过 `proposal_radius / bbox_expand / high_radius` 解决；如果不能，再考虑 nearest fallback 或 weak correspondence。
+
+### 新增文件
+- `scripts/analysis/build_stage42b_cgsp_child_coverage_sweep.py`
+- `scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+- `docs/CODEX_HANDOFF.md`
+
+### 输入
+- Step41 manifest:
+  - `results_stage41/low_high_coordinate_audit/stage41_manifest.json`
+- Step42 manifest:
+  - `results_stage42/cgsp_anchor_selection_audit/stage42_manifest.json`
+- Step42 anchors:
+  - `results_stage42/cgsp_anchor_selection_audit/cgsp_selected_anchors.csv`
+- low/high feature dirs:
+  - `/xiangmu/data/VILMIL/features_biomedclip_5x`
+  - `/xiangmu/data/VILMIL/features_biomedclip_20x`
+- prompt pool:
+  - `dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json`
+- checkpoint prompt buffers:
+  - `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt`
+
+### 输出
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_child_coverage_sweep_summary.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_anchor_level_child_stats_part_001.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_anchor_level_child_stats_part_002.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_anchor_stability_summary.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_strategy_comparison.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_example_anchor_child_pairs.csv`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_child_coverage_report.md`
+- `results_stage42b/cgsp_child_coverage_sweep/stage42b_manifest.json`
+
+### 如何运行
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+- smoke:
+  - `cd ViLa-MIL-main && MAX_SLIDES=3 OUTPUT_DIR=results_stage42b/cgsp_child_coverage_sweep_smoke bash scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+
+### 验证命令
+- `/home/ljh/anaconda3/envs/vila_mil/bin/python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage42b_cgsp_child_coverage_sweep.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+- `cd ViLa-MIL-main && MAX_SLIDES=3 OUTPUT_DIR=results_stage42b/cgsp_child_coverage_sweep_smoke bash scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage42b_cgsp_child_coverage_sweep.sh`
+
+### 是否实际运行
+- 是。
+- smoke run:
+  - `results_stage42b/cgsp_child_coverage_sweep_smoke/`
+  - `MAX_SLIDES=3`
+  - `processed slides = 3`
+  - `failed slides = 0`
+- formal run:
+  - `results_stage42b/cgsp_child_coverage_sweep/`
+  - 默认完整 sweep：
+    - `proposal_radius_values=512,1024,2048,4096`
+    - `nms_radius_values=512,1024`
+    - `bbox_expand_values=2,3,4,6,8,10`
+    - `high_radius_values=512,1024,2048,4096,8192`
+  - `processed slides = 194`
+  - `failed slides = 0`
+  - `warning count = 0`
+
+### 核心统计结论
+- Step42 的失败原因不是 anchors 不稳定：
+  - 所有 proposal/nms 组合都能稳定选满 `16` anchors。
+  - `full_anchor_slide_ratio = 1.0`。
+  - class 多样性保留：`unique_classes = 2`。
+  - concept 多样性保留：`unique_concepts = 23`。
+- Step42 的主要问题是 `bbox_expand<=3` 太小：
+  - `proposal_radius=512, bbox_expand=2/3/4/6` 时，`median_used_child_count` 仍为 `1.0`。
+  - 当 `bbox_expand=8/10` 时，child 覆盖明显改善。
+- 最佳纯 bbox containment：
+  - `proposal_radius=4096`
+  - `nms_radius=512`
+  - `bbox_expand=8`
+  - `empty_anchor_ratio=0.0023`
+  - `median_used_child_count=16.0`
+  - `mean_used_child_count=15.7784`
+  - `mean_fallback_ratio=0.0`
+- bbox_then_nearest 也可行，但不是首选：
+  - `proposal_radius=4096`
+  - `nms_radius=512`
+  - `bbox_expand=10`
+  - `empty_anchor_ratio=0.0`
+  - `median_used_child_count=16.0`
+  - `mean_fallback_ratio=0.0127`
+- center_radius 也可行，但空间约束更弱：
+  - `proposal_radius=4096`
+  - `nms_radius=512`
+  - `high_radius=4096`
+  - `empty_anchor_ratio=0.0`
+  - `median_used_child_count=16.0`
+
+### 推荐给 Step43 的参数
+- `child_selection_strategy=bbox_containment`
+- `proposal_radius=4096`
+- `nms_radius=512`
+- `bbox_expand=8`
+- `num_anchors=16`
+- `num_high_children=16`
+- `use_bbox_then_nearest_fallback=false`
+
+### 是否建议进入 Step43
+- 建议进入 Step43 `HCRC-Light Smoke`。
+- 理由：
+  - 纯 bbox containment 已满足阈值：
+    - `median_used_child_count >= 4`
+    - `empty_anchor_ratio <= 0.15`
+  - selected anchors 仍能稳定选满 16。
+  - anchor class/concept 多样性没有退化。
+  - 不需要 nearest fallback，因此 Step43 仍可以保持真实空间 containment 解释。
+
+### 风险与后续建议
+- `proposal_radius=4096` 相比 Step42 默认 `512` 会明显改变 proposal bbox 和部分 anchor 坐标：
+  - `rankwise_anchor_drift_median_vs_min_radius ≈ 35224.86`
+  - Step43 smoke 必须确认更大 spatial proposal 不会引入过宽的 weak evidence。
+- `bbox_expand=8` 是较大的 bbox 扩张：
+  - 虽然 child 覆盖达标，但可能混入更宽区域的 high patches。
+  - Step43 应保留 ablation：`bbox_expand=6/8/10` 或至少记录实际 child distance 分布。
+- 如果 Step43 smoke 不稳定：
+  - 优先退到 `center_radius=4096` 或 `bbox_then_nearest` 作为 HCRC-KNN / weak correspondence 版本。
+  - 若仍无收益，应暂停 HCRC 分支，转向 PRARC / Prompt Reliability 分支。
+
+### GitHub 文件大小处理
+- 原 `results_stage42b/cgsp_child_coverage_sweep/stage42b_anchor_level_child_stats.csv` 大小约 `132.20 MB`，超过 GitHub 单文件 `100 MB` 限制。
+- 已删除原单体 CSV，并按行顺序拆成两个 GitHub-safe part 文件：
+  - `stage42b_anchor_level_child_stats_part_001.csv`
+    - rows `0` 到 `273025`
+    - size ≈ `85.39 MB`
+  - `stage42b_anchor_level_child_stats_part_002.csv`
+    - rows `273026` 到 `422143`
+    - size ≈ `46.46 MB`
+- `stage42b_manifest.json` 已记录 `anchor_level_write_info`：
+  - `split=true`
+  - `row_count=422144`
+  - `parts=[part_001, part_002]`
+- 后续步骤如果需要 anchor-level child stats，应按 part 编号顺序 concat：
+  - `stage42b_anchor_level_child_stats_part_001.csv`
+  - `stage42b_anchor_level_child_stats_part_002.csv`
+- `scripts/analysis/build_stage42b_cgsp_child_coverage_sweep.py` 已更新为自动分片：以后若 `stage42b_anchor_level_child_stats.csv` 超过约 `95 MB`，会自动删除单体 CSV 并输出 part 文件，同时写入 manifest/report。

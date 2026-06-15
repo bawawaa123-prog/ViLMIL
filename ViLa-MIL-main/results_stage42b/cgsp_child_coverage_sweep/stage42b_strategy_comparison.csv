@@ -1,0 +1,4 @@
+strategy,best_proposal_radius,best_nms_radius,best_param_name,best_param_value,best_empty_anchor_ratio,best_median_used_child_count,best_mean_used_child_count,best_mean_fallback_ratio,meets_child_threshold,is_recommended
+bbox_containment,4096.0,512.0,bbox_expand,8.0,0.0022551546391752575,16.0,15.778350515463918,0.0,True,True
+bbox_then_nearest,4096.0,512.0,bbox_expand,10.0,0.0,16.0,16.0,0.012685244845360825,True,False
+center_radius,4096.0,512.0,high_radius,4096.0,0.0,16.0,15.82860824742268,0.0,True,False
