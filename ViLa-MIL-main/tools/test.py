@@ -8,10 +8,16 @@ Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查�
 '''
 import h5py
 
-path = "/xiangmu/data/VILMIL/patches_coords_5x/patches_256/25030630B.h5"
+path = "/xiangmu/data/VILMIL/patches_coords_5x/patches_256/2460239-B2.h5"
 
 with h5py.File(path, "r") as f:
     print(f.keys())
-    # print(f["features"].shape)
+    if "coords" not in f:
+        raise KeyError("coords dataset not found in this h5 file")
+
+    coords = f["coords"][:]
     print(f["coords"].shape)
-    print(f["coords"][:305])
+    print("前10条 coords:")
+    print(coords[:10])
+    print("后10条 coords:")
+    print(coords[-10:])

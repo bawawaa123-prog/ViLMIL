@@ -2058,3 +2058,124 @@
 - 但要保留一个明确风险：
   - 即使推荐组合通过，当前推荐组合仍有 `weighted empty match ratio = 0.1888`，说明不是所有 low patches 都有高倍 child patches。
   - Step42 应继续检查 anchor 选择覆盖率、empty-anchor 分布，以及是否需要对无 child 的 low patch 做跳过或单独标记。
+
+## 2026-06-15 - Step42: CGSP Anchor Selection Audit
+
+### Step 名称
+- `CGSP Anchor Selection Audit`
+
+### 目标
+- 不训练模型、不修改模型前向逻辑，只验证 Concept-Guided Spatial Proposal 是否能从 low patch 层面选出合理 spatial anchors。
+- 审计 selected anchors 是否能稳定匹配 high child patches，为 Step43 `HCRC-Light` 做准备。
+- 本步骤严格基于 Step41 推荐的真实原始 patch coords：
+  - `coord_mode=top_left`
+  - `scale_ratio=1.0`
+
+### 新增文件
+- `scripts/analysis/build_stage42_cgsp_anchor_selection_audit.py`
+- `scripts/analysis/run_stage42_cgsp_anchor_selection_audit.sh`
+- `docs/CODEX_HANDOFF.md`
+
+### 输入
+- low features:
+  - `/xiangmu/data/VILMIL/features_biomedclip_5x`
+- high features:
+  - `/xiangmu/data/VILMIL/features_biomedclip_20x`
+- slide CSV:
+  - `dataset_csv/all_data.csv`
+- split:
+  - `splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_0.csv`
+  - `split=test`
+- Step41 manifest:
+  - `results_stage41/low_high_coordinate_audit/stage41_manifest.json`
+- concept prompt pool:
+  - `dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json`
+- prompt feature source used for actual runs:
+  - `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt`
+  - source type: checkpoint buffers `low_prompt_features` / `high_prompt_features`
+
+### 输出
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_patch_scores.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_candidate_proposals.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_selected_anchors.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_anchor_child_match_stats.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_anchor_distribution_summary.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_example_anchor_child_pairs.csv`
+- `results_stage42/cgsp_anchor_selection_audit/cgsp_anchor_selection_report.md`
+- `results_stage42/cgsp_anchor_selection_audit/stage42_manifest.json`
+
+### 如何运行
+- 默认脚本保留 `CHECKPOINT_PATH=` 为空；若本地 BiomedCLIP cache 不稳定，建议显式传入已有 checkpoint：
+  - `cd ViLa-MIL-main && CHECKPOINT_PATH=results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt bash scripts/analysis/run_stage42_cgsp_anchor_selection_audit.sh`
+
+### 验证命令
+- `/home/ljh/anaconda3/envs/vila_mil/bin/python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage42_cgsp_anchor_selection_audit.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage42_cgsp_anchor_selection_audit.sh`
+- `cd ViLa-MIL-main && CHECKPOINT_PATH=results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt MAX_SLIDES=3 OUTPUT_DIR=results_stage42/cgsp_anchor_selection_audit_smoke bash scripts/analysis/run_stage42_cgsp_anchor_selection_audit.sh`
+- `cd ViLa-MIL-main && CHECKPOINT_PATH=results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt bash scripts/analysis/run_stage42_cgsp_anchor_selection_audit.sh`
+
+### 是否实际运行
+- 是。
+- smoke run:
+  - `results_stage42/cgsp_anchor_selection_audit_smoke/`
+  - `MAX_SLIDES=3`
+  - `processed slides = 3`
+  - `failed slides = 0`
+- formal run:
+  - `results_stage42/cgsp_anchor_selection_audit/`
+  - `fold=0`
+  - `split=test`
+  - `processed slides = 194`
+  - `failed slides = 0`
+  - `warning count = 0`
+
+### 核心统计结论
+- Prompt feature 来源：
+  - checkpoint buffer，未触发 BiomedCLIP 在线构建。
+- patch score 分布：
+  - `patch_score mean = 0.4128`
+  - `patch_score median = 0.4158`
+  - `class_margin median = 0.0260`
+- proposal 数量：
+  - 每张 slide candidate proposals median = `64`
+- selected anchors：
+  - 每张 slide 都选满 `16 / 16`
+  - `selected_anchor_count mean = 16.0`
+  - `selected_anchor_count median = 16.0`
+- anchor 空间分散性：
+  - `anchor_pair_distance_mean median = 45716.9484`
+  - `coverage_ratio_x median = 0.8670`
+  - `coverage_ratio_y median = 0.7862`
+  - 说明 anchors 并未高度集中在单个小区域。
+- anchor class / concept 多样性：
+  - `NonAdenocarcinoma anchors = 1592`
+  - `Adenocarcinoma anchors = 1512`
+  - `unique_anchor_concepts median = 6`
+- high child 覆盖：
+  - `bbox_expand=1.0`: `empty_anchor_ratio=0.2242`, `median_used_child_count=1.0`
+  - `bbox_expand=1.5`: `empty_anchor_ratio=0.2236`, `median_used_child_count=1.0`
+  - `bbox_expand=2.0`: `empty_anchor_ratio=0.2233`, `median_used_child_count=1.0`
+  - `bbox_expand=3.0`: `empty_anchor_ratio=0.2226`, `median_used_child_count=1.0`
+- 推荐 bbox_expand:
+  - `2.0`
+  - 注意：`3.0` 的 empty ratio 略低，但 child count 仍然没有实质改善；脚本选择 `2.0` 作为更保守的 HCRC-Light 候选。
+
+### 是否建议进入 Step43
+- 当前不建议直接进入 Step43 `HCRC-Light Smoke`。
+- 原因：
+  - anchor 选择稳定、分散、多样性够；
+  - 但 high child 覆盖不足，推荐 `bbox_expand=2.0` 时 `median_used_child_count=1.0`，远低于期望的 `>=4`。
+
+### 如果不建议进入 Step43，先调哪些参数
+- 优先增大或重定义 low anchor bbox：
+  - 当前 proposal bbox 基于低倍 patch 邻域，但 high child 仍然偏少，说明 patch 坐标网格/patch size 语义可能需要重新校准。
+- 调整 `proposal_radius`：
+  - 尝试 `1024 / 2048`，让 proposal bbox 覆盖更多 low-neighbor 组织区域。
+- 调整 `nms_radius`：
+  - 当前 anchors 已经分散，`nms_radius=512` 不构成主要瓶颈；可保持或略增。
+- 调整 `bbox_expand_values`：
+  - 增加 `4.0 / 6.0 / 8.0` 做专门 child 覆盖 sweep。
+- 调整 `candidate_top_l` 与 concept coverage：
+  - anchors 已能选满，`candidate_top_l=64` 当前够用；若后续扩大 bbox 后仍偏少，再增加到 `128`。
+- Step43 前建议先做 Step42b：
+  - `bbox_expand / proposal_radius` child coverage sweep，目标是把 `median_used_child_count` 提升到 `>=4`，再进入 HCRC-Light。
