@@ -1158,6 +1158,151 @@
 ### Commands not run
 - No formal 5-fold training was run.
 - No feature extraction was run.
+
+## 2026-06-15 - Step43: HCRC-Light Smoke
+
+### Goal
+- Add a default-off HCRC-Light branch inside `DEG_MIL_BiomedCLIP` only.
+- Keep the `RCE-v4-CSG-a01-rq16 / DEG skeleton` baseline unchanged when HCRC flags are off.
+- Run a fold0 / 1 epoch smoke with the Step42b recommended spatial settings and confirm training, checkpointing, and HCRC debug probing all work.
+
+### Files changed
+- `main.py`
+- `utils/core_utils.py`
+- `models/model_DEG_MIL_BiomedCLIP.py`
+- `scripts/analysis/check_stage43_hcrc_integrity.py`
+- `scripts/experiments/run_stage43_hcrc_light_smoke.sh`
+- `scripts/analysis/build_stage43_hcrc_smoke_summary.py`
+- `docs/CODEX_HANDOFF.md`
+
+### HCRC-Light structure
+- HCRC is implemented only in `DEG_MIL_BiomedCLIP`.
+- Inputs:
+  - low patch features: raw `x_s`
+  - low coords: raw `coord_s`
+  - high patch features: raw `x_l`
+  - high coords: raw `coords_l`
+- Anchor path:
+  - cosine similarity between low patches and low prompt pool
+  - patch score = concept relevance + margin-weighted class margin
+  - candidate merge = global top-L + concept coverage candidates
+  - local proposal = low-neighbor softmax weighted feature / coord / bbox
+  - spatial NMS = center-distance suppression
+- Child path:
+  - only `bbox_containment` is implemented for Step43
+  - expanded anchor bbox is matched against high patch centers
+  - top nearest `num_high_children` are kept, with zero padding + valid masks
+- Fusion path:
+  - low-anchor query attends over matched high children
+  - gated paired token fusion uses `[low_anchor, high_detail, low_anchor * high_detail]`
+  - paired tokens are scored by `_compute_scale_logits()`
+- Final dual-scale integration:
+  - `final_logits = logits_low + logits_high`
+  - plus visual residual if enabled
+  - plus `sigmoid(hcrc_alpha) * hcrc_logits`
+  - plus existing cross-scale graph if enabled
+  - logit calibration still runs after the HCRC addition
+
+### Default-off compatibility
+- New CLI / config flags are all optional and default to non-impacting values.
+- `rce_use_hcrc=False` keeps the previous DEG logits path unchanged.
+- `RCE_MIL_BiomedCLIP` behavior was not modified.
+- Dataset loading logic was not changed.
+
+### New HCRC args
+- `--rce_use_hcrc`
+- `--rce_hcrc_alpha_init`
+- `--rce_hcrc_num_anchors`
+- `--rce_hcrc_num_high_children`
+- `--rce_hcrc_proposal_radius`
+- `--rce_hcrc_nms_radius`
+- `--rce_hcrc_bbox_expand`
+- `--rce_hcrc_coord_mode`
+- `--rce_hcrc_scale_ratio`
+- `--rce_hcrc_child_strategy`
+- `--rce_hcrc_candidate_top_l`
+- `--rce_hcrc_top_g_concepts`
+- `--rce_hcrc_per_concept_top_m`
+- `--rce_hcrc_prompt_topk`
+- `--rce_hcrc_margin_weight`
+- `--rce_hcrc_prompt_scale`
+- `--rce_hcrc_min_child_count`
+- `--rce_hcrc_export_debug`
+
+### New HCRC debug exports
+- `last_hcrc_enabled`
+- `last_hcrc_logits`
+- `last_hcrc_alpha`
+- `last_hcrc_prompt_weights`
+- `last_hcrc_prompt_evidence`
+- `last_hcrc_region_concept_sim`
+- `last_hcrc_anchor_coords`
+- `last_hcrc_anchor_bboxes`
+- `last_hcrc_anchor_scores`
+- `last_hcrc_anchor_valid_mask`
+- `last_hcrc_child_counts`
+- `last_hcrc_child_used_counts`
+- `last_hcrc_empty_anchor_ratio`
+- `last_hcrc_child_valid_mask`
+- `last_hcrc_child_distance_mean`
+- `last_hcrc_skip_reason`
+
+### Validation commands
+- `python -m py_compile ViLa-MIL-main/main.py`
+- `python -m py_compile ViLa-MIL-main/utils/core_utils.py`
+- `python -m py_compile ViLa-MIL-main/models/model_DEG_MIL_BiomedCLIP.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/check_stage43_hcrc_integrity.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage43_hcrc_smoke_summary.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage43_hcrc_light_smoke.sh`
+- `python ViLa-MIL-main/scripts/analysis/check_stage43_hcrc_integrity.py`
+
+### Smoke run
+- Main smoke launcher:
+  - `cd ViLa-MIL-main && VARIANT=hcrc_a005 bash scripts/experiments/run_stage43_hcrc_light_smoke.sh`
+- Actual summary command used in the validated environment:
+  - `cd ViLa-MIL-main && PYTHONPATH=/home/ljh/ViLMIL/ViLa-MIL-main /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage43_hcrc_smoke_summary.py`
+- Supported smoke variants:
+  - `hcrc_a005`
+  - `hcrc_a01`
+  - `hcrc_a002`
+
+### Output directories
+- Smoke run:
+  - `results_stage43/stage43_hcrc_light_smoke_a005_s1`
+- Smoke log:
+  - `results_stage43/logs/stage43_hcrc_light_smoke_a005_s1.log`
+- Smoke summary:
+  - `results_stage43/stage43_hcrc_light_smoke_summary/stage43_hcrc_smoke_report.md`
+  - `results_stage43/stage43_hcrc_light_smoke_summary/stage43_hcrc_smoke_manifest.json`
+
+### Smoke result
+- Smoke run completed successfully on fold0 / 1 epoch.
+- Checkpoint generated:
+  - `results_stage43/stage43_hcrc_light_smoke_a005_s1/s_0_checkpoint.pt`
+- Fold0 test metrics:
+  - `AUC=0.9744`
+  - `ACC=0.8866`
+  - `F1=0.8810`
+  - `Balanced ACC=0.9104`
+  - `Sensitivity=0.9848`
+  - `Specificity=0.8359`
+  - `PR-AUC=0.9495`
+- HCRC probe summary from the post-run report:
+  - HCRC enabled at forward: `True`
+  - `hcrc_logits` non-zero: `True`
+  - post-sigmoid alpha: `0.0503671`
+  - valid anchors: `16`
+  - mean empty anchor ratio: `0.0625`
+  - mean child used count: `13.3125`
+  - no NaN / Inf detected in log, probe tensors, or checkpoint parameters
+
+### Recommendation
+- Step43 smoke outcome supports entering Step44 `HCRC-Light` 5-fold.
+
+### Risks
+- `proposal_radius=4096` changes anchor coordinates through large-neighborhood soft aggregation.
+- `bbox_expand=8` can produce very wide anchor boxes and large child sets.
+- Step43 therefore remains a smoke confirmation step, not a final performance conclusion.
 - No dataset files were modified.
 
 ### Results / observations

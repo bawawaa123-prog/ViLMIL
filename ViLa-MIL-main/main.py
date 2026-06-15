@@ -96,6 +96,29 @@ parser.add_argument(
     default="sqrt",
     help="normalization for the learnable cross-scale graph residual.",
 )
+parser.add_argument("--rce_use_hcrc", action="store_true", default=False)
+parser.add_argument("--rce_hcrc_alpha_init", type=float, default=0.05)
+parser.add_argument("--rce_hcrc_num_anchors", type=int, default=16)
+parser.add_argument("--rce_hcrc_num_high_children", type=int, default=16)
+parser.add_argument("--rce_hcrc_proposal_radius", type=float, default=4096.0)
+parser.add_argument("--rce_hcrc_nms_radius", type=float, default=512.0)
+parser.add_argument("--rce_hcrc_bbox_expand", type=float, default=8.0)
+parser.add_argument("--rce_hcrc_coord_mode", type=str, default="top_left")
+parser.add_argument("--rce_hcrc_scale_ratio", type=float, default=1.0)
+parser.add_argument("--rce_hcrc_child_strategy", type=str, default="bbox_containment")
+parser.add_argument("--rce_hcrc_candidate_top_l", type=int, default=64)
+parser.add_argument("--rce_hcrc_top_g_concepts", type=int, default=8)
+parser.add_argument("--rce_hcrc_per_concept_top_m", type=int, default=4)
+parser.add_argument("--rce_hcrc_prompt_topk", type=int, default=3)
+parser.add_argument("--rce_hcrc_margin_weight", type=float, default=0.5)
+parser.add_argument(
+    "--rce_hcrc_prompt_scale",
+    type=str,
+    choices=["low", "high", "avg"],
+    default="high",
+)
+parser.add_argument("--rce_hcrc_min_child_count", type=int, default=1)
+parser.add_argument("--rce_hcrc_export_debug", action="store_true", default=False)
 parser.add_argument("--deg_use_region_graph", action="store_true", default=False)
 parser.add_argument("--deg_region_graph_k", type=int, default=4)
 parser.add_argument("--deg_region_graph_alpha", type=float, default=0.1)
@@ -252,6 +275,9 @@ settings = {
     "k_start": args.k_start,
     "k_end": args.k_end,
     "task": args.task,
+    "data_root_dir": args.data_root_dir,
+    "data_folder_s": args.data_folder_s,
+    "data_folder_l": args.data_folder_l,
     "max_epochs": args.max_epochs,
     "results_dir": args.results_dir,
     "lr": args.lr,
@@ -292,6 +318,24 @@ settings = {
     "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
     "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
     "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,
+    "rce_use_hcrc": args.rce_use_hcrc,
+    "rce_hcrc_alpha_init": args.rce_hcrc_alpha_init,
+    "rce_hcrc_num_anchors": args.rce_hcrc_num_anchors,
+    "rce_hcrc_num_high_children": args.rce_hcrc_num_high_children,
+    "rce_hcrc_proposal_radius": args.rce_hcrc_proposal_radius,
+    "rce_hcrc_nms_radius": args.rce_hcrc_nms_radius,
+    "rce_hcrc_bbox_expand": args.rce_hcrc_bbox_expand,
+    "rce_hcrc_coord_mode": args.rce_hcrc_coord_mode,
+    "rce_hcrc_scale_ratio": args.rce_hcrc_scale_ratio,
+    "rce_hcrc_child_strategy": args.rce_hcrc_child_strategy,
+    "rce_hcrc_candidate_top_l": args.rce_hcrc_candidate_top_l,
+    "rce_hcrc_top_g_concepts": args.rce_hcrc_top_g_concepts,
+    "rce_hcrc_per_concept_top_m": args.rce_hcrc_per_concept_top_m,
+    "rce_hcrc_prompt_topk": args.rce_hcrc_prompt_topk,
+    "rce_hcrc_margin_weight": args.rce_hcrc_margin_weight,
+    "rce_hcrc_prompt_scale": args.rce_hcrc_prompt_scale,
+    "rce_hcrc_min_child_count": args.rce_hcrc_min_child_count,
+    "rce_hcrc_export_debug": args.rce_hcrc_export_debug,
     "deg_use_region_graph": args.deg_use_region_graph,
     "deg_region_graph_k": args.deg_region_graph_k,
     "deg_region_graph_alpha": args.deg_region_graph_alpha,
@@ -364,6 +408,13 @@ elif args.task == "task_adenocarcinoma":
         print("[Warning] args.text_prompt is not a list. Please check --text_prompt_path parsing.")
 else:
     raise NotImplementedError
+
+settings.update(
+    {
+        "n_classes": args.n_classes,
+        "class_names": args.class_names,
+    }
+)
 
 if args.use_concept_prompt_pool and not args.concept_prompt_path:
     raise ValueError("--use_concept_prompt_pool is set but --concept_prompt_path is missing.")
