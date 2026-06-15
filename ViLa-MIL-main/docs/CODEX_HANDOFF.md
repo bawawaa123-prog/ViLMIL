@@ -1932,3 +1932,53 @@
 
 ### Next suggested step
 - Step40：根据 stage39_paper_ready_summary.md 生成最终论文主图/方法图说明、实验表格说明和答辩汇报材料。如果还要继续模型创新，可以转向 Prompt Reliability / Refined Prompt Pool，但不建议再盲目堆 graph 或 gate。
+
+## 2026-06-15 - Step40: Paper-Ready Figures / Tables / Defense Package
+
+### Files changed
+- `scripts/analysis/build_stage40_paper_ready_assets.py`: added the Step40 paper-ready asset builder.
+- `scripts/analysis/run_stage40_paper_ready_assets.sh`: added the Step40 runner with `PYTHON_BIN` / `STAGE39_DIR` / `OUTPUT_DIR` overrides.
+- `docs/CODEX_HANDOFF.md`: appended this Step40 record.
+
+### Input dirs
+- `results_stage39/final_evidence_package/`
+
+### Generated outputs
+- `results_stage40/paper_ready_assets/stage40_method_overview.md`
+- `results_stage40/paper_ready_assets/stage40_main_figure_mermaid.md`
+- `results_stage40/paper_ready_assets/stage40_evidence_pipeline_mermaid.md`
+- `results_stage40/paper_ready_assets/stage40_experiment_tables_plan.md`
+- `results_stage40/paper_ready_assets/stage40_ablation_table_paper_ready.csv`
+- `results_stage40/paper_ready_assets/stage40_negative_ablation_table_paper_ready.csv`
+- `results_stage40/paper_ready_assets/stage40_failure_case_table_paper_ready.csv`
+- `results_stage40/paper_ready_assets/stage40_defense_slide_outline.md`
+- `results_stage40/paper_ready_assets/stage40_paper_section_draft.md`
+- `results_stage40/paper_ready_assets/stage40_final_claims_and_limitations.md`
+- `results_stage40/paper_ready_assets/stage40_next_research_branch.md`
+
+### Final default model
+- `RCE-v4-CSG-a01-rq16 / DEG skeleton`
+
+### Secondary trade-off variant
+- `RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0`
+
+### Final paper claims
+- `RCE-v4-CSG-a01-rq16` is the most stable final default model.
+- `CSG a01` and `rq16` are experimentally supported.
+- `region graph / concept graph / scalar gate` should be retained as negative ablation evidence rather than promoted to the final model.
+- `low-high consistency` reduces `low-high conflict` but remains a secondary trade-off variant.
+- The final pipeline supports evidence source decomposition and failure diagnosis.
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage40_paper_ready_assets.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage40_paper_ready_assets.sh`
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage40_paper_ready_assets.sh`
+
+### Commands not run
+- No training command.
+- No model-body logic modification.
+- No new graph / gate / consistency experiment.
+- No overwrite of Step39 original outputs.
+
+### Next suggested step
+- 如果当前目标是论文/答辩，下一步根据 Step40 输出生成最终 Word/PPT。如果还要继续模型创新，Step41 可启动 Prompt Reliability / Refined Prompt Pool 分支，但不要再盲目堆 graph 或 gate。

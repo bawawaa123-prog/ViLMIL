@@ -1,0 +1,5 @@
+module,what_was_tested,why_it_failed_or_traded_off,paper_role,final_decision
+attention-centroid region graph,graph over semantic region tokens using attention-centroid style spatial assumptions,attention-centroid region graph: semantic region token does not equal true spatial region,diagnostic ablation,not final default model
+concept prompt graph,concept-to-concept smoothing over prompt-level feature graph,concept prompt graph: ordinary feature-level prompt smoothing weakens evidence discrimination,diagnostic ablation,not final default model
+scalar visual gate,global scalar gate to suppress or rebalance visual residual,scalar visual gate: visual residual cannot be simply suppressed by a global scalar,diagnostic ablation,not final default model
+low-high consistency,consistency regularization between low-scale and high-scale evidence paths,low-high consistency: reduces low-high conflict but carries a visual residual override trade-off,secondary trade-off variant,secondary trade-off variant
