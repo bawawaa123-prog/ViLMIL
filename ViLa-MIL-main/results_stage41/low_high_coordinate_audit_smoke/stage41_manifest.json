@@ -1,0 +1,282 @@
+{
+  "step": "Step41 Low-High Coordinate Correspondence Audit",
+  "parameters": {
+    "data_root_dir": "/xiangmu/data/VILMIL",
+    "data_folder_s": "features_biomedclip_5x",
+    "data_folder_l": "features_biomedclip_20x",
+    "csv_path": "/home/ljh/ViLMIL/ViLa-MIL-main/dataset_csv/all_data.csv",
+    "split_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/splits/adenocarcinoma/task_adenocarcinoma_strictcv_100",
+    "fold": 0,
+    "split": "test",
+    "output_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke",
+    "max_slides": 3,
+    "low_patch_size": 256.0,
+    "high_patch_size": 256.0,
+    "bbox_expand": 1.0,
+    "try_scale_ratios": [
+      1.0,
+      2.0,
+      4.0,
+      0.5,
+      0.25
+    ],
+    "coord_mode": "auto",
+    "num_examples": 20,
+    "seed": 1
+  },
+  "input_paths": {
+    "low_dir": "/xiangmu/data/VILMIL/features_biomedclip_5x",
+    "high_dir": "/xiangmu/data/VILMIL/features_biomedclip_20x",
+    "csv_path": "/home/ljh/ViLMIL/ViLa-MIL-main/dataset_csv/all_data.csv",
+    "split_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/splits/adenocarcinoma/task_adenocarcinoma_strictcv_100"
+  },
+  "output_paths": {
+    "low_high_coordinate_match_stats_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/low_high_coordinate_match_stats.csv",
+    "child_count_distribution_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/child_count_distribution.csv",
+    "empty_match_cases_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/empty_match_cases.csv",
+    "example_low_high_pairs_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/example_low_high_pairs.csv",
+    "coordinate_match_report_md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/coordinate_match_report.md",
+    "stage41_manifest_json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage41/low_high_coordinate_audit_smoke/stage41_manifest.json"
+  },
+  "slide_source": {
+    "source": "split",
+    "source_path": "/home/ljh/ViLMIL/ViLa-MIL-main/splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_0.csv",
+    "csv_slide_count": 968,
+    "selected_slide_count": 3,
+    "split": "test",
+    "fold": 0,
+    "fallback_to_csv": false
+  },
+  "requested_slide_count": 3,
+  "processed_slide_count": 3,
+  "missing_slide_count": 0,
+  "failed_slide_count": 0,
+  "processed_slide_ids": [
+    "2460239-B2",
+    "2460628-B2",
+    "2460641-B2"
+  ],
+  "missing_slides": [],
+  "failed_slides": [],
+  "warning_count": 0,
+  "warnings": [],
+  "recommended_coord_mode": "top_left",
+  "recommended_scale_ratio": 1.0,
+  "recommended_combo": {
+    "coord_mode": "top_left",
+    "scale_ratio": 1.0,
+    "slide_count": 3,
+    "total_low_patches": 619,
+    "total_high_patches": 8771,
+    "weighted_empty_ratio": 0.2294022617124394,
+    "median_child_count": 1.0,
+    "mean_child_count": 0.7639186688159386,
+    "median_p95": 1.0,
+    "same_coord_system_rate": 1.0,
+    "expected_child_count": 1.0
+  },
+  "combo_summary": [
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 1.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.2294022617124394,
+      "mean_child_count": 0.7639186688159386,
+      "median_child_count": 1.0,
+      "median_p95": 1.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 2.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.975767366720517,
+      "mean_child_count": 0.026709822685054882,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 4.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 4.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.9919224555735057,
+      "mean_child_count": 0.008451244786735921,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 16.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 0.5,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 1.0,
+      "mean_child_count": 0.0,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 0.25,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 1.0,
+      "mean_child_count": 0.0,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 1.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.2294022617124394,
+      "mean_child_count": 0.7639186688159386,
+      "median_child_count": 1.0,
+      "median_p95": 1.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 2.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.9773828756058158,
+      "mean_child_count": 0.024927291490758983,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 4.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 4.0,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 0.9903069466882067,
+      "mean_child_count": 0.010205630751648202,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 16.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 0.5,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 1.0,
+      "mean_child_count": 0.0,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 0.25,
+      "slide_count": 3,
+      "total_low_patches": 619,
+      "total_high_patches": 8771,
+      "weighted_empty_ratio": 1.0,
+      "mean_child_count": 0.0,
+      "median_child_count": 0.0,
+      "median_p95": 0.0,
+      "same_coord_system_rate": 1.0,
+      "expected_child_count": 1.0
+    }
+  ],
+  "empty_summary": [
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 1.0,
+      "high_empty_slides": 0,
+      "mean_slide_empty_ratio": 0.23608133118406127,
+      "max_slide_empty_ratio": 0.3155080213903743
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 2.0,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 0.973290177314945,
+      "max_slide_empty_ratio": 1.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 4.0,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 0.9915487552132641,
+      "max_slide_empty_ratio": 0.9958677685950413
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 0.5,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 1.0,
+      "max_slide_empty_ratio": 1.0
+    },
+    {
+      "coord_mode": "top_left",
+      "scale_ratio": 0.25,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 1.0,
+      "max_slide_empty_ratio": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 1.0,
+      "high_empty_slides": 0,
+      "mean_slide_empty_ratio": 0.23608133118406127,
+      "max_slide_empty_ratio": 0.3155080213903743
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 2.0,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 0.975072708509241,
+      "max_slide_empty_ratio": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 4.0,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 0.9897943692483517,
+      "max_slide_empty_ratio": 0.9958677685950413
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 0.5,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 1.0,
+      "max_slide_empty_ratio": 1.0
+    },
+    {
+      "coord_mode": "center",
+      "scale_ratio": 0.25,
+      "high_empty_slides": 3,
+      "mean_slide_empty_ratio": 1.0,
+      "max_slide_empty_ratio": 1.0
+    }
+  ]
+}

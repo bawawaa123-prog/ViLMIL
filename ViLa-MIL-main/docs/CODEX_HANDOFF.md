@@ -1982,3 +1982,79 @@
 
 ### Next suggested step
 - 如果当前目标是论文/答辩，下一步根据 Step40 输出生成最终 Word/PPT。如果还要继续模型创新，Step41 可启动 Prompt Reliability / Refined Prompt Pool 分支，但不要再盲目堆 graph 或 gate。
+
+## 2026-06-15 - Step41: Low-High Coordinate Correspondence Audit
+
+### Step 名称
+- `Low-High Coordinate Correspondence Audit`
+
+### 目标
+- 不训练模型、不修改模型前向逻辑，只审计 `features_biomedclip_5x` 和 `features_biomedclip_20x` 的原始 patch coords 是否支持真实 low-high 空间对应。
+- 重点结论是：后续 HCRC / Step42 是否可以基于真实 coords 继续做 `CGSP Anchor Selection Audit`，而不是继续依赖 `DEG` 中 attention-centroid 风格的 region coords。
+
+### 新增文件
+- `scripts/analysis/build_stage41_low_high_coordinate_audit.py`
+- `scripts/analysis/run_stage41_low_high_coordinate_audit.sh`
+- `docs/CODEX_HANDOFF.md`
+
+### 默认输入路径
+- `DATA_ROOT_DIR=/xiangmu/data/VILMIL`
+- `DATA_FOLDER_S=features_biomedclip_5x`
+- `DATA_FOLDER_L=features_biomedclip_20x`
+- `CSV_PATH=dataset_csv/all_data.csv`
+- `SPLIT_DIR=splits/adenocarcinoma/task_adenocarcinoma_strictcv_100`
+- `FOLD=0`
+- `SPLIT=test`
+
+### 输出文件
+- `results_stage41/low_high_coordinate_audit/low_high_coordinate_match_stats.csv`
+- `results_stage41/low_high_coordinate_audit/child_count_distribution.csv`
+- `results_stage41/low_high_coordinate_audit/empty_match_cases.csv`
+- `results_stage41/low_high_coordinate_audit/example_low_high_pairs.csv`
+- `results_stage41/low_high_coordinate_audit/coordinate_match_report.md`
+- `results_stage41/low_high_coordinate_audit/stage41_manifest.json`
+
+### 如何运行
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage41_low_high_coordinate_audit.sh`
+
+### 验证命令
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage41_low_high_coordinate_audit.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage41_low_high_coordinate_audit.sh`
+- `cd ViLa-MIL-main && MAX_SLIDES=3 OUTPUT_DIR=results_stage41/low_high_coordinate_audit_smoke bash scripts/analysis/run_stage41_low_high_coordinate_audit.sh`
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage41_low_high_coordinate_audit.sh`
+
+### 是否实际运行
+- 是。
+- smoke run:
+  - `results_stage41/low_high_coordinate_audit_smoke/`
+  - `MAX_SLIDES=3`
+- formal run:
+  - `results_stage41/low_high_coordinate_audit/`
+  - `fold=0`
+  - `split=test`
+  - `processed slides = 194`
+  - `missing slides = 0`
+  - `failed slides = 0`
+
+### 初步结论
+- 当前 low/high 原始 coords 在坐标范围上高度一致，`same_coord_system_heuristic rate = 1.0000`。
+- low/high h5 结构稳定：
+  - 两侧都使用 `coords` key。
+  - 本次审计覆盖的 194 张 slide 中，`patch_level` / `patch_size` attrs 均缺失，因此不能依赖 attrs 做尺度转换，只能靠统计匹配判断。
+- 推荐组合：
+  - `coord_mode = top_left`
+  - `scale_ratio = 1.0`
+- 推荐组合统计：
+  - `total low patches = 41068`
+  - `total high patches = 583366`
+  - `weighted empty match ratio = 0.1888`
+  - `median child count = 1.0`
+  - `mean child count = 0.7922`
+- 其他 ratio (`2 / 4 / 0.5 / 0.25`) 的 empty match ratio 几乎全部接近 `1.0`，不支持显式尺度放缩假设。
+- 这说明当前 `features_biomedclip_5x` 与 `features_biomedclip_20x` 更像是已经处于同一 WSI 坐标系，至少在原始 patch coords 层面不需要再乘 `2x` 或 `4x` 才能建立 low-high correspondence。
+
+### 下一步建议
+- 可以进入 Step42，做 `CGSP Anchor Selection Audit`，并且必须基于 Step41 审计通过的真实 patch coords，而不是 `DEG` 里的 attention-weighted centroid。
+- 但要保留一个明确风险：
+  - 即使推荐组合通过，当前推荐组合仍有 `weighted empty match ratio = 0.1888`，说明不是所有 low patches 都有高倍 child patches。
+  - Step42 应继续检查 anchor 选择覆盖率、empty-anchor 分布，以及是否需要对无 child 的 low patch 做跳过或单独标记。
