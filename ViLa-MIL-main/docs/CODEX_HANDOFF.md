@@ -1808,3 +1808,73 @@
 
 ### Next suggested step
 - 如果 Step37 找到优于 skeleton 或 sensitivity/specificity 更均衡的 consistency variant，则 Step38 对最佳 variant 做 Step32/33 风格的 evidence re-export + failure analysis，重点检查 low_high_conflict 是否下降。如果所有 consistency variants 都不如 skeleton，则保留 Step36/37 为 negative diagnostic ablation，下一步转向 Prompt Reliability / Refined Prompt Pool。
+
+## 2026-06-14 - Step38: Skeleton vs LH-Consistency Evidence Re-export + Failure Comparison
+
+### Files changed
+- `scripts/analysis/build_stage33_evidence_failure_analysis.py`: added optional `--variant_name` for report/recommendation labeling while keeping default behavior compatible.
+- `scripts/analysis/run_stage38_lh_consistency_evidence_compare.sh`: added the Step38 end-to-end runner for evidence export, failure analysis, and comparison.
+- `scripts/analysis/build_stage38_lh_consistency_failure_comparison.py`: added the Step38 comparison builder.
+- `docs/CODEX_HANDOFF.md`: appended this Step38 record.
+
+### Compared variants
+- `skeleton`
+- `lh_l001_m0`
+
+### Input result directories
+- `results_stage37/lh_consistency_skeleton_5fold_e20_s1`
+- `results_stage37/lh_consistency_lh_l001_m0_5fold_e20_s1`
+
+### Generated outputs
+- `results_stage38/evidence_export_skeleton_fold0_test/`
+- `results_stage38/evidence_export_lh_l001_m0_fold0_test/`
+- `results_stage38/failure_analysis_skeleton_fold0_test/`
+- `results_stage38/failure_analysis_lh_l001_m0_fold0_test/`
+- `results_stage38/stage38_lh_consistency_failure_comparison/`
+
+### Checks run
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage38_lh_consistency_failure_comparison.py`
+- `bash -n ViLa-MIL-main/scripts/analysis/run_stage38_lh_consistency_evidence_compare.sh`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage33_evidence_failure_analysis.py`
+- `cd ViLa-MIL-main && bash scripts/analysis/run_stage38_lh_consistency_evidence_compare.sh`
+
+### Commands not run
+- No training command.
+- No model-body logic change.
+- No region graph / concept graph / visual evidence gate ablation.
+
+### Key comparison results
+- Metric deltas (`lh_l001_m0 - skeleton`):
+  - `AUC=-0.0039`
+  - `ACC=+0.0206`
+  - `F1=+0.0208`
+  - `Balanced ACC=+0.0120`
+  - `Sensitivity=-0.0152`
+  - `Specificity=+0.0391`
+  - `PR-AUC=-0.0034`
+- Error-set comparison:
+  - `fixed cases = 6`
+  - `regressed cases = 2`
+  - `persistent errors = 12`
+- Failure-type comparison:
+  - `low_high_conflict`: `10 -> 8`
+  - `visual_residual_override`: `13 -> 14`
+- Low/high conflict diagnostics:
+  - error `low_high_conflict` count delta: `-2`
+  - error `both_support_wrong` count delta: `-2`
+  - fixed cases with repaired `low_high_conflict`: `4`
+- Visual residual diagnostics:
+  - `visual_residual_override` delta: `+1`
+  - error-time `visual_source_ratio` mean increased from `0.6286` to `0.7949`
+
+### Recommendation
+- Current recommendation remains: keep `skeleton` as the final main model.
+- Reason:
+  - `lh_l001_m0` fixes more cases than it regresses and does reduce some `low_high_conflict`,
+  - but it also increases `visual_residual_override` and slightly lowers `AUC/PR-AUC`.
+- Interpretation:
+  - `lh_l001_m0` is a meaningful diagnostic / secondary trade-off variant,
+  - but the evidence is not clean enough to replace `skeleton` as the final primary model.
+
+### Next suggested step
+- 如果 Step38 证明 lh_l001_m0 明确减少 low_high_conflict 且 fixed cases 多于 regressed cases，则 Step39 做 final model evidence visualization / paper-ready figures。否则 Step39 转向 Prompt Reliability / Refined Prompt Pool，或直接固定 skeleton 为最终主模型并整理论文主图。

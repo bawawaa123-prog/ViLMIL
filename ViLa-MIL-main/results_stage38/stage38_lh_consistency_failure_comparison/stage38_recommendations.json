@@ -1,0 +1,16 @@
+{
+  "skeleton_name": "skeleton",
+  "lh_name": "lh_l001_m0",
+  "fixed_cases": 6,
+  "regressed_cases": 2,
+  "persistent_error_cases": 12,
+  "low_high_conflict_delta": -2,
+  "visual_residual_override_delta": 1,
+  "auc_delta": -0.00390625,
+  "pr_auc_delta": -0.003375686386157928,
+  "keep_lh_as_final_candidate": false,
+  "recommendation": "keep_skeleton_as_final_main_model",
+  "rationale": [
+    "visual_residual_override increases"
+  ]
+}

@@ -1,0 +1,4 @@
+variant,error_low_high_conflict_count,error_both_support_wrong_count,error_margin_gap_mean,error_margin_gap_median,fixed_cases_with_conflict_repaired
+skeleton,10,7,0.07268947185043033,0.060074711218476295,
+lh_l001_m0,8,5,0.08300534637445312,0.0748761661816387,
+lh_l001_m0 - skeleton,-2,-2,0.010315874524022786,0.014801454963162403,4.0

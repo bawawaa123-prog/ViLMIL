@@ -25,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build Step33 evidence failure/conflict analysis from Step32 exports.")
     parser.add_argument("--input_dir", type=str, default=str(DEFAULT_INPUT_DIR))
     parser.add_argument("--output_dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
+    parser.add_argument("--variant_name", type=str, default="")
     parser.add_argument("--near_zero_eps", type=float, default=1e-6)
     parser.add_argument("--dominance_ratio", type=float, default=0.5)
     parser.add_argument("--low_margin_quantile", type=float, default=0.25)
@@ -1108,6 +1109,7 @@ def build_report(
     reliability_preview: pd.DataFrame,
     error_case_table: pd.DataFrame,
     manifest: dict,
+    variant_name: str,
     warning_log: list[str],
 ) -> str:
     metrics = manifest.get("metrics", {}) if isinstance(manifest, dict) else {}
@@ -1118,8 +1120,12 @@ def build_report(
         ["scale", "class_name", "concept_text", "occurrences", "error_count", "error_rate_among_occurrences", "reliability_hint"]
     ] if not reliability_preview.empty else pd.DataFrame()
 
+    report_title = "# Step33 Evidence Failure / Conflict Analysis"
+    if variant_name:
+        report_title = f"# Step33 Evidence Failure / Conflict Analysis - {variant_name}"
+
     lines = [
-        "# Step33 Evidence Failure / Conflict Analysis",
+        report_title,
         "",
         "## Scope",
         "- This step does not train the model.",
@@ -1129,6 +1135,7 @@ def build_report(
         "## Inputs / Outputs",
         f"- Input directory: `{relative_path_str(root, input_dir)}`",
         f"- Output directory: `{relative_path_str(root, output_dir)}`",
+        f"- Variant name: `{variant_name or 'default'}`",
         "- Read files:",
         "  - `stage32_slide_evidence_summary.csv`",
         "  - `stage32_top_concepts_long.csv`",
@@ -1241,12 +1248,14 @@ def build_recommendations_json(
     csg_summary: dict[str, float | str | None],
     conflict_summary: dict[str, dict[str, int]],
     failure_counts: pd.DataFrame,
+    variant_name: str,
 ) -> dict[str, object]:
     top_failure = None
     if not failure_counts.empty:
         top_failure = failure_counts.iloc[0]["failure_type"]
     return {
         "step": 33,
+        "variant_name": variant_name or "default",
         "num_slides": int(len(slide_table)),
         "num_errors": int((~slide_table["correct"]).sum()) if len(slide_table) else 0,
         "top_primary_failure_type": top_failure,
@@ -1350,6 +1359,7 @@ def main() -> int:
         csg_summary=csg_summary,
         conflict_summary=conflict_summary,
         failure_counts=failure_counts,
+        variant_name=args.variant_name,
     )
     (output_dir / "stage33_recommendations.json").write_text(
         json.dumps(recommendations, ensure_ascii=False, indent=2),
@@ -1371,6 +1381,7 @@ def main() -> int:
         reliability_preview=reliability_preview,
         error_case_table=error_case_table,
         manifest=manifest,
+        variant_name=args.variant_name,
         warning_log=warning_log,
     )
     (output_dir / "stage33_evidence_failure_report.md").write_text(report_text, encoding="utf-8")

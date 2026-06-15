@@ -1,0 +1,67 @@
+{
+  "step": 33,
+  "variant_name": "skeleton",
+  "num_slides": 194,
+  "num_errors": 18,
+  "top_primary_failure_type": "visual_residual_override",
+  "visual_residual": {
+    "mean_visual_source_ratio": 0.8286127242077914,
+    "visual_supports_true_ratio": 0.9020618556701031,
+    "visual_supports_pred_ratio": 0.9948453608247423,
+    "visual_supports_wrong_ratio": 0.0979381443298969,
+    "error_visual_supports_wrong_ratio": 1.0,
+    "conclusion": "visual residual appears strong enough to justify an explicit gate in Step34.",
+    "recommended_gate_init": "0.00 or 0.01",
+    "recommended_strategy": "start with a scalar visual gate, then compare a slide-adaptive gate only if scalar gating helps."
+  },
+  "csg": {
+    "mean_abs_csg_margin": 3.656674950448723e-05,
+    "max_abs_csg_margin": 0.0001358476904430156,
+    "mean_abs_csg_raw_margin": 0.000377439806222124,
+    "max_abs_csg_raw_margin": 0.0014022117538843,
+    "mean_top_pair_score": 9.065103733212137e-06,
+    "max_top_pair_score": 4.578499647323042e-05,
+    "pair_export_mismatch_ratio": 0.005154639175257732,
+    "inactive_ratio": 0.0,
+    "conclusion": "CSG is present, but it remains much weaker than the visual and concept branches on exported evidence."
+  },
+  "low_high_conflict": {
+    "all": {
+      "low_support_true": 139,
+      "high_support_true": 175,
+      "both_support_true": 128,
+      "both_support_wrong": 8,
+      "conflict": 58,
+      "num_slides": 194
+    },
+    "correct": {
+      "low_support_true": 132,
+      "high_support_true": 170,
+      "both_support_true": 127,
+      "both_support_wrong": 1,
+      "conflict": 48,
+      "num_slides": 176
+    },
+    "error": {
+      "low_support_true": 7,
+      "high_support_true": 5,
+      "both_support_true": 1,
+      "both_support_wrong": 7,
+      "conflict": 10,
+      "num_slides": 18
+    }
+  },
+  "step34_recommendation": {
+    "use_evidence_level_gated_fusion": true,
+    "start_with_scalar_gate": true,
+    "consider_slide_adaptive_gate_after_scalar": true,
+    "suggested_visual_gate_init": "0.00 or 0.01",
+    "keep_csg_gate_as_ablation": true
+  },
+  "step35_recommendation": {
+    "consider_consistency_loss": true,
+    "prioritize_high_scale_margin_control": true,
+    "prioritize_low_high_consistency": true,
+    "defer_csg_constraint_until_export_is_clarified": false
+  }
+}

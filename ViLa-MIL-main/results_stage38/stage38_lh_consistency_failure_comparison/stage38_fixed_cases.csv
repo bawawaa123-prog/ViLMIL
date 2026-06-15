@@ -1,0 +1,7 @@
+slide_id,label,skeleton_pred,lh_pred,skeleton_correct,lh_correct,status,skeleton_failure_labels,lh_failure_labels,skeleton_primary_failure_type,lh_primary_failure_type
+2462598-B,0,1,0,False,True,fixed,low_high_conflict|uncertain_low_margin,,low_high_conflict,correct_prediction
+2468673-B2,0,1,0,False,True,fixed,low_high_conflict|low_scale_dominant_wrong|uncertain_low_margin|prompt_confusion,,low_high_conflict,correct_prediction
+2471959-B2,0,1,0,False,True,fixed,low_high_conflict|uncertain_low_margin,,low_high_conflict,correct_prediction
+2487558-B2,0,1,0,False,True,fixed,visual_residual_override|concept_wrong_class_drift|high_scale_dominant_wrong|uncertain_low_margin,,visual_residual_override,correct_prediction
+25021640B3,0,1,0,False,True,fixed,visual_residual_override|concept_wrong_class_drift|low_scale_dominant_wrong|csg_misleading|uncertain_low_margin,,visual_residual_override,correct_prediction
+25023690B3,0,1,0,False,True,fixed,visual_residual_override|low_high_conflict|high_scale_dominant_wrong|uncertain_low_margin|prompt_confusion,,visual_residual_override,correct_prediction

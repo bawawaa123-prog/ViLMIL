@@ -1,0 +1,9 @@
+failure_type,count_as_primary,count_any_label,proportion_among_errors
+visual_residual_override,14,14,1.0
+uncertain_low_margin,0,11,0.0
+high_scale_dominant_wrong,0,9,0.0
+low_high_conflict,0,8,0.0
+concept_wrong_class_drift,0,5,0.0
+prompt_confusion,0,5,0.0
+low_scale_dominant_wrong,0,2,0.0
+csg_inactive_or_zero,0,1,0.0

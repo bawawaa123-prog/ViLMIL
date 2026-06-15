@@ -1,0 +1,3 @@
+slide_id,label,skeleton_pred,lh_pred,skeleton_correct,lh_correct,status,skeleton_failure_labels,lh_failure_labels,skeleton_primary_failure_type,lh_primary_failure_type
+25015422B,0,0,1,True,False,regressed,,visual_residual_override|low_high_conflict|uncertain_low_margin,correct_prediction,visual_residual_override
+25023961B2,1,1,0,True,False,regressed,,visual_residual_override|low_high_conflict|low_scale_dominant_wrong|uncertain_low_margin|prompt_confusion,correct_prediction,visual_residual_override

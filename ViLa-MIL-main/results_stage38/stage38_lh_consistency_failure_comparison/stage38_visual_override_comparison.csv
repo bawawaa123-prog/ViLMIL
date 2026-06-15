@@ -1,0 +1,4 @@
+variant,visual_residual_override_error_count,error_visual_source_ratio_mean,all_visual_source_ratio_mean,error_wrong_class_visual_support_ratio
+skeleton,13,0.6286197268637571,0.8286127242077914,
+lh_l001_m0,14,0.7949460684331477,0.7938890261301206,
+lh_l001_m0 - skeleton,1,0.16632634156939063,-0.03472369807767084,

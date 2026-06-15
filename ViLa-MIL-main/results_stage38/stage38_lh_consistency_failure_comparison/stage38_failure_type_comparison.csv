@@ -1,0 +1,9 @@
+failure_type,skeleton_count_any_label,skeleton_count_as_primary,lh_l001_m0_count_any_label,lh_l001_m0_count_as_primary,lh_l001_m0_minus_skeleton_any_label,lh_l001_m0_minus_skeleton_primary
+uncertain_low_margin,14,0,11,0,-3,0
+concept_wrong_class_drift,7,1,5,0,-2,-1
+csg_misleading,2,0,0,0,-2,0
+high_scale_dominant_wrong,11,0,9,0,-2,0
+low_high_conflict,10,4,8,0,-2,-4
+low_scale_dominant_wrong,3,0,2,0,-1,0
+prompt_confusion,4,0,5,0,1,0
+visual_residual_override,13,13,14,14,1,1
