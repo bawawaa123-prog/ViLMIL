@@ -24,19 +24,49 @@ from models.model_DEG_MIL_BiomedCLIP import DEG_MIL_BiomedCLIP
 DEFAULT_VARIANTS = [
     "v2_gain2_g08",
     "v2_gain4_g08",
-    "v2_gain2_g05",
-    "v2_opt_gain2_g08",
     "v2_confprior_g08",
     "v2_varreg_g08",
 ]
 
+STAGE48B_SUMMARY_CSV = "stage48b_prarc_v2_variant_sweep_summary.csv"
+STAGE48B_GATE_CSV = "stage48b_prarc_v2_gate_distribution.csv"
+STAGE48B_PROBE_CSV = "stage48b_prarc_v2_gate_probe.csv"
+STAGE48B_REPORT_MD = "stage48b_prarc_v2_variant_report.md"
+STAGE48B_MANIFEST_JSON = "stage48b_manifest.json"
+
+STEP48_REFERENCE = {
+    "variant": "v2_gain2_g08",
+    "test_auc": 0.973248106060606,
+    "test_acc": 0.8917525773195877,
+    "test_f1": 0.8702341137123746,
+    "balanced_acc": 0.8482481060606061,
+    "pr_auc": 0.939597998013274,
+    "gate_mean": 0.931816570230366,
+    "gate_std": 0.0016590352169152671,
+    "gate_min": 0.9280582666397095,
+    "gate_max": 0.9330165386199951,
+    "gate_range": 0.0049582719802856445,
+    "conflict_gate_mean": 0.9300931004377512,
+    "non_conflict_gate_mean": 0.9320832976982707,
+    "conflict_minus_nonconflict": -0.0019901972605195217,
+}
+
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build Step48 PRARC-v2 smoke summary.")
+    parser = argparse.ArgumentParser(description="Build Step48/48b PRARC-v2 smoke summary.")
     parser.add_argument("--results_root", default="results_stage48")
-    parser.add_argument("--baseline_diagnostics", default="results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_distribution_summary.csv")
-    parser.add_argument("--output_dir", default="results_stage48/stage48_prarc_v2_smoke_summary")
-    parser.add_argument("--variants", default="v2_gain2_g08")
+    parser.add_argument(
+        "--baseline_diagnostics",
+        default="results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_distribution_summary.csv",
+    )
+    parser.add_argument(
+        "--output_dir",
+        default="results_stage48/stage48b_prarc_v2_variant_sweep_summary",
+    )
+    parser.add_argument(
+        "--variants",
+        default=",".join(DEFAULT_VARIANTS),
+    )
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--data_root_dir", default="/xiangmu/data/VILMIL")
     parser.add_argument("--data_folder_s", default="features_biomedclip_5x")
@@ -88,6 +118,12 @@ def format_metric(value: float | None) -> str:
     return f"{value:.4f}"
 
 
+def format_bool(value: object) -> str:
+    if value is None:
+        return "N/A"
+    return "True" if bool(value) else "False"
+
+
 def find_run_dir(results_root: Path, variant: str, seed: int) -> Path | None:
     exact = results_root / f"stage48_{variant}_s{seed}"
     if exact.is_dir():
@@ -115,7 +151,7 @@ def inspect_log(log_path: Path) -> dict[str, object]:
     return {
         "log_exists": True,
         "has_traceback": "Traceback" in text,
-        "has_nan_or_inf": bool(re.search(r"(?i)\b(?:nan|inf)\b", text)),
+        "has_nan_or_inf": bool(re.search(r"(?i)\\b(?:nan|inf)\\b", text)),
         "log_path": str(log_path),
     }
 
@@ -282,7 +318,7 @@ def probe_run(
         features_s, coords_s, features_l, coords_l, label, slide_id = split_dataset[idx]
         label_tensor = torch.tensor([int(label)], device=device, dtype=torch.long)
         with torch.no_grad():
-            y_prob, y_hat, _ = model(
+            _, y_hat, _ = model(
                 features_s.to(device),
                 coords_s.to(device),
                 features_l.to(device),
@@ -330,18 +366,172 @@ def summarize_distribution(variant: str, gate_df: pd.DataFrame) -> dict[str, obj
         "gate_max": float(gate_series.max()),
         "gate_range": float(gate_series.max() - gate_series.min()),
     }
-    conflict_series = gate_df[gate_df["visual_concept_conflict"] == 1]["prarc_gate"]
-    non_conflict_series = gate_df[gate_df["visual_concept_conflict"] == 0]["prarc_gate"]
-    if len(conflict_series) > 0:
-        out["conflict_gate_mean"] = float(pd.to_numeric(conflict_series, errors="coerce").mean())
-    if len(non_conflict_series) > 0:
-        out["non_conflict_gate_mean"] = float(pd.to_numeric(non_conflict_series, errors="coerce").mean())
-    if len(conflict_series) > 0 and len(non_conflict_series) > 0:
-        out["conflict_minus_nonconflict"] = float(
-            pd.to_numeric(conflict_series, errors="coerce").mean()
-            - pd.to_numeric(non_conflict_series, errors="coerce").mean()
-        )
+    conflict_series = pd.to_numeric(
+        gate_df[gate_df["visual_concept_conflict"] == 1]["prarc_gate"], errors="coerce"
+    ).dropna()
+    non_conflict_series = pd.to_numeric(
+        gate_df[gate_df["visual_concept_conflict"] == 0]["prarc_gate"], errors="coerce"
+    ).dropna()
+    if not conflict_series.empty:
+        out["conflict_gate_mean"] = float(conflict_series.mean())
+    if not non_conflict_series.empty:
+        out["non_conflict_gate_mean"] = float(non_conflict_series.mean())
+    if not conflict_series.empty and not non_conflict_series.empty:
+        out["conflict_minus_nonconflict"] = float(conflict_series.mean() - non_conflict_series.mean())
     return out
+
+
+def get_fold0_metrics(run_dir: Path) -> dict[str, object]:
+    fold_summary_path = run_dir / "fold_summary.csv"
+    if not fold_summary_path.is_file():
+        return {}
+    try:
+        df_metrics = pd.read_csv(fold_summary_path)
+    except Exception:
+        return {}
+    if df_metrics.empty:
+        return {}
+    return df_metrics.iloc[0].to_dict()
+
+
+def choose_gate_winner(summary_rows: list[dict[str, object]]) -> str | None:
+    candidates = [row for row in summary_rows if row.get("smoke_completed")]
+    if not candidates:
+        return None
+
+    def sort_key(row: dict[str, object]):
+        sign_bonus = 1 if (row.get("conflict_minus_nonconflict") is not None and row.get("conflict_minus_nonconflict") < 0) else 0
+        return (
+            safe_float(row.get("gate_std")) or -1.0,
+            safe_float(row.get("gate_range")) or -1.0,
+            sign_bonus,
+            -(safe_float(row.get("gate_mean")) or 999.0),
+            -abs(safe_float(row.get("conflict_minus_nonconflict")) or 0.0),
+        )
+
+    return max(candidates, key=sort_key).get("variant")
+
+
+def choose_performance_winner(summary_rows: list[dict[str, object]]) -> str | None:
+    candidates = [row for row in summary_rows if row.get("smoke_completed")]
+    if not candidates:
+        return None
+
+    def sort_key(row: dict[str, object]):
+        return (
+            safe_float(row.get("test_auc")) or -1.0,
+            safe_float(row.get("balanced_acc")) or -1.0,
+            safe_float(row.get("test_f1")) or -1.0,
+            safe_float(row.get("test_acc")) or -1.0,
+            safe_float(row.get("pr_auc")) or -1.0,
+        )
+
+    return max(candidates, key=sort_key).get("variant")
+
+
+def is_metric_not_collapsed(value: float | None, reference: float | None, tolerance: float) -> bool:
+    if value is None or reference is None:
+        return False
+    return value >= (reference - tolerance)
+
+
+def recommend_step49(row: dict[str, object]) -> bool:
+    smoke_completed = bool(row.get("smoke_completed"))
+    if not smoke_completed:
+        return False
+    if bool(row.get("log_has_traceback")) or bool(row.get("log_has_nan_or_inf")):
+        return False
+
+    test_auc = safe_float(row.get("test_auc"))
+    test_acc = safe_float(row.get("test_acc"))
+    test_f1 = safe_float(row.get("test_f1"))
+    balanced_acc = safe_float(row.get("balanced_acc"))
+    gate_mean = safe_float(row.get("gate_mean"))
+    gate_std = safe_float(row.get("gate_std"))
+    gate_range = safe_float(row.get("gate_range"))
+    conflict_gate_mean = safe_float(row.get("conflict_gate_mean"))
+    non_conflict_gate_mean = safe_float(row.get("non_conflict_gate_mean"))
+    conflict_gap = safe_float(row.get("conflict_minus_nonconflict"))
+
+    conditions = [
+        is_metric_not_collapsed(test_auc, STEP48_REFERENCE["test_auc"], 0.02),
+        is_metric_not_collapsed(test_acc, STEP48_REFERENCE["test_acc"], 0.05),
+        is_metric_not_collapsed(test_f1, STEP48_REFERENCE["test_f1"], 0.06),
+        is_metric_not_collapsed(balanced_acc, STEP48_REFERENCE["balanced_acc"], 0.05),
+        gate_std is not None and gate_std >= 0.005,
+        gate_range is not None and gate_range >= 0.02,
+        gate_mean is not None and gate_mean < 0.93,
+        conflict_gate_mean is not None and non_conflict_gate_mean is not None and conflict_gate_mean < non_conflict_gate_mean,
+        conflict_gap is not None and abs(conflict_gap) > abs(STEP48_REFERENCE["conflict_minus_nonconflict"]) * 1.5,
+    ]
+    return sum(bool(item) for item in conditions) >= 7
+
+
+def build_variant_summary_row(
+    variant: str,
+    run_dir: Path | None,
+    log_info: dict[str, object],
+    metrics: dict[str, object],
+    distribution: dict[str, object],
+    probe_status: dict[str, object],
+) -> dict[str, object]:
+    checkpoint_exists = bool(run_dir and (run_dir / "s_0_checkpoint.pt").is_file())
+    row = {
+        "variant": variant,
+        "smoke_completed": probe_status.get("status") == "ok",
+        "checkpoint_exists": checkpoint_exists,
+        "test_auc": safe_float(metrics.get("test_auc")),
+        "test_acc": safe_float(metrics.get("test_acc")),
+        "test_f1": safe_float(metrics.get("test_f1")),
+        "balanced_acc": safe_float(metrics.get("balanced_acc")),
+        "sensitivity": safe_float(metrics.get("sensitivity")),
+        "specificity": safe_float(metrics.get("specificity")),
+        "pr_auc": safe_float(metrics.get("pr_auc")),
+        "log_has_traceback": log_info.get("has_traceback"),
+        "log_has_nan_or_inf": log_info.get("has_nan_or_inf"),
+        "gate_mean": safe_float(distribution.get("gate_mean")),
+        "gate_std": safe_float(distribution.get("gate_std")),
+        "gate_min": safe_float(distribution.get("gate_min")),
+        "gate_max": safe_float(distribution.get("gate_max")),
+        "gate_range": safe_float(distribution.get("gate_range")),
+        "conflict_gate_mean": safe_float(distribution.get("conflict_gate_mean")),
+        "non_conflict_gate_mean": safe_float(distribution.get("non_conflict_gate_mean")),
+        "conflict_minus_nonconflict": safe_float(distribution.get("conflict_minus_nonconflict")),
+        "run_dir": str(run_dir) if run_dir else None,
+        "log_path": log_info.get("log_path"),
+        "probe_status": probe_status.get("status"),
+        "warning": None,
+    }
+    row["recommend_for_step49"] = recommend_step49(row)
+    return row
+
+
+def append_variant_block(report_lines: list[str], row: dict[str, object]) -> None:
+    report_lines.extend(
+        [
+            f"## {row['variant']}",
+            f"- smoke_completed: `{format_bool(row.get('smoke_completed'))}`",
+            f"- checkpoint_exists: `{format_bool(row.get('checkpoint_exists'))}`",
+            f"- test_auc: `{format_metric(safe_float(row.get('test_auc')))}`",
+            f"- test_acc: `{format_metric(safe_float(row.get('test_acc')))}`",
+            f"- test_f1: `{format_metric(safe_float(row.get('test_f1')))}`",
+            f"- balanced_acc: `{format_metric(safe_float(row.get('balanced_acc')))}`",
+            f"- sensitivity: `{format_metric(safe_float(row.get('sensitivity')))}`",
+            f"- specificity: `{format_metric(safe_float(row.get('specificity')))}`",
+            f"- pr_auc: `{format_metric(safe_float(row.get('pr_auc')))}`",
+            f"- gate_mean/std/range: `{format_metric(safe_float(row.get('gate_mean')))}` / `{format_metric(safe_float(row.get('gate_std')))}` / `{format_metric(safe_float(row.get('gate_range')))}`",
+            f"- gate_min/max: `{format_metric(safe_float(row.get('gate_min')))}` / `{format_metric(safe_float(row.get('gate_max')))}`",
+            f"- conflict_gate_mean: `{format_metric(safe_float(row.get('conflict_gate_mean')))}`",
+            f"- non_conflict_gate_mean: `{format_metric(safe_float(row.get('non_conflict_gate_mean')))}`",
+            f"- conflict_minus_nonconflict: `{format_metric(safe_float(row.get('conflict_minus_nonconflict')))}`",
+            f"- log_has_traceback: `{format_bool(row.get('log_has_traceback'))}`",
+            f"- log_has_nan_or_inf: `{format_bool(row.get('log_has_nan_or_inf'))}`",
+            f"- recommend_for_step49: `{format_bool(row.get('recommend_for_step49'))}`",
+        ]
+    )
+    if row.get("warning"):
+        report_lines.append(f"- warning: `{row['warning']}`")
+    report_lines.append("")
 
 
 def main() -> int:
@@ -351,123 +541,195 @@ def main() -> int:
     baseline_diag_path = resolve_path(args.baseline_diagnostics)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    variants = parse_variants(args.variants) or ["v2_gain2_g08"]
+    variants = parse_variants(args.variants) or list(DEFAULT_VARIANTS)
     baseline_gate_std, baseline_gate_range = load_baseline_step47_distribution(baseline_diag_path)
 
-    report_lines = ["# Step48 PRARC-v2 Smoke Report", ""]
+    report_lines = [
+        "# Step48b PRARC-v2 Variant Sweep Report",
+        "",
+        "## Step48b Purpose",
+        "- Run fold0 / 1 epoch smoke variants on top of the existing Step48 PRARC-v2 path.",
+        "- Do not enter 5-fold or evidence export unless a variant shows materially stronger gate dynamics without obvious metric collapse.",
+        "",
+        "## Known Step48 Issue",
+        f"- `{STEP48_REFERENCE['variant']}` was engineering-stable but its gate stayed near-constant.",
+        f"- Step48 reference gate mean/std/range: `{format_metric(STEP48_REFERENCE['gate_mean'])}` / `{format_metric(STEP48_REFERENCE['gate_std'])}` / `{format_metric(STEP48_REFERENCE['gate_range'])}`.",
+        f"- Step48 conflict vs non-conflict gate gap: `{format_metric(STEP48_REFERENCE['conflict_minus_nonconflict'])}`; direction was correct but too small.",
+        "",
+        "## Variants In Scope",
+        f"- Requested variants: `{', '.join(variants)}`",
+        "",
+    ]
+
     manifest: dict[str, object] = {
-        "step": "Step48 PRARC-v2 Gate Dynamics Repair Smoke",
+        "step": "Step48b PRARC-v2 Smoke Variant Sweep",
         "results_root": str(results_root),
         "output_dir": str(output_dir),
         "variants": variants,
         "baseline_step47_gate_std": baseline_gate_std,
         "baseline_step47_gate_range": baseline_gate_range,
+        "step48_reference": STEP48_REFERENCE,
+        "warnings": [],
         "variant_results": [],
     }
 
     probe_rows: list[dict[str, object]] = []
     distribution_rows: list[dict[str, object]] = []
+    summary_rows: list[dict[str, object]] = []
 
     for variant in variants:
         run_dir = find_run_dir(results_root, variant, args.seed)
-        variant_result: dict[str, object] = {"variant": variant, "run_dir": str(run_dir) if run_dir else None}
+        log_path = results_root / "logs" / f"stage48_{variant}_s{args.seed}.log"
+        log_info = inspect_log(log_path)
+
         if run_dir is None:
-            variant_result["status"] = "missing"
-            manifest["variant_results"].append(variant_result)
-            report_lines.append(f"- {variant}: run directory missing")
+            warning = f"missing run directory for {variant}"
+            manifest["warnings"].append(warning)
+            row = build_variant_summary_row(variant, None, log_info, {}, {"variant": variant}, {"status": "missing"})
+            row["warning"] = warning
+            summary_rows.append(row)
+            distribution_rows.append({"variant": variant, "warning": warning})
+            manifest["variant_results"].append(row)
+            append_variant_block(report_lines, row)
             continue
 
         settings = read_experiment_settings(run_dir)
-        fold_summary_path = run_dir / "fold_summary.csv"
-        metrics = {}
-        if fold_summary_path.is_file():
-            try:
-                df_metrics = pd.read_csv(fold_summary_path)
-                if not df_metrics.empty:
-                    metrics = df_metrics.iloc[0].to_dict()
-            except Exception:
-                metrics = {}
-
-        log_info = inspect_log(results_root / "logs" / f"stage48_{variant}_s{args.seed}.log")
-        checkpoint_exists = (run_dir / "s_0_checkpoint.pt").is_file()
+        metrics = get_fold0_metrics(run_dir)
         rows, probe_status = probe_run(variant, run_dir, settings, args)
         probe_rows.extend(rows)
 
         gate_df = pd.DataFrame([row for row in rows if row["variant"] == variant])
-        dist_row = summarize_distribution(variant, gate_df) if not gate_df.empty else {"variant": variant}
-        distribution_rows.append(dist_row)
+        distribution = summarize_distribution(variant, gate_df) if not gate_df.empty else {"variant": variant}
+        distribution_rows.append(distribution)
 
-        gate_std = dist_row.get("gate_std")
-        gate_range = dist_row.get("gate_range")
-        variance_better = False
-        if baseline_gate_std is not None and gate_std is not None:
-            variance_better = gate_std > baseline_gate_std
-        range_better = False
-        if baseline_gate_range is not None and gate_range is not None:
-            range_better = gate_range > baseline_gate_range
-        recommend_step49 = bool(
-            probe_status.get("status") == "ok"
-            and checkpoint_exists
-            and not log_info.get("has_traceback")
-            and not log_info.get("has_nan_or_inf")
-            and gate_std is not None and gate_std > 1e-3
-            and gate_range is not None and gate_range > max(1e-2, baseline_gate_range or 0.0)
-        )
+        row = build_variant_summary_row(variant, run_dir, log_info, metrics, distribution, probe_status)
+        summary_rows.append(row)
 
-        variant_result.update(
-            {
-                "status": probe_status.get("status"),
-                "checkpoint_exists": checkpoint_exists,
-                "fold0_metrics": metrics,
-                "log_info": log_info,
-                "probe_status": probe_status,
-                "gate_distribution": dist_row,
-                "variance_better_than_step47_v1_g08": variance_better,
-                "range_better_than_step47_v1_g08": range_better,
-                "recommend_step49": recommend_step49,
-            }
-        )
+        variant_result = {
+            **row,
+            "fold0_metrics": metrics,
+            "gate_distribution": distribution,
+            "probe_details": probe_status,
+            "log_info": log_info,
+            "gate_std_gt_step47_v1_g08": (
+                safe_float(row.get("gate_std")) is not None and baseline_gate_std is not None and safe_float(row.get("gate_std")) > baseline_gate_std
+            ),
+            "gate_range_gt_step47_v1_g08": (
+                safe_float(row.get("gate_range")) is not None and baseline_gate_range is not None and safe_float(row.get("gate_range")) > baseline_gate_range
+            ),
+        }
         manifest["variant_results"].append(variant_result)
+        append_variant_block(report_lines, row)
 
+    gate_best_variant = choose_gate_winner(summary_rows)
+    performance_best_variant = choose_performance_winner(summary_rows)
+    recommended_rows = [row for row in summary_rows if row.get("recommend_for_step49")]
+
+    recommend_step49_any = len(recommended_rows) > 0
+    recommended_variant = None
+    if recommend_step49_any:
+        prioritized = [row for row in recommended_rows if row.get("variant") == "v2_confprior_g08"]
+        if not prioritized:
+            prioritized = [row for row in recommended_rows if row.get("variant") == "v2_varreg_g08"]
+        if not prioritized:
+            prioritized = recommended_rows
+        recommended_variant = prioritized[0].get("variant")
+
+    gain4_row = next((row for row in summary_rows if row.get("variant") == "v2_gain4_g08"), None)
+    dynamic_but_unacceptable = False
+    if gain4_row is not None:
+        dynamic_but_unacceptable = (
+            safe_float(gain4_row.get("gate_range")) is not None
+            and safe_float(gain4_row.get("gate_range")) > STEP48_REFERENCE["gate_range"]
+            and not recommend_step49(gain4_row)
+        )
+
+    report_lines.extend(
+        [
+            "## Overall Judgment",
+            f"- best_gate_dynamics_variant: `{gate_best_variant or 'N/A'}`",
+            f"- best_metric_retention_variant: `{performance_best_variant or 'N/A'}`",
+            f"- recommend_enter_step49: `{format_bool(recommend_step49_any)}`",
+        ]
+    )
+    if recommended_variant is not None:
+        report_lines.append(f"- recommended_variant: `{recommended_variant}`")
+    else:
+        report_lines.append("- recommended_variant: `None`")
+
+    if dynamic_but_unacceptable:
+        report_lines.append("- note: `v2_gain4_g08` improved dynamics relative to Step48, but performance was not acceptable, so it should not enter Step49.`")
+
+    if not recommend_step49_any:
         report_lines.extend(
             [
-                f"## {variant}",
-                f"- smoke_completed: `{probe_status.get('status') == 'ok'}`",
-                f"- checkpoint_exists: `{checkpoint_exists}`",
-                f"- test_auc: `{metrics.get('test_auc')}`",
-                f"- test_acc: `{metrics.get('test_acc')}`",
-                f"- test_f1: `{metrics.get('test_f1')}`",
-                f"- balanced_acc: `{metrics.get('balanced_acc')}`",
-                f"- pr_auc: `{metrics.get('pr_auc')}`",
-                f"- prarc_enabled: `{bool(rows and rows[0].get('prarc_enabled'))}`",
-                f"- gate_mean: `{dist_row.get('gate_mean')}`",
-                f"- gate_std: `{dist_row.get('gate_std')}`",
-                f"- gate_min: `{dist_row.get('gate_min')}`",
-                f"- gate_max: `{dist_row.get('gate_max')}`",
-                f"- gate_range: `{dist_row.get('gate_range')}`",
-                f"- gate_std_gt_step47_v1_g08: `{variance_better}`",
-                f"- gate_range_gt_step47_v1_g08: `{range_better}`",
-                f"- conflict_gate_mean: `{dist_row.get('conflict_gate_mean')}`",
-                f"- non_conflict_gate_mean: `{dist_row.get('non_conflict_gate_mean')}`",
-                f"- conflict_minus_nonconflict: `{dist_row.get('conflict_minus_nonconflict')}`",
-                f"- log_has_traceback: `{log_info.get('has_traceback')}`",
-                f"- log_has_nan_or_inf: `{log_info.get('has_nan_or_inf')}`",
-                f"- recommend_enter_step49: `{recommend_step49}`",
-                "",
+                "- conclusion: `No Step48b variant met the combined stability + dynamics bar. PRARC should currently be treated as a negative ablation.`",
+                "- step49_decision: `Do not enter Step49 PRARC-v2 5-fold.`",
             ]
         )
+    else:
+        report_lines.extend(
+            [
+                f"- conclusion: `Proceed to Step49 only with {recommended_variant}.`",
+                f"- step49_decision: `Enter Step49 PRARC-v2 5-fold with {recommended_variant}.`",
+            ]
+        )
+    report_lines.append("")
 
-    probe_csv = output_dir / "stage48_prarc_v2_gate_probe.csv"
-    dist_csv = output_dir / "stage48_prarc_v2_gate_distribution.csv"
-    report_md = output_dir / "stage48_prarc_v2_smoke_report.md"
-    manifest_json = output_dir / "stage48_prarc_v2_smoke_manifest.json"
+    summary_columns = [
+        "variant",
+        "smoke_completed",
+        "checkpoint_exists",
+        "test_auc",
+        "test_acc",
+        "test_f1",
+        "balanced_acc",
+        "sensitivity",
+        "specificity",
+        "pr_auc",
+        "log_has_traceback",
+        "log_has_nan_or_inf",
+        "gate_mean",
+        "gate_std",
+        "gate_min",
+        "gate_max",
+        "gate_range",
+        "conflict_gate_mean",
+        "non_conflict_gate_mean",
+        "conflict_minus_nonconflict",
+        "recommend_for_step49",
+        "warning",
+    ]
 
-    pd.DataFrame(probe_rows).to_csv(probe_csv, index=False)
-    pd.DataFrame(distribution_rows).to_csv(dist_csv, index=False)
+    summary_df = pd.DataFrame(summary_rows)
+    if summary_df.empty:
+        summary_df = pd.DataFrame(columns=summary_columns)
+    else:
+        summary_df = summary_df.reindex(columns=summary_columns)
+
+    distribution_df = pd.DataFrame(distribution_rows)
+    probe_df = pd.DataFrame(probe_rows)
+
+    summary_csv = output_dir / STAGE48B_SUMMARY_CSV
+    gate_csv = output_dir / STAGE48B_GATE_CSV
+    probe_csv = output_dir / STAGE48B_PROBE_CSV
+    report_md = output_dir / STAGE48B_REPORT_MD
+    manifest_json = output_dir / STAGE48B_MANIFEST_JSON
+
+    summary_df.to_csv(summary_csv, index=False)
+    distribution_df.to_csv(gate_csv, index=False)
+    probe_df.to_csv(probe_csv, index=False)
+
+    manifest["best_gate_dynamics_variant"] = gate_best_variant
+    manifest["best_metric_retention_variant"] = performance_best_variant
+    manifest["recommended_variant"] = recommended_variant
+    manifest["recommend_enter_step49"] = recommend_step49_any
+    manifest["negative_ablation"] = not recommend_step49_any
+
     report_md.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
     manifest_json.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"[Done] Wrote Step48 smoke summary to {output_dir}")
+    print(f"[Done] Wrote Step48b summary to {output_dir}")
     return 0
 
 

@@ -2771,3 +2771,120 @@
 - Step46 smoke passed.
 - Recommended next step:
   - enter Step47 `PRARC 5-fold`.
+
+## 2026-06-16 - Step48b: PRARC-v2 Smoke Variant Sweep
+
+### Goal
+- Reuse the existing Step48 PRARC-v2 implementation and run fold0 / 1 epoch smoke variants only.
+- Do not enter 5-fold or evidence export unless a variant shows materially stronger gate dynamics without obvious metric collapse.
+- Keep dataset loading and core model behavior unchanged.
+
+### Files modified
+- `scripts/analysis/build_stage48_prarc_v2_smoke_summary.py`
+- `docs/CODEX_HANDOFF.md`
+
+### Static checks
+- `bash -n scripts/experiments/run_stage48_prarc_v2_smoke.sh`: passed
+- `python -m py_compile scripts/analysis/build_stage48_prarc_v2_smoke_summary.py`: passed
+
+### Variants run
+- Required:
+  - `v2_gain4_g08`
+  - `v2_confprior_g08`
+  - `v2_varreg_g08`
+- Included in final Step48b summary:
+  - `v2_gain2_g08`
+  - `v2_gain4_g08`
+  - `v2_confprior_g08`
+  - `v2_varreg_g08`
+
+### Output directories
+- Variant result dirs:
+  - `results_stage48/stage48_v2_gain4_g08_s1`
+  - `results_stage48/stage48_v2_confprior_g08_s1`
+  - `results_stage48/stage48_v2_varreg_g08_s1`
+  - Existing Step48 reference: `results_stage48/stage48_v2_gain2_g08_s1`
+- Variant logs:
+  - `results_stage48/logs/stage48_v2_gain4_g08_s1.log`
+  - `results_stage48/logs/stage48_v2_confprior_g08_s1.log`
+  - `results_stage48/logs/stage48_v2_varreg_g08_s1.log`
+  - Existing Step48 reference: `results_stage48/logs/stage48_v2_gain2_g08_s1.log`
+- Step48b summary dir:
+  - `results_stage48/stage48b_prarc_v2_variant_sweep_summary`
+
+### Step48b summary outputs
+- `stage48b_prarc_v2_variant_sweep_summary.csv`
+- `stage48b_prarc_v2_gate_distribution.csv`
+- `stage48b_prarc_v2_gate_probe.csv`
+- `stage48b_prarc_v2_variant_report.md`
+- `stage48b_manifest.json`
+
+### Step48 known issue carried into Step48b
+- Step48 reference variant `v2_gain2_g08` was engineering-stable but gate dynamics remained too weak.
+- Step48 reference metrics:
+  - `AUC=0.9732`
+  - `ACC=0.8918`
+  - `F1=0.8702`
+  - `Balanced ACC=0.8482`
+  - `PR-AUC=0.9396`
+- Step48 reference gate diagnostics:
+  - `gate_mean=0.9318`
+  - `gate_std=0.001659`
+  - `gate_range=0.004958`
+  - `conflict_gate_mean=0.9301`
+  - `non_conflict_gate_mean=0.9321`
+  - `conflict_minus_nonconflict=-0.00199`
+- Interpretation:
+  - direction was correct, but gate was still close to a high constant and did not justify Step49.
+
+### Fold0 / 1 epoch smoke results
+- `v2_gain2_g08`
+  - smoke completed: `True`
+  - no `Traceback`: `True`
+  - no `NaN/Inf`: `True`
+  - `AUC=0.9732`, `ACC=0.8918`, `F1=0.8702`, `Balanced ACC=0.8482`, `PR-AUC=0.9396`
+  - `gate_mean=0.9318`, `gate_std=0.001659`, `gate_range=0.004958`
+  - `conflict_gate_mean=0.9301`, `non_conflict_gate_mean=0.9321`, `conflict_minus_nonconflict=-0.00199`
+- `v2_gain4_g08`
+  - smoke completed: `True`
+  - no `Traceback`: `True`
+  - no `NaN/Inf`: `True`
+  - `AUC=0.9731`, `ACC=0.8918`, `F1=0.8702`, `Balanced ACC=0.8482`, `PR-AUC=0.9396`
+  - `gate_mean=0.9946`, `gate_std=0.000273`, `gate_range=0.000897`
+  - `conflict_gate_mean=0.9943`, `non_conflict_gate_mean=0.9946`, `conflict_minus_nonconflict=-0.000303`
+- `v2_confprior_g08`
+  - smoke completed: `True`
+  - no `Traceback`: `True`
+  - no `NaN/Inf`: `True`
+  - `AUC=0.9732`, `ACC=0.8918`, `F1=0.8702`, `Balanced ACC=0.8482`, `PR-AUC=0.9396`
+  - `gate_mean=0.9318`, `gate_std=0.001746`, `gate_range=0.005480`
+  - `conflict_gate_mean=0.9294`, `non_conflict_gate_mean=0.9322`, `conflict_minus_nonconflict=-0.00282`
+- `v2_varreg_g08`
+  - smoke completed: `True`
+  - no `Traceback`: `True`
+  - no `NaN/Inf`: `True`
+  - `AUC=0.9732`, `ACC=0.8918`, `F1=0.8702`, `Balanced ACC=0.8482`, `PR-AUC=0.9396`
+  - `gate_mean=0.9318`, `gate_std=0.001659`, `gate_range=0.004958`
+  - `conflict_gate_mean=0.9301`, `non_conflict_gate_mean=0.9321`, `conflict_minus_nonconflict=-0.00199`
+
+### Gate diagnostics summary
+- Best gate-dynamics variant:
+  - `v2_confprior_g08`
+- Best metric-retention variant:
+  - `v2_gain2_g08`
+- Important observations:
+  - `v2_confprior_g08` improved the conflict-vs-non-conflict gap from `-0.00199` to `-0.00282` and slightly widened gate range to `0.00548`.
+  - `v2_varreg_g08` did not materially change gate behavior relative to Step48 reference.
+  - `v2_gain4_g08` pushed the gate into stronger high-end saturation (`mean=0.9946`) and reduced spread further instead of improving dynamics.
+  - None of the variants reached the Step49 bar of roughly `gate_std >= 0.005` and `gate_range >= 0.02`.
+  - None of the variants escaped the long-term high-gate saturation regime.
+
+### Recommendation
+- Recommended variant:
+  - `None`
+- Enter Step49 PRARC-v2 5-fold:
+  - `No`
+- Final judgment:
+  - Step48b did not find a PRARC-v2 variant with sufficiently improved gate dynamics.
+  - PRARC should currently be treated as a `negative ablation`.
+  - Do not continue stacking PRARC variants into Step49 unless a new mechanism changes the gate regime more substantially than the current sweep.
