@@ -54,9 +54,12 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.rce_use_visual_evidence_gate = bool(getattr(config, "rce_use_visual_evidence_gate", False))
         self.rce_visual_gate_init = float(getattr(config, "rce_visual_gate_init", 1.0))
         self.rce_use_prarc_gate = bool(getattr(config, "rce_use_prarc_gate", False))
+        self.rce_prarc_gate_version = str(getattr(config, "rce_prarc_gate_version", "v1")).strip().lower()
         self.rce_prarc_gate_hidden_dim = int(getattr(config, "rce_prarc_gate_hidden_dim", 16))
         self.rce_prarc_gate_init = float(getattr(config, "rce_prarc_gate_init", 0.8))
         self.rce_prarc_gate_dropout = float(getattr(config, "rce_prarc_gate_dropout", 0.0))
+        self.rce_prarc_gate_gain = float(getattr(config, "rce_prarc_gate_gain", 1.0))
+        self.rce_prarc_gate_last_weight_init = float(getattr(config, "rce_prarc_gate_last_weight_init", 0.01))
         self.rce_prarc_gate_feature_set = str(getattr(config, "rce_prarc_gate_feature_set", "v1"))
         self.rce_prarc_detach_features = bool(getattr(config, "rce_prarc_detach_features", False))
         self.rce_prarc_include_optional_features = bool(
@@ -64,6 +67,14 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         )
         self.rce_prarc_feature_clip = float(getattr(config, "rce_prarc_feature_clip", 10.0))
         self.rce_prarc_export_debug = bool(getattr(config, "rce_prarc_export_debug", False))
+        self.rce_prarc_use_conflict_prior = bool(getattr(config, "rce_prarc_use_conflict_prior", False))
+        self.rce_prarc_conflict_prior_strength = float(
+            getattr(config, "rce_prarc_conflict_prior_strength", 0.2)
+        )
+        self.rce_prarc_use_gate_entropy_reg = bool(getattr(config, "rce_prarc_use_gate_entropy_reg", False))
+        self.rce_prarc_gate_entropy_lambda = float(getattr(config, "rce_prarc_gate_entropy_lambda", 0.0))
+        self.rce_prarc_use_gate_variance_reg = bool(getattr(config, "rce_prarc_use_gate_variance_reg", False))
+        self.rce_prarc_gate_variance_lambda = float(getattr(config, "rce_prarc_gate_variance_lambda", 0.0))
         self.rce_use_low_high_consistency_loss = bool(
             getattr(config, "rce_use_low_high_consistency_loss", False)
         )
@@ -108,7 +119,14 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             nn.Dropout(self.rce_prarc_gate_dropout),
             nn.Linear(self.rce_prarc_gate_hidden_dim, 1),
         )
-        nn.init.zeros_(self.prarc_gate_mlp[-1].weight)
+        if self.rce_prarc_gate_version == "v2":
+            nn.init.normal_(
+                self.prarc_gate_mlp[-1].weight,
+                mean=0.0,
+                std=max(float(self.rce_prarc_gate_last_weight_init), 1e-6),
+            )
+        else:
+            nn.init.zeros_(self.prarc_gate_mlp[-1].weight)
         nn.init.constant_(
             self.prarc_gate_mlp[-1].bias,
             float(self._sigmoid_init_to_logit(self.rce_prarc_gate_init).item()),
@@ -168,10 +186,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_visual_residual_contribution = None
         self.last_visual_gated_contribution = None
         self.last_prarc_enabled = None
+        self.last_prarc_gate_version = None
+        self.last_prarc_gate_gain = None
+        self.last_prarc_gate_logits = None
         self.last_prarc_gate = None
         self.last_prarc_gate_features = None
         self.last_prarc_gate_feature_names = None
         self.last_prarc_gate_feature_dict = None
+        self.last_prarc_conflict_prior = None
+        self.last_prarc_gate_reg_loss = None
+        self.last_prarc_gate_entropy = None
+        self.last_prarc_gate_variance = None
         self.last_prarc_visual_gated_contribution = None
         self.last_prarc_visual_residual_contribution = None
         self.last_prarc_concept_logits_before_visual = None
@@ -208,6 +233,12 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
                 "rce_use_visual_evidence_gate=True but rce_use_visual_residual=False; "
                 "visual evidence gate will be ignored."
             )
+        if self.rce_prarc_gate_version not in {"v1", "v2"}:
+            logger.warning(
+                "Unsupported rce_prarc_gate_version=%s; falling back to v1.",
+                self.rce_prarc_gate_version,
+            )
+            self.rce_prarc_gate_version = "v1"
         if self.rce_use_prarc_gate and not self.rce_use_visual_residual:
             logger.warning(
                 "rce_use_prarc_gate=True but rce_use_visual_residual=False; "
@@ -329,10 +360,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
 
     def _set_prarc_debug_defaults(self):
         self.last_prarc_enabled = torch.tensor(False)
+        self.last_prarc_gate_version = self.rce_prarc_gate_version
+        self.last_prarc_gate_gain = float(self.rce_prarc_gate_gain)
+        self.last_prarc_gate_logits = None
         self.last_prarc_gate = None
         self.last_prarc_gate_features = None
         self.last_prarc_gate_feature_names = list(self.rce_prarc_feature_names)
         self.last_prarc_gate_feature_dict = None
+        self.last_prarc_conflict_prior = None
+        self.last_prarc_gate_reg_loss = torch.tensor(0.0)
+        self.last_prarc_gate_entropy = None
+        self.last_prarc_gate_variance = None
         self.last_prarc_visual_gated_contribution = None
         self.last_prarc_visual_residual_contribution = None
         self.last_prarc_concept_logits_before_visual = None
@@ -340,6 +378,42 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_prarc_gate_min = None
         self.last_prarc_gate_max = None
         self.last_prarc_skip_reason = None
+
+    def _compute_prarc_conflict_prior(self, gate_feature_dict):
+        if not self.rce_prarc_use_conflict_prior:
+            return None
+        conflict = gate_feature_dict.get("visual_concept_conflict")
+        concept_abs = gate_feature_dict.get("concept_pred_margin_abs")
+        if conflict is None or concept_abs is None:
+            return None
+        prior_strength = max(float(self.rce_prarc_conflict_prior_strength), 0.0)
+        concept_confidence = concept_abs / (1.0 + concept_abs.abs())
+        return prior_strength * conflict * concept_confidence
+
+    def _compute_prarc_gate_regularization(self, prarc_gate):
+        if prarc_gate is None:
+            return None, None, None
+
+        gate_entropy = -(
+            prarc_gate * torch.log(prarc_gate.clamp_min(1e-6))
+            + (1.0 - prarc_gate) * torch.log((1.0 - prarc_gate).clamp_min(1e-6))
+        ).mean()
+        gate_variance = prarc_gate.var(unbiased=False)
+        gate_reg_loss = prarc_gate.new_zeros(())
+
+        if self.rce_prarc_use_gate_entropy_reg and self.rce_prarc_gate_entropy_lambda > 0.0:
+            target_entropy = 0.5 * math.log(2.0)
+            gate_reg_loss = gate_reg_loss + float(self.rce_prarc_gate_entropy_lambda) * F.relu(
+                prarc_gate.new_tensor(target_entropy) - gate_entropy
+            )
+
+        if self.rce_prarc_use_gate_variance_reg and self.rce_prarc_gate_variance_lambda > 0.0:
+            target_variance = 1e-3
+            gate_reg_loss = gate_reg_loss + float(self.rce_prarc_gate_variance_lambda) * F.relu(
+                prarc_gate.new_tensor(target_variance) - gate_variance
+            )
+
+        return gate_reg_loss, gate_entropy, gate_variance
 
     def _compute_prarc_gate_features(
         self,
@@ -443,10 +517,10 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
     ):
         if not self.rce_use_prarc_gate:
             self.last_prarc_skip_reason = "prarc_disabled"
-            return None, None, None, None
+            return None, None, None, None, None, None
         if visual_logits is None:
             self.last_prarc_skip_reason = "visual_logits_missing"
-            return None, None, None, None
+            return None, None, None, None, None, None
 
         gate_features, feature_dict, feature_names = self._compute_prarc_gate_features(
             logits_low=logits_low,
@@ -458,13 +532,20 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         )
         if gate_features is None:
             self.last_prarc_skip_reason = "feature_build_failed"
-            return None, None, None, None
+            return None, None, None, None, None, None
         mlp_input = gate_features.detach() if self.rce_prarc_detach_features else gate_features
         gate_logits = self.prarc_gate_mlp(mlp_input)
-        prarc_gate = torch.sigmoid(gate_logits)
+        conflict_prior = None
+        if self.rce_prarc_gate_version == "v2":
+            conflict_prior = self._compute_prarc_conflict_prior(feature_dict)
+            if conflict_prior is not None:
+                gate_logits = gate_logits - conflict_prior.unsqueeze(1)
+            prarc_gate = torch.sigmoid(float(self.rce_prarc_gate_gain) * gate_logits)
+        else:
+            prarc_gate = torch.sigmoid(gate_logits)
         self.last_prarc_enabled = torch.tensor(True)
         self.last_prarc_skip_reason = None
-        return prarc_gate, gate_features, feature_dict, feature_names
+        return prarc_gate, gate_features, feature_dict, feature_names, gate_logits, conflict_prior
 
     def _prepare_patch_features_for_attention(self, patch_features):
         if patch_features.dim() == 2:
@@ -1313,8 +1394,18 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         if self.rce_use_visual_residual:
             alpha = torch.sigmoid(self.rce_visual_residual_alpha)
             visual_residual_contribution = alpha * visual_logits
+            prarc_gate_reg_loss = None
+            prarc_gate_entropy = None
+            prarc_gate_variance = None
             if self.rce_use_prarc_gate:
-                prarc_gate, prarc_gate_features, prarc_feature_dict, prarc_feature_names = self._apply_prarc_gate(
+                (
+                    prarc_gate,
+                    prarc_gate_features,
+                    prarc_feature_dict,
+                    prarc_feature_names,
+                    prarc_gate_logits,
+                    prarc_conflict_prior,
+                ) = self._apply_prarc_gate(
                     logits_low=logits_low,
                     logits_high=logits_high,
                     visual_logits=visual_logits,
@@ -1323,12 +1414,30 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
                 )
                 if prarc_gate is not None:
                     visual_gated_contribution = prarc_gate * visual_residual_contribution
+                    prarc_gate_reg_loss, prarc_gate_entropy, prarc_gate_variance = (
+                        self._compute_prarc_gate_regularization(prarc_gate)
+                    )
+                    self.last_prarc_gate_version = self.rce_prarc_gate_version
+                    self.last_prarc_gate_gain = float(self.rce_prarc_gate_gain)
+                    self.last_prarc_gate_logits = prarc_gate_logits.detach().cpu()
                     self.last_prarc_gate = prarc_gate.detach().cpu()
                     self.last_prarc_gate_features = prarc_gate_features.detach().cpu()
                     self.last_prarc_gate_feature_names = list(prarc_feature_names)
                     self.last_prarc_gate_feature_dict = {
                         name: value.detach().cpu() for name, value in prarc_feature_dict.items()
                     }
+                    self.last_prarc_conflict_prior = (
+                        prarc_conflict_prior.detach().cpu() if prarc_conflict_prior is not None else None
+                    )
+                    self.last_prarc_gate_reg_loss = (
+                        prarc_gate_reg_loss.detach().cpu() if prarc_gate_reg_loss is not None else torch.tensor(0.0)
+                    )
+                    self.last_prarc_gate_entropy = (
+                        prarc_gate_entropy.detach().cpu() if prarc_gate_entropy is not None else None
+                    )
+                    self.last_prarc_gate_variance = (
+                        prarc_gate_variance.detach().cpu() if prarc_gate_variance is not None else None
+                    )
                     self.last_prarc_visual_residual_contribution = visual_residual_contribution.detach().cpu()
                     self.last_prarc_visual_gated_contribution = visual_gated_contribution.detach().cpu()
                     self.last_prarc_gate_mean = float(prarc_gate.mean().detach().cpu().item())
@@ -1417,11 +1526,16 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             final_logits = final_logits * scale + self.rce_class_bias
 
         ce_loss = self.loss_ce(final_logits, label)
+        prarc_gate_reg_loss = ce_loss.new_zeros(())
         lh_consistency_loss = ce_loss.new_zeros(())
         low_margin = None
         high_margin = None
         lh_margin_gap = None
         loss = ce_loss
+        if self.rce_use_prarc_gate and self.last_prarc_gate_reg_loss is not None:
+            prarc_gate_reg_loss = self.last_prarc_gate_reg_loss.to(ce_loss.device, dtype=ce_loss.dtype)
+            if self.rce_prarc_gate_version == "v2":
+                loss = loss + prarc_gate_reg_loss
         if self.scale_mode == "dual" and self.rce_use_low_high_consistency_loss:
             low_margin = self._true_vs_wrong_margin(logits_low, label)
             high_margin = self._true_vs_wrong_margin(logits_high, label)
@@ -1430,7 +1544,7 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             high_loss = F.relu(margin - high_margin)
             lh_consistency_loss = (low_loss + high_loss).mean()
             lh_margin_gap = torch.abs(low_margin - high_margin)
-            loss = ce_loss + self.rce_lh_consistency_lambda * lh_consistency_loss
+            loss = loss + self.rce_lh_consistency_lambda * lh_consistency_loss
 
         self.last_low_prompt_weights = low_prompt_weights.detach().cpu()
         self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
@@ -1482,6 +1596,7 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_high_true_wrong_margin = high_margin.detach().cpu() if high_margin is not None else None
         self.last_lh_margin_gap = lh_margin_gap.detach().cpu() if lh_margin_gap is not None else None
         self.last_lh_consistency_loss = lh_consistency_loss.detach().cpu()
+        self.last_prarc_gate_reg_loss = prarc_gate_reg_loss.detach().cpu()
         self.last_total_loss = loss.detach().cpu()
         Y_prob = F.softmax(final_logits, dim=1)
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]

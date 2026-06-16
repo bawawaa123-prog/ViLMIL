@@ -315,6 +315,53 @@
   - Pending actual Step47 performance + diagnostics.
 - If Step48 is not recommended:
   - First adjust PRARC feature set / gate initialization and re-check whether gate spread grows beyond near-scalar behavior.
+
+## Step48: PRARC-v2 Gate Dynamics Repair Smoke
+
+- Modified files:
+  - `main.py`
+  - `utils/core_utils.py`
+  - `models/model_DEG_MIL_BiomedCLIP.py`
+  - `scripts/experiments/run_stage48_prarc_v2_smoke.sh`
+  - `scripts/analysis/check_stage48_prarc_v2_integrity.py`
+  - `scripts/analysis/build_stage48_prarc_v2_smoke_summary.py`
+  - `docs/CODEX_HANDOFF.md`
+- Goal:
+  - Do not enter the original Step48 evidence export path because Step47 showed PRARC-v1 underperformed baseline and gate dynamics were too weak.
+  - Repair PRARC gate dynamics first with a backward-compatible PRARC-v2 option, then use fold0 / 1 epoch smoke + probe to judge whether gate variation becomes meaningfully stronger.
+- Why Step47 did not enter evidence export:
+  - `prarc_v1_g05` was the strongest PRARC-v1 variant but still below baseline on AUC / ACC / F1 / Balanced ACC / PR-AUC.
+  - `prarc_v1_g08` and `prarc_v1_g10` behaved close to scalar gates, with very small gate spread in diagnostics.
+  - Therefore failure/evidence export would over-analyze a gate that had not yet learned meaningful sample-adaptive behavior.
+- PRARC-v2 changes:
+  - Added `rce_prarc_gate_version` with default `v1` to preserve Step46/47 behavior.
+  - Added `gate_gain` and nonzero last-layer initialization for stronger gate-logit dynamics.
+  - Added optional label-free conflict prior based on `visual_concept_conflict` and `concept_pred_margin_abs`.
+  - Added optional gate entropy regularization and gate variance regularization.
+  - Added debug buffers for gate logits, prior, entropy, variance, and regularization loss.
+- Smoke variants:
+  - `v2_gain2_g08`
+  - `v2_gain4_g08`
+  - `v2_gain2_g05`
+  - `v2_opt_gain2_g08`
+  - `v2_confprior_g08`
+  - `v2_varreg_g08`
+  - `all`
+- Output directories:
+  - smoke runs: `results_stage48/stage48_<variant>_s1`
+  - logs: `results_stage48/logs/stage48_<variant>_s1.log`
+  - smoke summary: `results_stage48/stage48_prarc_v2_smoke_summary`
+- Gate diagnostics:
+  - `build_stage48_prarc_v2_smoke_summary.py` runs a lightweight test-split probe for fold0, exports per-slide gate values, and compares gate spread against Step47 `prarc_v1_g08`.
+- Validation:
+  - `python -m py_compile main.py`
+  - `python -m py_compile utils/core_utils.py`
+  - `python -m py_compile models/model_DEG_MIL_BiomedCLIP.py`
+  - `python -m py_compile scripts/analysis/check_stage48_prarc_v2_integrity.py`
+  - `python -m py_compile scripts/analysis/build_stage48_prarc_v2_smoke_summary.py`
+  - `bash -n scripts/experiments/run_stage48_prarc_v2_smoke.sh`
+- Recommend enter Step49:
+  - Pending actual Step48 smoke run + gate probe results.
   - `results_stage9/stage13_rce_evidence_export/slide_top_concepts.csv`
   - `results_stage9/stage13_rce_evidence_export/region_concept_evidence.pkl`
   - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_export_report.md`

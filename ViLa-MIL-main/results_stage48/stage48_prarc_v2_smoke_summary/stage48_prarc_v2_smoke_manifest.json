@@ -1,0 +1,56 @@
+{
+  "step": "Step48 PRARC-v2 Gate Dynamics Repair Smoke",
+  "results_root": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48",
+  "output_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48/stage48_prarc_v2_smoke_summary",
+  "variants": [
+    "v2_gain2_g08"
+  ],
+  "baseline_step47_gate_std": 0.0011475386210503201,
+  "baseline_step47_gate_range": 0.00392577648162834,
+  "variant_results": [
+    {
+      "variant": "v2_gain2_g08",
+      "run_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48/stage48_v2_gain2_g08_s1",
+      "status": "ok",
+      "checkpoint_exists": true,
+      "fold0_metrics": {
+        "fold": 1.0,
+        "test_auc": 0.973248106060606,
+        "test_acc": 0.8917525773195877,
+        "test_f1": 0.8702341137123746,
+        "val_auc": 0.9595170454545454,
+        "val_acc": 0.8608247422680413,
+        "balanced_acc": 0.8482481060606061,
+        "sensitivity": 0.7121212121212122,
+        "specificity": 0.984375,
+        "pr_auc": 0.939597998013274
+      },
+      "log_info": {
+        "log_exists": true,
+        "has_traceback": false,
+        "has_nan_or_inf": false,
+        "log_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48/logs/stage48_v2_gain2_g08_s1.log"
+      },
+      "probe_status": {
+        "status": "ok",
+        "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48/stage48_v2_gain2_g08_s1/s_0_checkpoint.pt",
+        "slides": 194
+      },
+      "gate_distribution": {
+        "variant": "v2_gain2_g08",
+        "n": 194,
+        "gate_mean": 0.931816570230366,
+        "gate_std": 0.0016590352169152671,
+        "gate_min": 0.9280582666397095,
+        "gate_max": 0.9330165386199951,
+        "gate_range": 0.0049582719802856445,
+        "conflict_gate_mean": 0.9300931004377512,
+        "non_conflict_gate_mean": 0.9320832976982707,
+        "conflict_minus_nonconflict": -0.0019901972605195217
+      },
+      "variance_better_than_step47_v1_g08": true,
+      "range_better_than_step47_v1_g08": true,
+      "recommend_step49": false
+    }
+  ]
+}
