@@ -1,0 +1,44 @@
+{
+  "step": 50,
+  "paper_title": "Evidence-Guided Cross-Scale Vision-Language Multiple Instance Learning for Whole Slide Image Classification",
+  "input_dirs": {
+    "stage39_dir": "results_stage39/final_evidence_package",
+    "stage40_dir": "results_stage40/paper_ready_assets",
+    "stage44_dir": "results_stage44/stage44_hcrc_light_summary",
+    "stage45_dir": "results_stage45/prarc_reliability_audit",
+    "stage47_dir": "results_stage47/stage47_prarc_gate_summary",
+    "stage47_gate_diag_dir": "results_stage47/stage47_prarc_gate_diagnostics",
+    "stage48b_dir": "results_stage48/stage48b_prarc_v2_variant_sweep_summary",
+    "stage49_dir": "results_stage49/final_consolidation"
+  },
+  "output_files": [
+    "stage50_paper_outline.md",
+    "stage50_method_overview_final.md",
+    "stage50_main_method_figure_mermaid.md",
+    "stage50_evidence_pipeline_figure_mermaid.md",
+    "stage50_experiment_tables_final.md",
+    "stage50_main_results_table.csv",
+    "stage50_ablation_table_final.csv",
+    "stage50_negative_ablation_table_final.csv",
+    "stage50_failure_analysis_table_final.csv",
+    "stage50_claims_to_make_and_avoid.md",
+    "stage50_limitations_future_work_final.md",
+    "stage50_rebuttal_or_defense_points.md",
+    "stage50_paper_section_draft.md",
+    "stage50_final_paper_package_report.md",
+    "stage50_manifest.json"
+  ],
+  "final_primary_model": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "final_secondary_variant": "RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",
+  "negative_ablation_modules": [
+    "ordinary region graph",
+    "ordinary concept graph",
+    "scalar visual evidence gate",
+    "HCRC-Light",
+    "PRARC-v1",
+    "PRARC-v2"
+  ],
+  "recommend_more_training_now": false,
+  "recommend_start_paper_writing": true,
+  "warnings": []
+}

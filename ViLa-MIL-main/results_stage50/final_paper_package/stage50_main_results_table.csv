@@ -1,0 +1,21 @@
+method,AUC,ACC,F1,Balanced ACC,PR-AUC,role,comment
+RCE-v4-CSG-a01-rq16 / DEG skeleton,0.9702,0.9225,0.9145,0.9171,0.9444,final_primary_model,Final default model retained after Stage39 and confirmed by Stage49.
+"RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",0.9681,0.9277,0.9197,0.9197,0.9354,secondary_tradeoff_variant,"Better ACC/F1/BalAcc trade-off, but lower AUC/PR-AUC and more visual override."
+RCE-v4-CSG-a005-rq16,0.9619,0.8977,0.8851,0.8832,0.9213,csg_ablation_reference,Source stage: stage24 / category: csg_init
+RCE-v4-CSG-a01-rq32,0.9577,0.9070,0.8956,0.8917,0.9218,region_query_ablation,Source stage: stage24 / category: region_query
+RCE-v4-CSG-a01-rq8,0.9640,0.9101,0.8979,0.8912,0.9356,region_query_ablation,Source stage: stage24 / category: region_query
+DEG Concept Prompt Graph k=2 alpha=0.05,0.9614,0.9008,0.8902,0.8898,0.9317,negative_ablation_reference,Source stage: stage31 / category: concept_prompt_graph
+DEG Concept Prompt Graph k=4 alpha=0.05,0.9612,0.9132,0.9027,0.9000,0.9376,negative_ablation_reference,Source stage: stage31 / category: concept_prompt_graph
+DEG Concept Prompt Graph k=8 alpha=0.05,0.9646,0.9101,0.8981,0.8931,0.9401,negative_ablation_reference,Source stage: stage31 / category: concept_prompt_graph
+DEG Spatial Region Graph k=2,0.9577,0.9101,0.9003,0.9005,0.9224,negative_ablation_reference,Source stage: stage28 / category: spatial_region_graph
+DEG Spatial Region Graph k=4,0.9627,0.9173,0.9080,0.9060,0.9400,negative_ablation_reference,Source stage: stage28 / category: spatial_region_graph
+DEG Spatial Region Graph k=8,0.9655,0.9173,0.9074,0.9052,0.9342,negative_ablation_reference,Source stage: stage28 / category: spatial_region_graph
+Visual gate init 0.00,0.9586,0.9091,0.8987,0.8976,0.9292,negative_ablation_reference,Source stage: stage35 / category: visual_gate
+Visual gate init 0.01,0.9652,0.9163,0.9050,0.8973,0.9335,negative_ablation_reference,Source stage: stage35 / category: visual_gate
+Visual gate init 0.05,0.9651,0.9122,0.9009,0.8970,0.9402,negative_ablation_reference,Source stage: stage35 / category: visual_gate
+Visual gate init 1.00,0.9655,0.9101,0.9008,0.9026,0.9235,negative_ablation_reference,Source stage: stage35 / category: visual_gate
+LH consistency lambda 0.001 margin 0.00,0.9632,0.9163,0.9069,0.9066,0.9274,consistency_variant,Source stage: stage37 / category: low_high_consistency
+LH consistency lambda 0.005 margin 0.00,0.9605,0.9080,0.8984,0.9018,0.9159,consistency_variant,Source stage: stage37 / category: low_high_consistency
+LH consistency lambda 0.005 margin 0.02,0.9622,0.9163,0.9067,0.9059,0.9249,consistency_variant,Source stage: stage37 / category: low_high_consistency
+LH consistency lambda 0.01 margin 0.02,0.9561,0.9101,0.8995,0.8990,0.9002,consistency_variant,Source stage: stage37 / category: low_high_consistency
+LH consistency lambda 0.01 margin 0.05,0.9636,0.9142,0.9057,0.9086,0.9170,consistency_variant,Source stage: stage37 / category: low_high_consistency

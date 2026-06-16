@@ -1,0 +1,8 @@
+component,selected_variant,reference_or_context,source_stage,delta_AUC,delta_ACC,delta_F1,delta_Balanced_ACC,delta_PR_AUC,status,paper_takeaway
+CSG a01,RCE-v4-CSG-a01-rq16,RCE-v4-CSG-a005-rq16,stage24,0.0083,0.0248,0.0294,0.0339,0.0231,validated_positive,CSG a01 > CSG a005
+rq16,RCE-v4-CSG-a01-rq16,RCE-v4-CSG-a01-rq8,stage24,0.0062,0.0124,0.0166,0.0259,0.0088,validated_positive,rq16 > rq8
+rq16,RCE-v4-CSG-a01-rq16,RCE-v4-CSG-a01-rq32,stage24,0.0125,0.0155,0.0188,0.0254,0.0226,validated_positive,rq16 > rq32
+Low-high consistency secondary variant,"RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",DEG skeleton,stage37+stage38,-0.0039,0.0206,0.0208,0.0120,-0.0034,secondary_tradeoff_variant,Low-High Consistency is a trade-off variant
+Concept prompt pool,Final concept prompt pool,Core final method component,Stage39 narrative,,,,,,included_without_standalone_stage39_delta,Kept as a core component of region-concept evidence modeling; no standalone Stage39 delta table available.
+Logit calibration,Final calibrated logits,Core final method component,Stage39 narrative,,,,,,included_without_standalone_stage39_delta,"Retained in the final pipeline, but Step39 inputs do not expose a standalone ablation delta for this component."
+Visual residual,Residual visual branch,Core final method component,Stage39 narrative,,,,,,included_without_standalone_stage39_delta,"Essential for the final evidence decomposition, while also remaining the main unresolved failure source."

@@ -2991,3 +2991,95 @@
   - uncertainty-aware residual suppression
   - train-split-only reliability learning
   - evidence-margin auxiliary loss
+
+## 2026-06-16 - Step50: Final Paper Package after HCRC/PRARC Consolidation
+
+### Goal
+- Do not train models.
+- Do not modify the existing forward path.
+- Generate the final paper-material package from Stage39, Stage40, Stage44, Stage45, Stage47, Stage48b, and Stage49.
+- Produce paper-ready method narrative, tables, rebuttal notes, limitations, and final manuscript drafts.
+
+### Files added
+- `scripts/analysis/build_stage50_final_paper_package.py`
+- `scripts/analysis/run_stage50_final_paper_package.sh`
+
+### Files modified
+- `docs/CODEX_HANDOFF.md`
+
+### Inputs used
+- `results_stage39/final_evidence_package/`
+- `results_stage40/paper_ready_assets/`
+- `results_stage44/stage44_hcrc_light_summary/`
+- `results_stage45/prarc_reliability_audit/`
+- `results_stage47/stage47_prarc_gate_summary/`
+- `results_stage47/stage47_prarc_gate_diagnostics/`
+- `results_stage48/stage48b_prarc_v2_variant_sweep_summary/`
+- `results_stage49/final_consolidation/`
+
+### Static checks
+- `python -m py_compile scripts/analysis/build_stage50_final_paper_package.py`: passed
+- `bash -n scripts/analysis/run_stage50_final_paper_package.sh`: passed
+
+### Execution
+- Ran: `bash scripts/analysis/run_stage50_final_paper_package.sh`
+- Status: completed successfully
+
+### Output directory
+- `results_stage50/final_paper_package/`
+
+### Output files
+- `stage50_paper_outline.md`
+- `stage50_method_overview_final.md`
+- `stage50_main_method_figure_mermaid.md`
+- `stage50_evidence_pipeline_figure_mermaid.md`
+- `stage50_experiment_tables_final.md`
+- `stage50_main_results_table.csv`
+- `stage50_ablation_table_final.csv`
+- `stage50_negative_ablation_table_final.csv`
+- `stage50_failure_analysis_table_final.csv`
+- `stage50_claims_to_make_and_avoid.md`
+- `stage50_limitations_future_work_final.md`
+- `stage50_rebuttal_or_defense_points.md`
+- `stage50_paper_section_draft.md`
+- `stage50_final_paper_package_report.md`
+- `stage50_manifest.json`
+
+### Final primary model
+- `RCE-v4-CSG-a01-rq16 / DEG skeleton`
+- Metrics:
+  - `AUC=0.9702`
+  - `ACC=0.9225`
+  - `F1=0.9145`
+  - `Balanced ACC=0.9171`
+  - `PR-AUC=0.9444`
+
+### Final secondary variant
+- `RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0`
+- Role:
+  - secondary evidence-calibration trade-off variant only
+  - not the final default model
+
+### Final paper storyline
+- Keep the main narrative centered on:
+  - BiomedCLIP low/high patch features
+  - learnable region queries
+  - region-concept evidence
+  - concept prompt pool
+  - low/high concept evidence logits
+  - CSG cross-scale concept reasoning
+  - visual residual
+  - logit calibration
+  - evidence decomposition
+- Keep HCRC-Light, PRARC-v1, and PRARC-v2 in:
+  - negative ablation
+  - limitations
+  - future work
+
+### Final recommendation
+- Do not continue training in the current HCRC/PRARC direction.
+- Start manual paper writing and review now.
+- Suggested next step:
+  - manually review the generated paper package
+  - decide target journal/conference
+  - polish figures, tables, and representative evidence cases

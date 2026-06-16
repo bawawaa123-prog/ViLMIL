@@ -1,0 +1,31 @@
+# Stage50 Paper Section Draft
+
+## Abstract Draft
+This work studies evidence-aware whole slide image classification under a vision-language multiple instance learning framework. Instead of continuing to stack new graph or gating modules, we consolidate the strongest validated path around region-concept evidence modeling and cross-scale concept reasoning. The final method uses BiomedCLIP low/high patch features, learnable region queries, a concept prompt pool, low/high concept evidence logits, cross-scale concept graph reasoning, a visual residual branch, calibrated logits, and evidence decomposition for failure diagnosis. Across the Stage39-49 evidence package, `RCE-v4-CSG-a01-rq16 / DEG skeleton` remains the most robust default model, while low-high consistency regularization is retained only as a secondary calibration trade-off variant. Systematic exploratory branches including ordinary region graph, ordinary concept graph, scalar visual gate, HCRC-Light, PRARC-v1, and PRARC-v2 are reported as negative ablations rather than promoted improvements. The consolidated results indicate that visual residual override remains the main unresolved failure source.
+
+## Introduction Contribution Bullets
+- We formulate WSI classification as an evidence-guided vision-language MIL problem in which slide prediction is tied to explicit region-concept evidence rather than slide-level similarity alone.
+- We retain a concept-level cross-scale reasoning path through CSG and show that it is stronger than the tested alternative graph/gating routes in the current project branch.
+- We provide an evidence-driven consolidation package spanning final metrics, ablations, negative ablations, and failure analysis rather than presenting a single isolated model result.
+
+## Method Overview Draft
+The final model takes low- and high-magnification WSI patches, extracts BiomedCLIP features, and aggregates them with learnable region queries. Each region token is matched against a concept prompt pool to produce region-concept evidence, which is then summarized into low-scale and high-scale concept evidence logits. A cross-scale concept graph reasoning block captures concept-level interactions between low and high evidence streams, while a visual residual branch preserves complementary visual discrimination. The final decision is produced from calibrated logits, and the prediction can be decomposed into low, high, CSG, and visual residual evidence sources for downstream diagnosis. HCRC and PRARC are not part of this final forward narrative and are discussed only as exploratory negative ablations.
+
+## Ablation Study Draft
+The main ablation results support two positive architectural choices. First, Stage24 shows that `CSG a01` outperforms `CSG a005`, supporting the final strength setting for cross-scale concept reasoning. Second, the same stage shows that `rq16` outperforms both `rq8` and `rq32`, fixing the region-query design used by the final model. By contrast, the strongest tested ordinary spatial region graph, concept prompt graph, and scalar visual gate all remain below the skeleton baseline. These results support a narrower claim: the strongest path in the current branch comes from evidence modeling choices inside the region-concept and CSG pipeline, not from adding more generic graph or gate structure.
+
+## Negative Ablation Discussion Draft
+Negative ablations are an important part of the final paper package because they document which directions were completed, tested, and rejected. HCRC-Light completed formal 5-fold evaluation, but none of its variants exceeded the final baseline on the ranking metrics. PRARC-v1 completed formal 5-fold evaluation but stayed below baseline, and its gate diagnostics remained weak overall. PRARC-v2 variants were engineering-stable in smoke evaluation, yet their gate spread was still too small to justify promotion. Reporting these branches as negative ablations makes the final model choice more credible and prevents over-claiming unvalidated improvements.
+
+## Failure Analysis Draft
+The failure analysis across Stage33, Stage39, and Stage45 indicates that visual residual override remains the dominant unresolved error mode. Stage33 reports that visual residual override accounts for 13 error slides as a labeled failure type, while low-high conflict appears on 10 error slides and concept wrong-class drift is less common. Stage39 further shows that low-high consistency regularization reduces low-high conflict and both-support-wrong cases, but slightly increases visual residual override and lowers AUC/PR-AUC, making it a trade-off rather than a clean replacement for the default model. Stage45 reinforces this conclusion by showing that visual override slides have markedly lower confidence margins and negative visual effective margins.
+
+## Limitations Draft
+This study has three main limitations. First, HCRC currently relies on relatively loose proposal coverage, which can introduce weak high-scale evidence and prevents it from serving as the main model path. Second, PRARC gates still tend to collapse toward a near-scalar regime, so the current reliability-gating designs do not yet provide a strong adaptive residual control mechanism. Third, visual residual override remains unresolved, which means the final model is best described as a strong, evidence-supported baseline rather than a finished reliability solution.
+
+## Conclusion Draft
+Across the consolidated Stage39-49 evidence package, `RCE-v4-CSG-a01-rq16 / DEG skeleton` remains the final primary model and `RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0` remains a secondary evidence-calibration trade-off variant only. The strongest validated paper narrative is therefore centered on region-concept evidence modeling, concept-level cross-scale reasoning through CSG, and explicit evidence decomposition for diagnosis. The completed HCRC and PRARC branches should be reported as systematic negative ablations, while future improvement effort should shift toward residual calibration and uncertainty-aware reliability learning.
+
+## Writing Constraint Note
+- All claims above are grounded in the Stage39-49 result package.
+- The draft deliberately avoids presenting HCRC or PRARC as successful final modules.
