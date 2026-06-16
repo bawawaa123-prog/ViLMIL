@@ -26,6 +26,7 @@ Step36 adds an optional low-high evidence consistency auxiliary loss for the dua
 DEG skeleton without changing the default logits path.
 
 Step43 adds an optional HCRC-Light residual branch over low/high raw patch features.
+Step46 adds an optional PRARC sample-adaptive residual gate over the visual residual branch.
 """
 
 from __future__ import absolute_import, division, print_function
@@ -52,6 +53,17 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         super().__init__(config=config, num_classes=num_classes, model_path=model_path)
         self.rce_use_visual_evidence_gate = bool(getattr(config, "rce_use_visual_evidence_gate", False))
         self.rce_visual_gate_init = float(getattr(config, "rce_visual_gate_init", 1.0))
+        self.rce_use_prarc_gate = bool(getattr(config, "rce_use_prarc_gate", False))
+        self.rce_prarc_gate_hidden_dim = int(getattr(config, "rce_prarc_gate_hidden_dim", 16))
+        self.rce_prarc_gate_init = float(getattr(config, "rce_prarc_gate_init", 0.8))
+        self.rce_prarc_gate_dropout = float(getattr(config, "rce_prarc_gate_dropout", 0.0))
+        self.rce_prarc_gate_feature_set = str(getattr(config, "rce_prarc_gate_feature_set", "v1"))
+        self.rce_prarc_detach_features = bool(getattr(config, "rce_prarc_detach_features", False))
+        self.rce_prarc_include_optional_features = bool(
+            getattr(config, "rce_prarc_include_optional_features", False)
+        )
+        self.rce_prarc_feature_clip = float(getattr(config, "rce_prarc_feature_clip", 10.0))
+        self.rce_prarc_export_debug = bool(getattr(config, "rce_prarc_export_debug", False))
         self.rce_use_low_high_consistency_loss = bool(
             getattr(config, "rce_use_low_high_consistency_loss", False)
         )
@@ -86,6 +98,20 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.rce_hcrc_use_bbox_then_nearest_fallback = False
         self.rce_visual_evidence_gate = nn.Parameter(
             self._sigmoid_init_to_logit(self.rce_visual_gate_init)
+        )
+        self.rce_prarc_feature_names = self._build_prarc_feature_name_list()
+        prarc_input_dim = len(self.rce_prarc_feature_names)
+        self.prarc_gate_mlp = nn.Sequential(
+            nn.Linear(prarc_input_dim, self.rce_prarc_gate_hidden_dim),
+            nn.LayerNorm(self.rce_prarc_gate_hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(self.rce_prarc_gate_dropout),
+            nn.Linear(self.rce_prarc_gate_hidden_dim, 1),
+        )
+        nn.init.zeros_(self.prarc_gate_mlp[-1].weight)
+        nn.init.constant_(
+            self.prarc_gate_mlp[-1].bias,
+            float(self._sigmoid_init_to_logit(self.rce_prarc_gate_init).item()),
         )
         self.rce_hcrc_alpha = nn.Parameter(
             self._sigmoid_init_to_logit(self.rce_hcrc_alpha_init)
@@ -141,6 +167,18 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_visual_evidence_gate = None
         self.last_visual_residual_contribution = None
         self.last_visual_gated_contribution = None
+        self.last_prarc_enabled = None
+        self.last_prarc_gate = None
+        self.last_prarc_gate_features = None
+        self.last_prarc_gate_feature_names = None
+        self.last_prarc_gate_feature_dict = None
+        self.last_prarc_visual_gated_contribution = None
+        self.last_prarc_visual_residual_contribution = None
+        self.last_prarc_concept_logits_before_visual = None
+        self.last_prarc_gate_mean = None
+        self.last_prarc_gate_min = None
+        self.last_prarc_gate_max = None
+        self.last_prarc_skip_reason = None
         self.last_low_scale_logits = None
         self.last_high_scale_logits = None
         self.last_low_true_wrong_margin = None
@@ -169,6 +207,16 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             logger.warning(
                 "rce_use_visual_evidence_gate=True but rce_use_visual_residual=False; "
                 "visual evidence gate will be ignored."
+            )
+        if self.rce_use_prarc_gate and not self.rce_use_visual_residual:
+            logger.warning(
+                "rce_use_prarc_gate=True but rce_use_visual_residual=False; "
+                "PRARC will be skipped."
+            )
+        if self.rce_use_prarc_gate and self.rce_use_visual_evidence_gate:
+            logger.warning(
+                "rce_use_prarc_gate=True and rce_use_visual_evidence_gate=True; "
+                "Step46 PRARC will override the old scalar visual gate path."
             )
         if self.rce_use_low_high_consistency_loss and self.scale_mode != "dual":
             logger.warning(
@@ -199,6 +247,30 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         init = min(max(float(init_value), 1e-6), 1.0 - 1e-6)
         return torch.logit(torch.tensor(init, dtype=torch.float32))
 
+    def _build_prarc_feature_name_list(self):
+        feature_set = self.rce_prarc_gate_feature_set.strip().lower()
+        if feature_set != "v1":
+            logger.warning("Unsupported rce_prarc_gate_feature_set=%s; falling back to v1.", feature_set)
+            feature_set = "v1"
+            self.rce_prarc_gate_feature_set = "v1"
+        base_features = [
+            "concept_pred_margin_abs",
+            "low_high_margin_agreement",
+            "visual_concept_conflict",
+            "dominant_source_ratio",
+            "prediction_confidence_margin",
+            "low_high_sign_agreement",
+        ]
+        optional_features = [
+            "visual_margin_abs",
+            "high_margin_abs",
+            "low_margin_abs",
+            "visual_over_concept_ratio",
+        ]
+        if self.rce_prarc_include_optional_features:
+            return base_features + optional_features
+        return base_features
+
     @staticmethod
     def _true_vs_wrong_margin(logits, label):
         true_logit = logits.gather(1, label.view(-1, 1)).squeeze(1)
@@ -220,6 +292,179 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         if isinstance(slide_id, list):
             return [DEG_MIL_BiomedCLIP._detach_slide_id(item) for item in slide_id]
         return slide_id
+
+    @staticmethod
+    def _prarc_top_margin(logits):
+        if logits is None or logits.dim() != 2:
+            return None
+        if logits.size(1) <= 1:
+            return torch.zeros(logits.size(0), device=logits.device, dtype=logits.dtype)
+        top2 = torch.topk(logits, k=min(2, logits.size(1)), dim=1).values
+        if top2.size(1) < 2:
+            return torch.zeros(logits.size(0), device=logits.device, dtype=logits.dtype)
+        return top2[:, 0] - top2[:, 1]
+
+    @staticmethod
+    def _prarc_top_class(logits):
+        if logits is None or logits.dim() != 2:
+            return None
+        return torch.argmax(logits, dim=1)
+
+    @staticmethod
+    def _prarc_binary_sign(logits):
+        if logits is None or logits.dim() != 2:
+            return None
+        if logits.size(1) == 1:
+            return torch.sign(logits[:, 0])
+        if logits.size(1) == 2:
+            return torch.sign(logits[:, 0] - logits[:, 1])
+        margin = DEG_MIL_BiomedCLIP._prarc_top_margin(logits)
+        return torch.sign(margin) if margin is not None else None
+
+    @staticmethod
+    def _prarc_safe_ratio(num, den):
+        if num is None or den is None:
+            return None
+        return num / den.clamp_min(1e-6)
+
+    def _set_prarc_debug_defaults(self):
+        self.last_prarc_enabled = torch.tensor(False)
+        self.last_prarc_gate = None
+        self.last_prarc_gate_features = None
+        self.last_prarc_gate_feature_names = list(self.rce_prarc_feature_names)
+        self.last_prarc_gate_feature_dict = None
+        self.last_prarc_visual_gated_contribution = None
+        self.last_prarc_visual_residual_contribution = None
+        self.last_prarc_concept_logits_before_visual = None
+        self.last_prarc_gate_mean = None
+        self.last_prarc_gate_min = None
+        self.last_prarc_gate_max = None
+        self.last_prarc_skip_reason = None
+
+    def _compute_prarc_gate_features(
+        self,
+        logits_low,
+        logits_high,
+        visual_logits,
+        cross_scale_logits,
+        concept_logits_before_visual,
+        scale_mode,
+    ):
+        del scale_mode
+        low_margin = self._prarc_top_margin(logits_low)
+        high_margin = self._prarc_top_margin(logits_high)
+        concept_margin = self._prarc_top_margin(concept_logits_before_visual)
+        visual_margin = self._prarc_top_margin(visual_logits)
+        csg_margin = self._prarc_top_margin(cross_scale_logits) if cross_scale_logits is not None else None
+
+        if low_margin is not None and high_margin is not None:
+            low_high_margin_agreement = 1.0 / (1.0 + torch.abs(low_margin - high_margin))
+            if logits_low.size(1) == 2 and logits_high.size(1) == 2:
+                low_sign = torch.sign(logits_low[:, 0] - logits_low[:, 1])
+                high_sign = torch.sign(logits_high[:, 0] - logits_high[:, 1])
+            else:
+                low_sign = self._prarc_top_class(logits_low)
+                high_sign = self._prarc_top_class(logits_high)
+            low_high_sign_agreement = (
+                (low_sign == high_sign).to(logits_low.dtype)
+            )
+        else:
+            low_high_margin_agreement = None
+            low_high_sign_agreement = None
+
+        concept_class = self._prarc_top_class(concept_logits_before_visual)
+        visual_class = self._prarc_top_class(visual_logits)
+        visual_concept_conflict = None
+        if concept_class is not None and visual_class is not None:
+            visual_concept_conflict = (concept_class != visual_class).to(concept_logits_before_visual.dtype)
+
+        low_abs = torch.abs(low_margin) if low_margin is not None else None
+        high_abs = torch.abs(high_margin) if high_margin is not None else None
+        visual_abs = torch.abs(visual_margin) if visual_margin is not None else None
+        csg_abs = torch.abs(csg_margin) if csg_margin is not None else None
+        concept_abs = torch.abs(concept_margin) if concept_margin is not None else None
+
+        total_source_abs = None
+        source_terms = [term for term in [low_abs, high_abs, visual_abs, csg_abs] if term is not None]
+        if source_terms:
+            total_source_abs = torch.zeros_like(source_terms[0])
+            for term in source_terms:
+                total_source_abs = total_source_abs + term
+            dominant_source_abs = torch.stack(source_terms, dim=1).max(dim=1).values
+            dominant_source_ratio = self._prarc_safe_ratio(dominant_source_abs, total_source_abs)
+        else:
+            dominant_source_ratio = None
+
+        visual_over_concept_ratio = None
+        if visual_abs is not None and concept_abs is not None:
+            visual_over_concept_ratio = self._prarc_safe_ratio(visual_abs, concept_abs + 1e-6)
+
+        feature_values = {
+            "concept_pred_margin_abs": concept_abs,
+            "low_high_margin_agreement": low_high_margin_agreement,
+            "visual_concept_conflict": visual_concept_conflict,
+            "dominant_source_ratio": dominant_source_ratio,
+            "prediction_confidence_margin": concept_margin,
+            "low_high_sign_agreement": low_high_sign_agreement,
+            "visual_margin_abs": visual_abs,
+            "high_margin_abs": high_abs,
+            "low_margin_abs": low_abs,
+            "visual_over_concept_ratio": visual_over_concept_ratio,
+        }
+
+        features = []
+        feature_dict = {}
+        clip_value = max(float(self.rce_prarc_feature_clip), 1e-6)
+        for feature_name in self.rce_prarc_feature_names:
+            value = feature_values.get(feature_name)
+            if value is None:
+                if concept_logits_before_visual is None:
+                    raise ValueError(f"PRARC feature {feature_name} is unavailable and concept logits are missing.")
+                value = torch.zeros(
+                    concept_logits_before_visual.size(0),
+                    device=concept_logits_before_visual.device,
+                    dtype=concept_logits_before_visual.dtype,
+                )
+            value = torch.nan_to_num(value, nan=0.0, posinf=clip_value, neginf=-clip_value)
+            value = value.clamp(min=-clip_value, max=clip_value)
+            features.append(value.unsqueeze(1))
+            feature_dict[feature_name] = value
+
+        gate_features = torch.cat(features, dim=1) if features else None
+        return gate_features, feature_dict, list(self.rce_prarc_feature_names)
+
+    def _apply_prarc_gate(
+        self,
+        logits_low,
+        logits_high,
+        visual_logits,
+        cross_scale_logits,
+        concept_logits_before_visual,
+    ):
+        if not self.rce_use_prarc_gate:
+            self.last_prarc_skip_reason = "prarc_disabled"
+            return None, None, None, None
+        if visual_logits is None:
+            self.last_prarc_skip_reason = "visual_logits_missing"
+            return None, None, None, None
+
+        gate_features, feature_dict, feature_names = self._compute_prarc_gate_features(
+            logits_low=logits_low,
+            logits_high=logits_high,
+            visual_logits=visual_logits,
+            cross_scale_logits=cross_scale_logits,
+            concept_logits_before_visual=concept_logits_before_visual,
+            scale_mode=self.scale_mode,
+        )
+        if gate_features is None:
+            self.last_prarc_skip_reason = "feature_build_failed"
+            return None, None, None, None
+        mlp_input = gate_features.detach() if self.rce_prarc_detach_features else gate_features
+        gate_logits = self.prarc_gate_mlp(mlp_input)
+        prarc_gate = torch.sigmoid(gate_logits)
+        self.last_prarc_enabled = torch.tensor(True)
+        self.last_prarc_skip_reason = None
+        return prarc_gate, gate_features, feature_dict, feature_names
 
     def _prepare_patch_features_for_attention(self, patch_features):
         if patch_features.dim() == 2:
@@ -945,6 +1190,7 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         low_patches = x_s.float()
         high_patches = x_l.float()
         self._set_hcrc_debug_defaults()
+        self._set_prarc_debug_defaults()
 
         low_region_features, low_attn_weights = self._aggregate_region_features(
             low_patches,
@@ -1019,41 +1265,96 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_low_scale_logits = logits_low.detach().cpu()
         self.last_high_scale_logits = logits_high.detach().cpu()
 
+        if self.scale_mode == "low_only":
+            concept_logits = logits_low
+        elif self.scale_mode == "high_only":
+            concept_logits = logits_high
+        else:
+            concept_logits = logits_low + logits_high
+
         low_visual_logits = None
         high_visual_logits = None
         visual_logits = None
-
-        if self.scale_mode == "low_only":
-            final_logits = logits_low
-            if self.rce_use_visual_residual:
+        if self.rce_use_visual_residual:
+            if self.scale_mode == "low_only":
                 low_region_pool = low_region_features.mean(dim=1)
                 low_visual_logits = self.low_visual_head(low_region_pool)
                 visual_logits = low_visual_logits
-        elif self.scale_mode == "high_only":
-            final_logits = logits_high
-            if self.rce_use_visual_residual:
+            elif self.scale_mode == "high_only":
                 high_region_pool = high_region_features.mean(dim=1)
                 high_visual_logits = self.high_visual_head(high_region_pool)
                 visual_logits = high_visual_logits
-        else:
-            final_logits = logits_low + logits_high
-            if self.rce_use_visual_residual:
+            else:
                 low_region_pool = low_region_features.mean(dim=1)
                 high_region_pool = high_region_features.mean(dim=1)
                 low_visual_logits = self.low_visual_head(low_region_pool)
                 high_visual_logits = self.high_visual_head(high_region_pool)
                 visual_logits = low_visual_logits + high_visual_logits
 
+        hcrc_result = None
+        if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
+            cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
+                low_prompt_evidence,
+                high_prompt_evidence,
+            )
+            alpha = self.rce_cross_scale_graph_alpha
+            concept_logits = concept_logits + alpha * cross_scale_logits
+            self.last_cross_scale_logits = cross_scale_logits.detach().cpu()
+            self.last_cross_scale_alpha = alpha.detach().cpu()
+            self.last_cross_scale_adj = effective_adj.detach().cpu()
+        else:
+            cross_scale_logits = None
+            self.last_cross_scale_logits = None
+            self.last_cross_scale_alpha = None
+            self.last_cross_scale_adj = None
+
+        self.last_prarc_concept_logits_before_visual = concept_logits.detach().cpu()
+
         if self.rce_use_visual_residual:
             alpha = torch.sigmoid(self.rce_visual_residual_alpha)
             visual_residual_contribution = alpha * visual_logits
-            if self.rce_use_visual_evidence_gate:
-                gate = torch.sigmoid(self.rce_visual_evidence_gate)
+            if self.rce_use_prarc_gate:
+                prarc_gate, prarc_gate_features, prarc_feature_dict, prarc_feature_names = self._apply_prarc_gate(
+                    logits_low=logits_low,
+                    logits_high=logits_high,
+                    visual_logits=visual_logits,
+                    cross_scale_logits=cross_scale_logits,
+                    concept_logits_before_visual=concept_logits,
+                )
+                if prarc_gate is not None:
+                    visual_gated_contribution = prarc_gate * visual_residual_contribution
+                    self.last_prarc_gate = prarc_gate.detach().cpu()
+                    self.last_prarc_gate_features = prarc_gate_features.detach().cpu()
+                    self.last_prarc_gate_feature_names = list(prarc_feature_names)
+                    self.last_prarc_gate_feature_dict = {
+                        name: value.detach().cpu() for name, value in prarc_feature_dict.items()
+                    }
+                    self.last_prarc_visual_residual_contribution = visual_residual_contribution.detach().cpu()
+                    self.last_prarc_visual_gated_contribution = visual_gated_contribution.detach().cpu()
+                    self.last_prarc_gate_mean = float(prarc_gate.mean().detach().cpu().item())
+                    self.last_prarc_gate_min = float(prarc_gate.min().detach().cpu().item())
+                    self.last_prarc_gate_max = float(prarc_gate.max().detach().cpu().item())
+                    gate = prarc_gate
+                else:
+                    gate = torch.ones(
+                        visual_residual_contribution.size(0),
+                        1,
+                        device=visual_residual_contribution.device,
+                        dtype=visual_residual_contribution.dtype,
+                    )
+                    visual_gated_contribution = visual_residual_contribution
+            elif self.rce_use_visual_evidence_gate:
+                gate = torch.sigmoid(self.rce_visual_evidence_gate).view(1, 1)
                 visual_gated_contribution = gate * visual_residual_contribution
             else:
-                gate = torch.ones_like(alpha)
+                gate = torch.ones(
+                    visual_residual_contribution.size(0),
+                    1,
+                    device=visual_residual_contribution.device,
+                    dtype=visual_residual_contribution.dtype,
+                )
                 visual_gated_contribution = visual_residual_contribution
-            final_logits = final_logits + visual_gated_contribution
+            final_logits = concept_logits + visual_gated_contribution
             self.last_visual_residual_alpha = alpha.detach().cpu()
             self.last_low_visual_logits = (
                 low_visual_logits.detach().cpu() if low_visual_logits is not None else None
@@ -1065,7 +1366,10 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             self.last_visual_evidence_gate = gate.detach().cpu()
             self.last_visual_residual_contribution = visual_residual_contribution.detach().cpu()
             self.last_visual_gated_contribution = visual_gated_contribution.detach().cpu()
+            if not self.rce_use_prarc_gate:
+                self.last_prarc_skip_reason = "prarc_disabled"
         else:
+            final_logits = concept_logits
             self.last_visual_residual_alpha = None
             self.last_low_visual_logits = None
             self.last_high_visual_logits = None
@@ -1073,8 +1377,8 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
             self.last_visual_evidence_gate = None
             self.last_visual_residual_contribution = None
             self.last_visual_gated_contribution = None
+            self.last_prarc_skip_reason = "visual_residual_disabled"
 
-        hcrc_result = None
         if self.rce_use_hcrc and self.scale_mode == "dual":
             hcrc_result = self._hcrc_run(
                 low_patches,
@@ -1107,21 +1411,6 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
                 self.last_hcrc_skip_reason = hcrc_result.get("skip_reason")
         elif self.rce_use_hcrc:
             self.last_hcrc_skip_reason = "scale_mode_not_dual"
-
-        if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
-            cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
-                low_prompt_evidence,
-                high_prompt_evidence,
-            )
-            alpha = self.rce_cross_scale_graph_alpha
-            final_logits = final_logits + alpha * cross_scale_logits
-            self.last_cross_scale_logits = cross_scale_logits.detach().cpu()
-            self.last_cross_scale_alpha = alpha.detach().cpu()
-            self.last_cross_scale_adj = effective_adj.detach().cpu()
-        else:
-            self.last_cross_scale_logits = None
-            self.last_cross_scale_alpha = None
-            self.last_cross_scale_adj = None
 
         if self.rce_use_logit_calibration:
             scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)

@@ -84,6 +84,15 @@ parser.add_argument("--rce_use_visual_residual", action="store_true", default=Fa
 parser.add_argument("--rce_visual_residual_init", type=float, default=0.1)
 parser.add_argument("--rce_use_visual_evidence_gate", action="store_true", default=False)
 parser.add_argument("--rce_visual_gate_init", type=float, default=1.0)
+parser.add_argument("--rce_use_prarc_gate", action="store_true", default=False)
+parser.add_argument("--rce_prarc_gate_hidden_dim", type=int, default=16)
+parser.add_argument("--rce_prarc_gate_init", type=float, default=0.8)
+parser.add_argument("--rce_prarc_gate_dropout", type=float, default=0.0)
+parser.add_argument("--rce_prarc_gate_feature_set", type=str, default="v1")
+parser.add_argument("--rce_prarc_detach_features", action="store_true", default=False)
+parser.add_argument("--rce_prarc_include_optional_features", action="store_true", default=False)
+parser.add_argument("--rce_prarc_feature_clip", type=float, default=10.0)
+parser.add_argument("--rce_prarc_export_debug", action="store_true", default=False)
 parser.add_argument("--rce_use_low_high_consistency_loss", action="store_true", default=False)
 parser.add_argument("--rce_lh_consistency_lambda", type=float, default=0.0)
 parser.add_argument("--rce_lh_consistency_margin", type=float, default=0.0)
@@ -312,6 +321,15 @@ settings = {
     "rce_visual_residual_init": args.rce_visual_residual_init,
     "rce_use_visual_evidence_gate": args.rce_use_visual_evidence_gate,
     "rce_visual_gate_init": args.rce_visual_gate_init,
+    "rce_use_prarc_gate": args.rce_use_prarc_gate,
+    "rce_prarc_gate_hidden_dim": args.rce_prarc_gate_hidden_dim,
+    "rce_prarc_gate_init": args.rce_prarc_gate_init,
+    "rce_prarc_gate_dropout": args.rce_prarc_gate_dropout,
+    "rce_prarc_gate_feature_set": args.rce_prarc_gate_feature_set,
+    "rce_prarc_detach_features": args.rce_prarc_detach_features,
+    "rce_prarc_include_optional_features": args.rce_prarc_include_optional_features,
+    "rce_prarc_feature_clip": args.rce_prarc_feature_clip,
+    "rce_prarc_export_debug": args.rce_prarc_export_debug,
     "rce_use_low_high_consistency_loss": args.rce_use_low_high_consistency_loss,
     "rce_lh_consistency_lambda": args.rce_lh_consistency_lambda,
     "rce_lh_consistency_margin": args.rce_lh_consistency_margin,

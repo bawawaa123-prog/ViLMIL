@@ -2562,3 +2562,108 @@
   - `stage42b_anchor_level_child_stats_part_001.csv`
   - `stage42b_anchor_level_child_stats_part_002.csv`
 - `scripts/analysis/build_stage42b_cgsp_child_coverage_sweep.py` 已更新为自动分片：以后若 `stage42b_anchor_level_child_stats.csv` 超过约 `95 MB`，会自动删除单体 CSV 并输出 part 文件，同时写入 manifest/report。
+
+## 2026-06-16 - Step46: PRARC Adaptive Residual Gate Smoke
+
+### Goal
+- Add a default-off PRARC sample-adaptive residual gate to `DEG_MIL_BiomedCLIP`.
+- Keep the baseline path unchanged when PRARC is off.
+- Run a fold0 / 1 epoch smoke to confirm forward, loss, gate, debug buffers, checkpointing, and summary outputs.
+
+### Files changed
+- `main.py`: added Step46 PRARC CLI args.
+- `utils/core_utils.py`: passed PRARC config only into the DEG/RCE BiomedCLIP path.
+- `models/model_DEG_MIL_BiomedCLIP.py`: added PRARC gate config, feature helpers, gate MLP, forward integration, and debug buffers.
+- `scripts/analysis/check_stage46_prarc_integrity.py`: added a static integrity check for Step46.
+- `scripts/experiments/run_stage46_prarc_gate_smoke.sh`: added the Step46 smoke launcher.
+- `scripts/analysis/build_stage46_prarc_smoke_summary.py`: added the Step46 smoke summary/probe builder.
+- `docs/CODEX_HANDOFF.md`: appended this Step46 record.
+
+### PRARC behavior
+- Default is fully backward compatible:
+  - `rce_use_prarc_gate=False` keeps the old DEG forward behavior.
+  - No dataset loading path was changed.
+  - No non-DEG model path was modified.
+- Step46 PRARC uses forward-time, label-free features only:
+  - `concept_pred_margin_abs`
+  - `low_high_margin_agreement`
+  - `visual_concept_conflict`
+  - `dominant_source_ratio`
+  - `prediction_confidence_margin`
+  - `low_high_sign_agreement`
+- Optional forward-time features are implemented but off by default:
+  - `visual_margin_abs`
+  - `high_margin_abs`
+  - `low_margin_abs`
+  - `visual_over_concept_ratio`
+- Step46 does not use `prompt_error_risk_score` or `prompt_reliability_score` inside forward.
+- If both PRARC and the old scalar visual gate are enabled, PRARC takes priority for the visual residual path.
+
+### Forward integration
+- PRARC is inserted into the residual visual branch as:
+  - `final_logits = concept_logits + prarc_gate * alpha_visual * visual_logits`
+- `concept_logits` is built from low/high concept logits, then adds cross-scale graph residual if enabled.
+- Visual residual is gated after concept/CSG fusion and before logit calibration.
+- HCRC remains separate and is still off in the Step46 smoke configuration.
+
+### Debug / export buffers
+- Added:
+  - `last_prarc_enabled`
+  - `last_prarc_gate`
+  - `last_prarc_gate_features`
+  - `last_prarc_gate_feature_names`
+  - `last_prarc_gate_feature_dict`
+  - `last_prarc_visual_gated_contribution`
+  - `last_prarc_visual_residual_contribution`
+  - `last_prarc_concept_logits_before_visual`
+  - `last_prarc_gate_mean`
+  - `last_prarc_gate_min`
+  - `last_prarc_gate_max`
+  - `last_prarc_skip_reason`
+- Existing visual and cross-scale debug buffers remain available.
+
+### Checks run
+- `python -m py_compile main.py utils/core_utils.py models/model_DEG_MIL_BiomedCLIP.py scripts/analysis/check_stage46_prarc_integrity.py scripts/analysis/build_stage46_prarc_smoke_summary.py`: passed
+- `bash -n scripts/experiments/run_stage46_prarc_gate_smoke.sh`: passed
+- `python scripts/analysis/check_stage46_prarc_integrity.py`: passed
+
+### Smoke run
+- Command run:
+  - `bash scripts/experiments/run_stage46_prarc_gate_smoke.sh`
+- Variant:
+  - `prarc_v1_g08`
+- Smoke results directory:
+  - `results_stage46/stage46_prarc_gate_smoke_v1_g08_s1_s1`
+- Log path:
+  - `results_stage46/logs/stage46_prarc_gate_smoke_v1_g08_s1_s1.log`
+- Final fold0 / 1 epoch test metrics:
+  - `AUC=0.9710`
+  - `ACC=0.9227`
+  - `F1=0.9164`
+  - `Balanced ACC=0.9304`
+  - `Sensitivity=0.9545`
+  - `Specificity=0.9062`
+  - `PR-AUC=0.9372`
+
+### Smoke summary outputs
+- Summary directory:
+  - `results_stage46/stage46_prarc_gate_smoke_summary`
+- Generated files:
+  - `stage46_prarc_smoke_report.md`
+  - `stage46_prarc_smoke_manifest.json`
+- Probe results:
+  - `prarc_enabled=True`
+  - `prarc_gate_init=0.8`
+  - `gate_mean≈0.7971`
+  - `gate_min≈0.797136`
+  - `gate_max≈0.797146`
+  - `gate_nonconstant=True`
+  - `gate_features_present=True`
+  - `visual_residual_adjusted=True`
+  - no `Traceback`
+  - no `NaN/Inf`
+
+### Recommendation
+- Step46 smoke passed.
+- Recommended next step:
+  - enter Step47 `PRARC 5-fold`.
