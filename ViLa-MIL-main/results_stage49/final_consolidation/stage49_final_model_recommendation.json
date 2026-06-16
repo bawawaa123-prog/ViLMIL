@@ -1,0 +1,43 @@
+{
+  "final_primary_model": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "final_secondary_variant": "RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",
+  "not_recommended_modules": [
+    "ordinary region graph",
+    "ordinary concept graph",
+    "scalar visual evidence gate",
+    "HCRC-Light",
+    "PRARC-v1",
+    "PRARC-v2"
+  ],
+  "evidence_supporting_primary_model": [
+    "Stage39 final evidence package explicitly retained the CSG-equipped DEG skeleton as the default final model.",
+    "Stage39 ablation summary concluded CSG a01 > CSG a005 and rq16 > rq8/rq32.",
+    "Stage44 showed all HCRC-Light variants remained below baseline by the formal decision rules.",
+    "Stage47 showed all PRARC-v1 variants remained below baseline, with weak or near-scalar gate behavior.",
+    "Stage48b showed PRARC-v2 variants were stable but still failed the required gate-dynamics bar."
+  ],
+  "why_hcrc_not_primary": [
+    "No HCRC-Light variant exceeded the baseline on the main ranking metrics.",
+    "The best HCRC AUC remained below the baseline and its PR-AUC was also lower.",
+    "The large proposal/bbox settings also keep HCRC in a weaker-evidence-risk regime."
+  ],
+  "why_prarc_not_primary": [
+    "PRARC-v1 5-fold metrics stayed below baseline and the gate often behaved near-scalar.",
+    "PRARC-v2 improved diagnostics only marginally and still failed the Step49 gate-dynamics bar.",
+    "Visual residual override remains unresolved by the current PRARC designs."
+  ],
+  "paper_ready_claims": [
+    "Region-concept evidence modeling is effective.",
+    "Cross-scale concept relation reasoning is a key part of the current strongest model.",
+    "Visual residual override is the main remaining failure source.",
+    "HCRC and PRARC were systematically explored but did not surpass the default model.",
+    "The final model choice is evidence-driven rather than ad hoc."
+  ],
+  "claims_to_avoid": [
+    "HCRC improved the final model.",
+    "PRARC solved visual residual override.",
+    "The gate became strongly sample-adaptive.",
+    "Low-high spatial correspondence is inherently better than concept-level CSG reasoning."
+  ],
+  "recommended_next_step": "Keep the current baseline as the paper primary model, report HCRC/PRARC as negative ablations, and only continue research if the focus shifts to loss-level or uncertainty-aware residual calibration."
+}

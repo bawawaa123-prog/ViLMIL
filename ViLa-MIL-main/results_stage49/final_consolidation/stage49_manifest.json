@@ -1,0 +1,36 @@
+{
+  "step": "Step49 Final Model Consolidation after HCRC/PRARC Search",
+  "baseline_name": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "input_dirs": {
+    "stage39_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage39/final_evidence_package",
+    "stage44_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary",
+    "stage45_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage45/prarc_reliability_audit",
+    "stage47_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary",
+    "stage47_gate_diag_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics",
+    "stage48b_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage48/stage48b_prarc_v2_variant_sweep_summary"
+  },
+  "warnings": [],
+  "final_primary_model": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "final_secondary_variant": "RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0",
+  "hcrc_conclusion": "HCRC-Light should not be promoted to the final primary model.",
+  "prarc_conclusion": "PRARC-v1 and PRARC-v2 should remain negative ablations in the current branch.",
+  "negative_ablation_summary": [
+    "ordinary region graph",
+    "ordinary concept graph",
+    "scalar visual evidence gate",
+    "HCRC-Light",
+    "PRARC-v1",
+    "PRARC-v2"
+  ],
+  "outputs": {
+    "stage49_final_model_recommendation.json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_final_model_recommendation.json",
+    "stage49_final_model_decision_table.csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_final_model_decision_table.csv",
+    "stage49_negative_ablation_registry.csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_negative_ablation_registry.csv",
+    "stage49_hcrc_prarc_consolidated_summary.csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_hcrc_prarc_consolidated_summary.csv",
+    "stage49_paper_claims_and_evidence.md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_paper_claims_and_evidence.md",
+    "stage49_limitations_and_future_work.md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_limitations_and_future_work.md",
+    "stage49_next_research_routes.md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_next_research_routes.md",
+    "stage49_final_consolidation_report.md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_final_consolidation_report.md",
+    "stage49_manifest.json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage49/final_consolidation/stage49_manifest.json"
+  }
+}

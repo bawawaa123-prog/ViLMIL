@@ -2888,3 +2888,106 @@
   - Step48b did not find a PRARC-v2 variant with sufficiently improved gate dynamics.
   - PRARC should currently be treated as a `negative ablation`.
   - Do not continue stacking PRARC variants into Step49 unless a new mechanism changes the gate regime more substantially than the current sweep.
+
+## 2026-06-16 - Step49: Final Model Consolidation after HCRC/PRARC Search
+
+### Goal
+- Do not train new models.
+- Do not modify the existing forward path.
+- Consolidate Stage39, Stage44, Stage45, Stage47, and Stage48b into a final model-selection package.
+- Make the main-model decision, negative-ablation registry, paper narrative, and next-step recommendation explicit.
+
+### Files added
+- `scripts/analysis/build_stage49_final_consolidation.py`
+- `scripts/analysis/run_stage49_final_consolidation.sh`
+
+### Files modified
+- `docs/CODEX_HANDOFF.md`
+
+### Inputs used
+- `results_stage39/final_evidence_package/`
+- `results_stage44/stage44_hcrc_light_summary/`
+- `results_stage45/prarc_reliability_audit/`
+- `results_stage47/stage47_prarc_gate_summary/`
+- `results_stage47/stage47_prarc_gate_diagnostics/`
+- `results_stage48/stage48b_prarc_v2_variant_sweep_summary/`
+
+### Static checks
+- `python -m py_compile scripts/analysis/build_stage49_final_consolidation.py`: passed
+- `bash -n scripts/analysis/run_stage49_final_consolidation.sh`: passed
+
+### Output directory
+- `results_stage49/final_consolidation/`
+
+### Output files
+- `stage49_final_model_recommendation.json`
+- `stage49_final_model_decision_table.csv`
+- `stage49_negative_ablation_registry.csv`
+- `stage49_hcrc_prarc_consolidated_summary.csv`
+- `stage49_paper_claims_and_evidence.md`
+- `stage49_limitations_and_future_work.md`
+- `stage49_next_research_routes.md`
+- `stage49_final_consolidation_report.md`
+- `stage49_manifest.json`
+
+### Final primary model
+- `RCE-v4-CSG-a01-rq16 / DEG skeleton`
+
+### Final secondary variant
+- `RCE-v4-CSG-a01-rq16 + Low-High Consistency, lambda=0.01, margin=0`
+- Interpretation:
+  - keep as a secondary evidence-calibration trade-off variant only
+  - do not replace the final primary model
+
+### HCRC consolidation
+- Stage44 completed formal 5-fold evaluation for HCRC-Light.
+- All HCRC variants ran cleanly, but none exceeded the baseline by the Step44 decision rules.
+- Best HCRC branch still remained below baseline on the main ranking metrics.
+- Conclusion:
+  - HCRC-Light is not the final primary model
+  - retain as negative ablation / future-work branch
+
+### PRARC consolidation
+- Stage47:
+  - PRARC-v1 completed 5-fold evaluation
+  - best variant was still below baseline
+  - gate diagnostics remained weak / near-scalar overall
+- Stage48b:
+  - PRARC-v2 smoke variants all completed cleanly
+  - `v2_confprior_g08` had the best gate diagnostics
+  - gate dynamics still failed the Step49 promotion bar
+- Conclusion:
+  - PRARC-v1 is not the final primary model
+  - PRARC-v2 is not the final primary model
+  - both should be retained as negative ablations in the current branch
+
+### Negative ablation conclusion
+- Keep the following outside the final primary model:
+  - ordinary region graph
+  - ordinary concept graph
+  - scalar visual evidence gate
+  - HCRC-Light
+  - PRARC-v1
+  - PRARC-v2
+- Core interpretation:
+  - the final model choice is evidence-driven, not a cherry-picked architecture decision
+
+### Paper narrative recommendation
+- Emphasize:
+  - region-concept evidence modeling is effective
+  - cross-scale concept relation reasoning is a key part of the strongest current model
+  - visual residual override remains the main unresolved failure source
+  - HCRC and PRARC were systematically explored but did not surpass the main model
+- Avoid:
+  - claiming HCRC improved the final model
+  - claiming PRARC solved visual residual override
+  - claiming the gate became strongly sample-adaptive
+
+### Next-step recommendation
+- Do not continue HCRC or PRARC training in the current branch.
+- Start organizing paper materials around the current baseline plus the full negative-ablation package.
+- If research continues, focus on:
+  - loss-level visual residual calibration
+  - uncertainty-aware residual suppression
+  - train-split-only reliability learning
+  - evidence-margin auxiliary loss
