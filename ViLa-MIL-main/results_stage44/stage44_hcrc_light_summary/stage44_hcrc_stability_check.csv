@@ -1,0 +1,4 @@
+variant,status,run_dir,fold_summary_path,checkpoint_count,log_exists,log_path,has_traceback,has_nan_or_inf,missing_folds
+hcrc_a002_b8,ok,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a002_b8_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a002_b8_s1/fold_summary.csv,5,True,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/logs/stage44_hcrc_a002_b8_s1.log,False,False,
+hcrc_a005_b8,ok,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a005_b8_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a005_b8_s1/fold_summary.csv,5,True,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/logs/stage44_hcrc_a005_b8_s1.log,False,False,
+hcrc_a01_b8,ok,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a01_b8_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_a01_b8_s1/fold_summary.csv,5,True,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/logs/stage44_hcrc_a01_b8_s1.log,False,False,

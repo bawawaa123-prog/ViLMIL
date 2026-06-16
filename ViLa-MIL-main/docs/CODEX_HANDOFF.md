@@ -1303,6 +1303,93 @@
 - `proposal_radius=4096` changes anchor coordinates through large-neighborhood soft aggregation.
 - `bbox_expand=8` can produce very wide anchor boxes and large child sets.
 - Step43 therefore remains a smoke confirmation step, not a final performance conclusion.
+
+## 2026-06-15 - Step44: HCRC-Light 5-fold Setup
+
+### Goal
+- Add the formal Step44 5-fold launcher and result-summary tooling for HCRC-Light.
+- Keep Step43 smoke behavior unchanged.
+- Avoid changing dataset reading, `RCE_MIL_BiomedCLIP`, or earlier stage outputs.
+
+### Files changed
+- `scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+- `scripts/analysis/build_stage44_hcrc_light_summary.py`
+- `scripts/analysis/check_stage44_hcrc_outputs.py`
+- `docs/CODEX_HANDOFF.md`
+
+### Variants
+- `hcrc_a002_b8`
+- `hcrc_a005_b8`
+- `hcrc_a01_b8`
+- `hcrc_a005_b6`
+- `hcrc_a005_b10`
+- `all_core`
+- `all_bbox`
+
+### Fixed Step44 settings
+- Base model path remains:
+  - `DEG_MIL_BiomedCLIP`
+  - `scale_mode=dual`
+  - `prototype_number=16`
+  - concept prompt pool enabled with core12 prompt JSON
+  - concept prior enabled
+  - visual residual enabled with `init=0.05`
+  - cross-scale graph enabled with `init=0.1`, `norm=sqrt`
+- HCRC spatial defaults remain:
+  - `proposal_radius=4096`
+  - `nms_radius=512`
+  - `num_anchors=16`
+  - `num_high_children=16`
+  - `child_strategy=bbox_containment`
+  - `coord_mode=top_left`
+  - `scale_ratio=1.0`
+  - `prompt_scale=high`
+  - `candidate_top_l=64`
+  - `top_g_concepts=8`
+  - `per_concept_top_m=4`
+  - `prompt_topk=3`
+  - `margin_weight=0.5`
+  - `min_child_count=1`
+
+### Output directories
+- 5-fold runs:
+  - `results_stage44/stage44_<variant>_s1`
+- 5-fold logs:
+  - `results_stage44/logs/stage44_<variant>_s1.log`
+- summary outputs:
+  - `results_stage44/stage44_hcrc_light_summary/`
+
+### Validation commands
+- `python -m py_compile ViLa-MIL-main/scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/build_stage44_hcrc_light_summary.py`
+- `python -m py_compile ViLa-MIL-main/scripts/analysis/check_stage44_hcrc_outputs.py`
+- `bash -n ViLa-MIL-main/scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+
+### Run status
+- The long Step44 5-fold training was intentionally not started in this turn.
+- The launcher was generated so the user can run it directly.
+- The summary script was implemented to work both before and after the actual 5-fold runs:
+  - before runs: it reports missing variants gracefully
+  - after runs: it aggregates per-fold metrics, baseline deltas, and stability checks
+
+### Recommended run commands
+- Main Step44 run:
+  - `cd ViLa-MIL-main && VARIANT=hcrc_a005_b8 bash scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+- Core alpha sweep:
+  - `cd ViLa-MIL-main && VARIANT=all_core bash scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+- BBox sweep:
+  - `cd ViLa-MIL-main && VARIANT=all_bbox bash scripts/experiments/run_stage44_hcrc_light_5fold.sh`
+- Summary after runs:
+  - `cd ViLa-MIL-main && python scripts/analysis/build_stage44_hcrc_light_summary.py --variants hcrc_a002_b8,hcrc_a005_b8,hcrc_a01_b8`
+- Optional output check after runs:
+  - `cd ViLa-MIL-main && python scripts/analysis/check_stage44_hcrc_outputs.py --variants hcrc_a002_b8,hcrc_a005_b8,hcrc_a01_b8`
+
+### 5-fold metrics summary
+- Not available yet in this turn because the formal Step44 runs were not started.
+
+### Recommendation
+- Pending actual Step44 5-fold results.
+- After the runs finish, use `build_stage44_hcrc_light_summary.py` to decide whether to enter Step45 or treat HCRC as a negative ablation and pivot to PRARC.
 - No dataset files were modified.
 
 ### Results / observations

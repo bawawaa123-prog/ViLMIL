@@ -1,0 +1,33 @@
+{
+  "step": "Step44 HCRC-Light 5-fold",
+  "results_root": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44",
+  "baseline_results_root": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage39/final_evidence_package",
+  "stage43_summary": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage43/stage43_hcrc_light_smoke_summary/stage43_hcrc_smoke_report.md",
+  "output_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary",
+  "variants": [
+    "hcrc_a002_b8",
+    "hcrc_a005_b8",
+    "hcrc_a01_b8"
+  ],
+  "seed": 1,
+  "successful_variants": [
+    "hcrc_a002_b8",
+    "hcrc_a005_b8",
+    "hcrc_a01_b8"
+  ],
+  "failed_variants": [],
+  "recommended_variant": "hcrc_a002_b8",
+  "recommendation_reason": "No variant beat baseline by the Step44 rules; selected strongest internal HCRC variant for reporting.",
+  "baseline_available": true,
+  "baseline_warning": null,
+  "enter_step45": false,
+  "enter_step45_reason": "All valid HCRC variants remain below baseline by the Step44 decision rules.",
+  "output_paths": {
+    "summary_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_hcrc_5fold_summary.csv",
+    "fold_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_hcrc_fold_metrics.csv",
+    "delta_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_hcrc_vs_baseline.csv",
+    "stability_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_hcrc_stability_check.csv",
+    "report_md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_hcrc_light_report.md",
+    "manifest_json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage44/stage44_hcrc_light_summary/stage44_manifest.json"
+  }
+}
