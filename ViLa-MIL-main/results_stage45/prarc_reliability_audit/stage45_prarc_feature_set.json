@@ -1,0 +1,37 @@
+{
+  "safe_features_v1": [
+    "concept_margin_abs",
+    "low_high_margin_agreement",
+    "visual_concept_conflict",
+    "dominant_source_ratio",
+    "prediction_confidence_margin",
+    "low_high_sign_agreement"
+  ],
+  "optional_features_v2": [
+    "visual_margin_abs",
+    "high_margin_abs",
+    "low_margin_abs",
+    "visual_over_concept_ratio",
+    "prompt_error_risk_score",
+    "prompt_reliability_score"
+  ],
+  "exclude_features": [
+    "csg_abs_margin"
+  ],
+  "feature_reasons": {
+    "concept_margin_abs": "complete enough, interpretable, and separates both error and visual override targets.",
+    "low_margin_abs": "potentially useful signal, but less stable or less interpretable than the v1 core set.",
+    "high_margin_abs": "potentially useful signal, but less stable or less interpretable than the v1 core set.",
+    "low_high_margin_agreement": "complete enough, interpretable, and separates both error and visual override targets.",
+    "low_high_sign_agreement": "complete enough, interpretable, and separates both error and visual override targets.",
+    "visual_concept_conflict": "complete enough, interpretable, and separates both error and visual override targets.",
+    "visual_margin_abs": "potentially useful signal, but less stable or less interpretable than the v1 core set.",
+    "visual_over_concept_ratio": "potentially useful signal, but less stable or less interpretable than the v1 core set.",
+    "dominant_source_ratio": "complete enough, interpretable, and separates both error and visual override targets.",
+    "prompt_error_risk_score": "audit signal is useful, but the score is derived from test-set reliability statistics and must be recomputed inside training folds to avoid leakage.",
+    "prompt_reliability_score": "audit signal is useful, but the score is derived from test-set reliability statistics and must be recomputed inside training folds to avoid leakage.",
+    "csg_abs_margin": "weak separability, unstable behavior, or too little practical value for the first adaptive gate.",
+    "prediction_confidence_margin": "complete enough, interpretable, and separates both error and visual override targets."
+  },
+  "audit_only_note": "Prompt-derived reliability scores are audit features only in Step45. They should not be turned into fixed prompt weights from this test export; if used in Step46, they must be recomputed inside the training fold or learned without test leakage."
+}
