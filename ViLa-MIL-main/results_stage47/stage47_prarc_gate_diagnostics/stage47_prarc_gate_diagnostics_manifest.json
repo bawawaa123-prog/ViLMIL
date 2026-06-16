@@ -1,0 +1,165 @@
+{
+  "step": "Step47 PRARC Gate Diagnostics",
+  "results_root": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47",
+  "output_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics",
+  "requested_variants": [
+    "prarc_v1_g05",
+    "prarc_v1_g08",
+    "prarc_v1_g10"
+  ],
+  "split": "test",
+  "max_slides_per_fold": 0,
+  "variant_diagnostics": [
+    {
+      "variant": "prarc_v1_g05",
+      "gate_mean_mean": 0.5144110412075762,
+      "gate_std_mean": 0.002768640560822254,
+      "gate_range_mean": 0.013543564081192016,
+      "fraction_gate_below_0.5_mean": 0.23092783505154638,
+      "fraction_gate_above_0.9_mean": 0.0,
+      "error_vs_correct_delta": -0.0026979808573009967,
+      "conflict_vs_nonconflict_delta": -0.008662194639222798,
+      "disagree_vs_agree_delta": -0.0031398900668333507,
+      "sample_adaptive_flag": true
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "gate_mean_mean": 0.7872141105628448,
+      "gate_std_mean": 0.0011475386210503785,
+      "gate_range_mean": 0.003925776481628418,
+      "fraction_gate_below_0.5_mean": 0.0,
+      "fraction_gate_above_0.9_mean": 0.0,
+      "error_vs_correct_delta": -0.0008785093956801271,
+      "conflict_vs_nonconflict_delta": -0.0024614717034565636,
+      "disagree_vs_agree_delta": -0.001852534956984564,
+      "sample_adaptive_flag": false
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "gate_mean_mean": 0.9882732799557384,
+      "gate_std_mean": 5.236272175911539e-05,
+      "gate_range_mean": 0.00016201734542846679,
+      "fraction_gate_below_0.5_mean": 0.0,
+      "fraction_gate_above_0.9_mean": 1.0,
+      "error_vs_correct_delta": -2.5517751217174478e-05,
+      "conflict_vs_nonconflict_delta": -5.585680521580372e-05,
+      "disagree_vs_agree_delta": -0.00011283390090732759,
+      "sample_adaptive_flag": false
+    }
+  ],
+  "fold_status": [
+    {
+      "variant": "prarc_v1_g05",
+      "fold": 0,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/s_0_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g05",
+      "fold": 1,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/s_1_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g05",
+      "fold": 2,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/s_2_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g05",
+      "fold": 3,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/s_3_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g05",
+      "fold": 4,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/s_4_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "fold": 0,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/s_0_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "fold": 1,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/s_1_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "fold": 2,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/s_2_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "fold": 3,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/s_3_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "fold": 4,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/s_4_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "fold": 0,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/s_0_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "fold": 1,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/s_1_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "fold": 2,
+      "status": "ok",
+      "slides_probed": 194,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/s_2_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "fold": 3,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/s_3_checkpoint.pt"
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "fold": 4,
+      "status": "ok",
+      "slides_probed": 193,
+      "checkpoint_path": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/s_4_checkpoint.pt"
+    }
+  ],
+  "outputs": {
+    "slide_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_probe_slide_level.csv",
+    "distribution_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_distribution_summary.csv",
+    "condition_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_by_condition.csv",
+    "correlation_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_feature_correlation.csv",
+    "report_md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_diagnostics_report.md",
+    "manifest_json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_diagnostics/stage47_prarc_gate_diagnostics_manifest.json"
+  }
+}

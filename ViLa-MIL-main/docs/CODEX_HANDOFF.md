@@ -258,6 +258,63 @@
   - `scripts/analysis/check_stage13_rce_evidence_quality.py`
 - Checked evidence files:
   - `results_stage9/stage13_rce_evidence_export/slide_prediction_evidence.csv`
+
+## Step47: PRARC 5-Fold + Gate Diagnostics
+
+- Modified files:
+  - `scripts/experiments/run_stage47_prarc_gate_5fold.sh`
+  - `scripts/analysis/build_stage47_prarc_gate_summary.py`
+  - `scripts/analysis/probe_stage47_prarc_gate_diagnostics.py`
+  - `scripts/analysis/check_stage47_prarc_outputs.py`
+  - `docs/CODEX_HANDOFF.md`
+- Goal:
+  - Run formal 5-fold validation for Step46 PRARC adaptive residual gate variants.
+  - Summarize 5-fold performance against the Step39 baseline.
+  - Probe per-slide PRARC gate behavior and determine whether the gate is truly sample-adaptive or near-scalar.
+- Added files:
+  - `scripts/experiments/run_stage47_prarc_gate_5fold.sh`
+  - `scripts/analysis/build_stage47_prarc_gate_summary.py`
+  - `scripts/analysis/probe_stage47_prarc_gate_diagnostics.py`
+  - `scripts/analysis/check_stage47_prarc_outputs.py`
+- Supported run variants:
+  - `prarc_v1_g05`
+  - `prarc_v1_g08`
+  - `prarc_v1_g10`
+  - `prarc_v1_h32_g08`
+  - `prarc_v1_opt_g08`
+  - `all_core`
+  - `all_extended`
+- Default variant:
+  - `prarc_v1_g08`
+- Output directories:
+  - training runs: `results_stage47/stage47_<variant>_s1`
+  - logs: `results_stage47/logs/stage47_<variant>_s1.log`
+  - summary: `results_stage47/stage47_prarc_gate_summary`
+  - diagnostics: `results_stage47/stage47_prarc_gate_diagnostics`
+- Verification commands:
+  - `bash -n scripts/experiments/run_stage47_prarc_gate_5fold.sh`
+  - `python -m py_compile scripts/analysis/build_stage47_prarc_gate_summary.py`
+  - `python -m py_compile scripts/analysis/probe_stage47_prarc_gate_diagnostics.py`
+  - `python -m py_compile scripts/analysis/check_stage47_prarc_outputs.py`
+- Suggested execution commands:
+  - `VARIANT=prarc_v1_g08 bash scripts/experiments/run_stage47_prarc_gate_5fold.sh`
+  - `VARIANT=all_core bash scripts/experiments/run_stage47_prarc_gate_5fold.sh`
+  - `python scripts/analysis/build_stage47_prarc_gate_summary.py --variants prarc_v1_g05,prarc_v1_g08,prarc_v1_g10`
+  - `python scripts/analysis/probe_stage47_prarc_gate_diagnostics.py --variants prarc_v1_g05,prarc_v1_g08,prarc_v1_g10`
+  - `python scripts/analysis/check_stage47_prarc_outputs.py`
+- Actual run:
+  - No Step47 5-fold training run was executed in this implementation turn.
+  - Summary and diagnostics scripts are designed to emit warnings instead of fabricating results when run artifacts are missing.
+- 5-fold metric summary:
+  - Pending actual Step47 runs.
+- Gate diagnostics summary:
+  - Pending actual Step47 checkpoints and probe exports.
+- Recommended variant:
+  - Pending actual Step47 runs; start with `prarc_v1_g08`, then compare `prarc_v1_g05` and `prarc_v1_g10`.
+- Recommend enter Step48:
+  - Pending actual Step47 performance + diagnostics.
+- If Step48 is not recommended:
+  - First adjust PRARC feature set / gate initialization and re-check whether gate spread grows beyond near-scalar behavior.
   - `results_stage9/stage13_rce_evidence_export/slide_top_concepts.csv`
   - `results_stage9/stage13_rce_evidence_export/region_concept_evidence.pkl`
   - `results_stage9/stage13_rce_evidence_export/stage13_rce_evidence_export_report.md`

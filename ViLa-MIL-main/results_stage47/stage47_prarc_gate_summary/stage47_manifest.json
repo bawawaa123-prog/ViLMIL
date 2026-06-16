@@ -1,0 +1,53 @@
+{
+  "step": "Step47 PRARC 5-fold + Gate Diagnostics",
+  "results_root": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47",
+  "baseline_summary_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage39/final_evidence_package",
+  "stage46_summary": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage46/stage46_prarc_gate_smoke_summary/stage46_prarc_smoke_report.md",
+  "output_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary",
+  "requested_variants": [
+    "prarc_v1_g05",
+    "prarc_v1_g08",
+    "prarc_v1_g10"
+  ],
+  "successful_variants": [
+    "prarc_v1_g05",
+    "prarc_v1_g08",
+    "prarc_v1_g10"
+  ],
+  "failed_or_missing_variants": [],
+  "baseline_available": true,
+  "baseline_warning": null,
+  "baseline_model": "RCE-v4-CSG-a01-rq16 / DEG skeleton",
+  "diagnostics_available": false,
+  "recommended_variant": "prarc_v1_g05",
+  "recommend_enter_step48": false,
+  "recommendation_reason": "Performance is below baseline or gate still looks near-scalar.",
+  "variant_decisions": [
+    {
+      "variant": "prarc_v1_g05",
+      "score": 0.7077312984318477,
+      "recommend_step48": false,
+      "reason": "Performance is below baseline or gate still looks near-scalar."
+    },
+    {
+      "variant": "prarc_v1_g08",
+      "score": 0.39894464033029486,
+      "recommend_step48": false,
+      "reason": "Performance is below baseline or gate still looks near-scalar."
+    },
+    {
+      "variant": "prarc_v1_g10",
+      "score": 0.266356189841795,
+      "recommend_step48": false,
+      "reason": "Performance is below baseline or gate still looks near-scalar."
+    }
+  ],
+  "outputs": {
+    "summary_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_prarc_5fold_summary.csv",
+    "fold_metrics_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_prarc_fold_metrics.csv",
+    "vs_baseline_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_prarc_vs_baseline.csv",
+    "stability_csv": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_prarc_stability_check.csv",
+    "report_md": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_prarc_gate_report.md",
+    "manifest_json": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_gate_summary/stage47_manifest.json"
+  }
+}

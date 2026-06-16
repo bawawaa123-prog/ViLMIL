@@ -1,0 +1,16 @@
+variant,fold,feature_name,correlation,n
+prarc_v1_g05,0,low_high_margin_agreement,-0.15759576237775488,194
+prarc_v1_g05,1,low_high_margin_agreement,-0.10550052765082692,194
+prarc_v1_g05,2,low_high_margin_agreement,0.1286517614088934,194
+prarc_v1_g05,3,low_high_margin_agreement,0.26218383356169667,193
+prarc_v1_g05,4,low_high_margin_agreement,0.027602485281316508,193
+prarc_v1_g08,0,low_high_margin_agreement,0.38412238573031776,194
+prarc_v1_g08,1,low_high_margin_agreement,-0.23545732540500186,194
+prarc_v1_g08,2,low_high_margin_agreement,0.16771396661001006,194
+prarc_v1_g08,3,low_high_margin_agreement,-0.06699704432769955,193
+prarc_v1_g08,4,low_high_margin_agreement,-0.03087202808768205,193
+prarc_v1_g10,0,low_high_margin_agreement,0.09746608561055703,194
+prarc_v1_g10,1,low_high_margin_agreement,0.042002960857661406,194
+prarc_v1_g10,2,low_high_margin_agreement,-0.2915966468644571,194
+prarc_v1_g10,3,low_high_margin_agreement,-0.20998613029705268,193
+prarc_v1_g10,4,low_high_margin_agreement,0.0026615115643702325,193

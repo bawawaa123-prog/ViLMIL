@@ -1,0 +1,4 @@
+variant,status,checkpoint_exists,checkpoint_count,missing_checkpoint_folds,missing_folds,log_exists,has_traceback,has_nan_or_inf,run_dir,fold_summary_path
+prarc_v1_g05,ok,True,5,,,True,False,False,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g05_s1/fold_summary.csv
+prarc_v1_g08,ok,True,5,,,True,False,False,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g08_s1/fold_summary.csv
+prarc_v1_g10,ok,True,5,,,True,False,False,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1,/home/ljh/ViLMIL/ViLa-MIL-main/results_stage47/stage47_prarc_v1_g10_s1/fold_summary.csv
