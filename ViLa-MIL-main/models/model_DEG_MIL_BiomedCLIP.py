@@ -104,42 +104,68 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.rce_hcrc_prompt_scale = str(getattr(config, "rce_hcrc_prompt_scale", "high"))
         self.rce_hcrc_min_child_count = int(getattr(config, "rce_hcrc_min_child_count", 1))
         self.rce_hcrc_export_debug = bool(getattr(config, "rce_hcrc_export_debug", False))
+        self.deg_skeleton_passthrough = not any(
+            [
+                self.deg_use_region_graph,
+                self.deg_use_concept_graph,
+                self.rce_use_visual_evidence_gate,
+                self.rce_use_prarc_gate,
+                self.rce_use_hcrc,
+                self.rce_use_low_high_consistency_loss,
+            ]
+        )
+        self._deg_force_base_region_aggregate = False
         self.rce_hcrc_low_patch_size = 256.0
         self.rce_hcrc_high_patch_size = 256.0
         self.rce_hcrc_use_bbox_then_nearest_fallback = False
-        self.rce_visual_evidence_gate = nn.Parameter(
-            self._sigmoid_init_to_logit(self.rce_visual_gate_init)
-        )
         self.rce_prarc_feature_names = self._build_prarc_feature_name_list()
-        prarc_input_dim = len(self.rce_prarc_feature_names)
-        self.prarc_gate_mlp = nn.Sequential(
-            nn.Linear(prarc_input_dim, self.rce_prarc_gate_hidden_dim),
-            nn.LayerNorm(self.rce_prarc_gate_hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(self.rce_prarc_gate_dropout),
-            nn.Linear(self.rce_prarc_gate_hidden_dim, 1),
-        )
-        if self.rce_prarc_gate_version == "v2":
-            nn.init.normal_(
-                self.prarc_gate_mlp[-1].weight,
-                mean=0.0,
-                std=max(float(self.rce_prarc_gate_last_weight_init), 1e-6),
+        self.rce_visual_evidence_gate = None
+        self.prarc_gate_mlp = None
+        self.rce_hcrc_alpha = None
+        self.hcrc_query_proj = None
+        self.hcrc_key_proj = None
+        self.hcrc_value_proj = None
+        self.hcrc_out_proj = None
+        self.hcrc_fusion_gate = None
+        self.hcrc_norm = None
+
+        if not self.deg_skeleton_passthrough:
+            self.rce_visual_evidence_gate = nn.Parameter(
+                self._sigmoid_init_to_logit(self.rce_visual_gate_init)
             )
+            prarc_input_dim = len(self.rce_prarc_feature_names)
+            self.prarc_gate_mlp = nn.Sequential(
+                nn.Linear(prarc_input_dim, self.rce_prarc_gate_hidden_dim),
+                nn.LayerNorm(self.rce_prarc_gate_hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(self.rce_prarc_gate_dropout),
+                nn.Linear(self.rce_prarc_gate_hidden_dim, 1),
+            )
+            if self.rce_prarc_gate_version == "v2":
+                nn.init.normal_(
+                    self.prarc_gate_mlp[-1].weight,
+                    mean=0.0,
+                    std=max(float(self.rce_prarc_gate_last_weight_init), 1e-6),
+                )
+            else:
+                nn.init.zeros_(self.prarc_gate_mlp[-1].weight)
+            nn.init.constant_(
+                self.prarc_gate_mlp[-1].bias,
+                float(self._sigmoid_init_to_logit(self.rce_prarc_gate_init).item()),
+            )
+            self.rce_hcrc_alpha = nn.Parameter(
+                self._sigmoid_init_to_logit(self.rce_hcrc_alpha_init)
+            )
+            self.hcrc_query_proj = nn.Linear(self.input_size, self.input_size)
+            self.hcrc_key_proj = nn.Linear(self.input_size, self.input_size)
+            self.hcrc_value_proj = nn.Linear(self.input_size, self.input_size)
+            self.hcrc_out_proj = nn.Linear(self.input_size, self.input_size)
+            self.hcrc_fusion_gate = nn.Linear(3 * self.input_size, self.input_size)
+            self.hcrc_norm = nn.LayerNorm(self.input_size)
         else:
-            nn.init.zeros_(self.prarc_gate_mlp[-1].weight)
-        nn.init.constant_(
-            self.prarc_gate_mlp[-1].bias,
-            float(self._sigmoid_init_to_logit(self.rce_prarc_gate_init).item()),
-        )
-        self.rce_hcrc_alpha = nn.Parameter(
-            self._sigmoid_init_to_logit(self.rce_hcrc_alpha_init)
-        )
-        self.hcrc_query_proj = nn.Linear(self.input_size, self.input_size)
-        self.hcrc_key_proj = nn.Linear(self.input_size, self.input_size)
-        self.hcrc_value_proj = nn.Linear(self.input_size, self.input_size)
-        self.hcrc_out_proj = nn.Linear(self.input_size, self.input_size)
-        self.hcrc_fusion_gate = nn.Linear(3 * self.input_size, self.input_size)
-        self.hcrc_norm = nn.LayerNorm(self.input_size)
+            logger.info(
+                "DEG_MIL_BiomedCLIP skeleton passthrough enabled: no DEG-only trainable parameters registered."
+            )
 
         if self.deg_use_region_graph:
             self.low_region_graph_proj = nn.Linear(self.input_size, self.input_size)
@@ -562,6 +588,14 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         return patch_features
 
     def _aggregate_region_features(self, patch_features, region_queries, attention_layer, norm_layer):
+        if self._deg_force_base_region_aggregate:
+            return RCE_MIL_BiomedCLIP._aggregate_region_features(
+                self,
+                patch_features,
+                region_queries,
+                attention_layer,
+                norm_layer,
+            )
         patch_features = self._prepare_patch_features_for_attention(patch_features)
         batch_size = patch_features.size(1)
         query = region_queries.expand(-1, batch_size, -1)
@@ -1268,6 +1302,13 @@ class DEG_MIL_BiomedCLIP(RCE_MIL_BiomedCLIP):
         self.last_hcrc_skip_reason = None
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
+        if self.deg_skeleton_passthrough:
+            self._deg_force_base_region_aggregate = True
+            try:
+                return super().forward(x_s, coord_s, x_l, coords_l, label, slide_id=slide_id)
+            finally:
+                self._deg_force_base_region_aggregate = False
+
         low_patches = x_s.float()
         high_patches = x_l.float()
         self._set_hcrc_debug_defaults()
