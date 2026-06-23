@@ -1,0 +1,9 @@
+input_name,path,status
+main_lineage,docs/main_model_reproduction_and_code_lineage.md,ready
+stage52_comparison,docs/stage52_rce_core_ablation_comparison.md,ready
+stage52b_paper_md,docs/stage52b_rce_ablation_table_paper.md,ready
+stage52b_paper_csv,docs/stage52b_rce_ablation_table_paper.csv,ready
+stage52b_latex,docs/stage52b_rce_ablation_table_latex.tex,ready
+stage52b_delta_csv,docs/stage52b_rce_ablation_fold_delta.csv,ready
+stage52b_interpretation,docs/stage52b_rce_ablation_interpretation.md,ready
+stage52b_statistics,docs/stage52b_rce_ablation_statistics_plan.md,ready

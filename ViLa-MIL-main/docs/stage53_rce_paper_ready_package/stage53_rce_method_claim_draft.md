@@ -1,0 +1,5 @@
+# Stage53 RCE Method Claim Draft
+
+Starting from ViLa-MIL, which aligns pathology slides with language prompts at dual visual scales, we formulate RCE as a region-concept evidence modeling framework for slide-level diagnosis. Instead of relying only on global slide-text alignment, RCE decomposes the prediction process into region-level evidence candidates and concept-aware aggregation, allowing the model to reason about which local observations support which diagnostic concepts.
+
+Within this framework, CSG introduces concept-level cross-scale reasoning between low- and high-magnification evidence, so that concept support can be refined through cross-scale interaction rather than isolated per-scale scoring. The visual residual branch preserves complementary image evidence that is not fully captured by concept similarity alone, while the logit calibration module stabilizes the final decision boundary and improves balanced decision behavior. In this paper, these components are presented as part of the final RCE formulation; DEG, HCRC, and PRARC are not treated as the final method.
