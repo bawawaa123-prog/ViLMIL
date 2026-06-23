@@ -1,0 +1,5 @@
+item,path,status
+full_run_dir,results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1,ready
+wo_csg_run_dir,results_stage52_rce_core_ablation/wo_csg_5fold_e20_s1,ready
+full_existing_evidence_dir,results_stage32/stage32_rce_v4_csg_evidence_export,ready
+stage39_dir,results_stage39/final_evidence_package,ready

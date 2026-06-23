@@ -103,6 +103,32 @@ def load_experiment_args(results_dir: Path, warning_log: list[str]) -> dict:
         return {}
 
 
+def get_bool(config: SimpleNamespace, name: str, default: bool) -> bool:
+    value = getattr(config, name, default)
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "t", "on"}
+    return bool(value)
+
+
+def get_int(config: SimpleNamespace, name: str, default: int) -> int:
+    try:
+        return int(getattr(config, name, default))
+    except Exception:
+        return int(default)
+
+
+def get_float(config: SimpleNamespace, name: str, default: float) -> float:
+    try:
+        return float(getattr(config, name, default))
+    except Exception:
+        return float(default)
+
+
+def get_str(config: SimpleNamespace, name: str, default: str) -> str:
+    value = getattr(config, name, default)
+    return str(value) if value is not None else str(default)
+
+
 def build_mainline_config(root: Path, args: argparse.Namespace, experiment_args: dict) -> SimpleNamespace:
     config = SimpleNamespace()
     for key, value in experiment_args.items():
@@ -112,47 +138,47 @@ def build_mainline_config(root: Path, args: argparse.Namespace, experiment_args:
     config.n_classes = 2
     config.class_names = list(CLASS_NAMES)
     config.model_type = args.model_type
-    config.mode = "transformer"
-    config.input_size = 512
-    config.hidden_size = 192
-    config.prototype_number = 16
-    config.scale_mode = "dual"
-    config.use_concept_prompt_pool = True
-    config.prompt_ensemble_mode = "embedding_mean"
-    config.use_dynamic_prompt_gate = False
-    config.dynamic_gate_hidden_dim = 256
-    config.dynamic_gate_residual_mean = False
-    config.prompt_dropout = 0.0
-    config.peps_topk = int(getattr(config, "peps_topk", 3))
-    config.peps_tau = float(getattr(config, "peps_tau", 0.1))
-    config.save_peps_weights = False
-    config.save_sap_peps_weights = False
-    config.spatial_lambda = 1.0
-    config.spatial_sigma = 1.0
-    config.spatial_score_type = "centroid_mean_dist"
-    config.scale_fusion_mode = "sum"
-    config.scale_gate_hidden_dim = 128
-    config.scale_gate_dropout = 0.25
-    config.scale_residual_gamma = 0.25
-    config.allow_legacy_scale_fusion_ckpt = False
-    config.finetune_text_encoder = False
-    config.text_finetune_mode = "proj"
-    config.text_unfreeze_last_n = 2
-    config.rce_use_concept_prior = True
-    config.rce_use_logit_calibration = True
-    config.rce_logit_scale_init = 10.0
-    config.rce_concept_prior_strength = 1.0
-    config.rce_use_visual_residual = True
-    config.rce_visual_residual_init = 0.05
-    config.rce_use_cross_scale_graph = True
-    config.rce_cross_scale_graph_init = 0.1
-    config.rce_cross_scale_graph_norm = "sqrt"
-    config.deg_use_region_graph = False
-    config.deg_region_graph_k = int(getattr(config, "deg_region_graph_k", 4))
-    config.deg_region_graph_alpha = float(getattr(config, "deg_region_graph_alpha", 0.1))
-    config.deg_use_concept_graph = False
-    config.deg_concept_graph_topk = int(getattr(config, "deg_concept_graph_topk", 4))
-    config.deg_concept_graph_alpha = float(getattr(config, "deg_concept_graph_alpha", 0.05))
+    config.mode = get_str(config, "mode", "transformer")
+    config.input_size = get_int(config, "input_size", 512)
+    config.hidden_size = get_int(config, "hidden_size", 192)
+    config.prototype_number = get_int(config, "prototype_number", 16)
+    config.scale_mode = get_str(config, "scale_mode", "dual")
+    config.use_concept_prompt_pool = get_bool(config, "use_concept_prompt_pool", True)
+    config.prompt_ensemble_mode = get_str(config, "prompt_ensemble_mode", "embedding_mean")
+    config.use_dynamic_prompt_gate = get_bool(config, "use_dynamic_prompt_gate", False)
+    config.dynamic_gate_hidden_dim = get_int(config, "dynamic_gate_hidden_dim", 256)
+    config.dynamic_gate_residual_mean = get_bool(config, "dynamic_gate_residual_mean", False)
+    config.prompt_dropout = get_float(config, "prompt_dropout", 0.0)
+    config.peps_topk = get_int(config, "peps_topk", 3)
+    config.peps_tau = get_float(config, "peps_tau", 0.1)
+    config.save_peps_weights = get_bool(config, "save_peps_weights", False)
+    config.save_sap_peps_weights = get_bool(config, "save_sap_peps_weights", False)
+    config.spatial_lambda = get_float(config, "spatial_lambda", 1.0)
+    config.spatial_sigma = get_float(config, "spatial_sigma", 1.0)
+    config.spatial_score_type = get_str(config, "spatial_score_type", "centroid_mean_dist")
+    config.scale_fusion_mode = get_str(config, "scale_fusion_mode", "sum")
+    config.scale_gate_hidden_dim = get_int(config, "scale_gate_hidden_dim", 128)
+    config.scale_gate_dropout = get_float(config, "scale_gate_dropout", 0.25)
+    config.scale_residual_gamma = get_float(config, "scale_residual_gamma", 0.25)
+    config.allow_legacy_scale_fusion_ckpt = get_bool(config, "allow_legacy_scale_fusion_ckpt", False)
+    config.finetune_text_encoder = get_bool(config, "finetune_text_encoder", False)
+    config.text_finetune_mode = get_str(config, "text_finetune_mode", "proj")
+    config.text_unfreeze_last_n = get_int(config, "text_unfreeze_last_n", 2)
+    config.rce_use_concept_prior = get_bool(config, "rce_use_concept_prior", True)
+    config.rce_use_logit_calibration = get_bool(config, "rce_use_logit_calibration", True)
+    config.rce_logit_scale_init = get_float(config, "rce_logit_scale_init", 10.0)
+    config.rce_concept_prior_strength = get_float(config, "rce_concept_prior_strength", 1.0)
+    config.rce_use_visual_residual = get_bool(config, "rce_use_visual_residual", True)
+    config.rce_visual_residual_init = get_float(config, "rce_visual_residual_init", 0.05)
+    config.rce_use_cross_scale_graph = get_bool(config, "rce_use_cross_scale_graph", True)
+    config.rce_cross_scale_graph_init = get_float(config, "rce_cross_scale_graph_init", 0.1)
+    config.rce_cross_scale_graph_norm = get_str(config, "rce_cross_scale_graph_norm", "sqrt")
+    config.deg_use_region_graph = get_bool(config, "deg_use_region_graph", False)
+    config.deg_region_graph_k = get_int(config, "deg_region_graph_k", 4)
+    config.deg_region_graph_alpha = get_float(config, "deg_region_graph_alpha", 0.1)
+    config.deg_use_concept_graph = get_bool(config, "deg_use_concept_graph", False)
+    config.deg_concept_graph_topk = get_int(config, "deg_concept_graph_topk", 4)
+    config.deg_concept_graph_alpha = get_float(config, "deg_concept_graph_alpha", 0.05)
     config.data_root_dir = str(args.data_root_dir)
     config.data_folder_s = str(args.data_folder_s)
     config.data_folder_l = str(args.data_folder_l)
@@ -665,6 +691,16 @@ def aggregate_top_items(df: pd.DataFrame, group_cols: list[str], score_col: str,
     return lines
 
 
+def mean_abs_pair_from_df(df: pd.DataFrame, col0: str, col1: str) -> float | None:
+    if df.empty or col0 not in df.columns or col1 not in df.columns:
+        return None
+    series0 = pd.to_numeric(df[col0], errors="coerce")
+    series1 = pd.to_numeric(df[col1], errors="coerce")
+    if series0.dropna().empty and series1.dropna().empty:
+        return None
+    return safe_float(series0.abs().add(series1.abs()).mean() / 2.0)
+
+
 def build_report(
     output_dir: Path,
     slide_df: pd.DataFrame,
@@ -692,20 +728,16 @@ def build_report(
     error_lines = aggregate_top_items(error_pred_df, ["scale", "class_name", "concept_text"], "contribution", topn=6)
 
     concept_source = {
-        "mean_abs_low_logit": safe_float(slide_df["low_logit_class_0"].abs().add(slide_df["low_logit_class_1"].abs()).mean() / 2.0)
-        if not slide_df.empty and {"low_logit_class_0", "low_logit_class_1"}.issubset(slide_df.columns)
+        "mean_abs_low_logit": mean_abs_pair_from_df(slide_df, "low_logit_class_0", "low_logit_class_1"),
+        "mean_abs_high_logit": mean_abs_pair_from_df(slide_df, "high_logit_class_0", "high_logit_class_1"),
+        "mean_abs_visual_logit": mean_abs_pair_from_df(slide_df, "visual_logit_class_0", "visual_logit_class_1"),
+        "mean_abs_csg_logit": mean_abs_pair_from_df(slide_df, "csg_logit_class_0", "csg_logit_class_1"),
+        "mean_visual_alpha": safe_float(pd.to_numeric(slide_df["visual_alpha"], errors="coerce").dropna().mean())
+        if not slide_df.empty and "visual_alpha" in slide_df
         else None,
-        "mean_abs_high_logit": safe_float(slide_df["high_logit_class_0"].abs().add(slide_df["high_logit_class_1"].abs()).mean() / 2.0)
-        if not slide_df.empty and {"high_logit_class_0", "high_logit_class_1"}.issubset(slide_df.columns)
+        "mean_csg_alpha": safe_float(pd.to_numeric(slide_df["csg_alpha"], errors="coerce").dropna().mean())
+        if not slide_df.empty and "csg_alpha" in slide_df
         else None,
-        "mean_abs_visual_logit": safe_float(slide_df["visual_logit_class_0"].abs().add(slide_df["visual_logit_class_1"].abs()).mean() / 2.0)
-        if not slide_df.empty and {"visual_logit_class_0", "visual_logit_class_1"}.issubset(slide_df.columns)
-        else None,
-        "mean_abs_csg_logit": safe_float(slide_df["csg_logit_class_0"].abs().add(slide_df["csg_logit_class_1"].abs()).mean() / 2.0)
-        if not slide_df.empty and {"csg_logit_class_0", "csg_logit_class_1"}.issubset(slide_df.columns)
-        else None,
-        "mean_visual_alpha": safe_float(slide_df["visual_alpha"].dropna().mean()) if not slide_df.empty and "visual_alpha" in slide_df else None,
-        "mean_csg_alpha": safe_float(slide_df["csg_alpha"].dropna().mean()) if not slide_df.empty and "csg_alpha" in slide_df else None,
     }
 
     lines = [
