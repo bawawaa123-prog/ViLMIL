@@ -1,0 +1,14 @@
+# Step55 Ablation Table
+
+This table mirrors the Step52B paper table values and does not recompute or overwrite the original ablation results.
+
+| variant | paper_label | status | AUC_mean | AUC_std | ACC_mean | ACC_std | F1_mean | F1_std | BACC_mean | BACC_std | PR_AUC_mean | PR_AUC_std | delta_AUC_vs_full | delta_ACC_vs_full | delta_F1_vs_full | delta_BACC_vs_full | delta_PR_AUC_vs_full | p_AUC_vs_full | p_ACC_vs_full | p_F1_vs_full | p_BACC_vs_full | p_PR_AUC_vs_full | source_dir | source_file |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stage23_history | Stage23 reference | ready | 0.9702 | 0.0130 | 0.9225 | 0.0188 | 0.9145 | 0.0207 | 0.9171 | 0.0196 | 0.9444 | 0.0252 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | missing | missing | missing | missing | missing | results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+| full | Full RCE-v4-CSG-rq16 | ready | 0.9702 | 0.0130 | 0.9225 | 0.0188 | 0.9145 | 0.0207 | 0.9171 | 0.0196 | 0.9444 | 0.0252 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | results_stage52_rce_core_ablation/full_rce_v4_csg_rq16_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+| wo_csg | w/o CSG | ready | 0.9655 | 0.0154 | 0.9215 | 0.0165 | 0.9127 | 0.0191 | 0.9134 | 0.0217 | 0.9278 | 0.0361 | -0.0047 | -0.0010 | -0.0018 | -0.0037 | -0.0166 | 0.2282 | 0.8655 | 0.7938 | 0.5728 | 0.0878 | results_stage52_rce_core_ablation/wo_csg_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+| wo_concept_prior | w/o concept prior | ready | 0.9592 | 0.0221 | 0.9019 | 0.0390 | 0.8903 | 0.0445 | 0.8891 | 0.0447 | 0.9078 | 0.0495 | -0.0110 | -0.0206 | -0.0241 | -0.0280 | -0.0366 | 0.1383 | 0.2344 | 0.2254 | 0.1742 | 0.0606 | results_stage52_rce_core_ablation/wo_concept_prior_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+| wo_visual_residual | w/o visual residual | ready | 0.9645 | 0.0192 | 0.9049 | 0.0167 | 0.8946 | 0.0160 | 0.8960 | 0.0154 | 0.9239 | 0.0467 | -0.0057 | -0.0176 | -0.0198 | -0.0211 | -0.0205 | 0.1743 | 0.2320 | 0.2271 | 0.2523 | 0.2008 | results_stage52_rce_core_ablation/wo_visual_residual_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+| wo_logit_calibration | w/o logit calibration | ready | 0.9686 | 0.0169 | 0.9215 | 0.0277 | 0.9111 | 0.0338 | 0.9076 | 0.0394 | 0.9486 | 0.0226 | -0.0017 | -0.0010 | -0.0034 | -0.0095 | 0.0042 | 0.7506 | 0.9353 | 0.8246 | 0.5864 | 0.6665 | results_stage52_rce_core_ablation/wo_logit_calibration_5fold_e20_s1 | docs/stage52b_rce_ablation_table_paper.csv |
+
+Interpretation boundary: use these values as descriptive trends. The paired t-test values from Step52B should not be promoted to a conventional `p < 0.05` significance claim in the frozen release.

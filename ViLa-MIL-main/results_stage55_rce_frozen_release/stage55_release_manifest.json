@@ -1,0 +1,103 @@
+{
+  "release_step": "Step55",
+  "generated_at": "2026-06-24T13:21:50+08:00",
+  "git": {
+    "commit_hash": "d6fdd9d4306fa984da5a5641c7953a4aa31de310",
+    "branch": "main",
+    "status_short": [
+      "?? docs/stage55_rce_frozen_release/",
+      "?? results_stage55_rce_frozen_release/",
+      "?? scripts/analysis/build_stage55_rce_frozen_release.py"
+    ],
+    "has_uncommitted_changes": true,
+    "captured_at": "2026-06-24T13:21:50+08:00"
+  },
+  "main_model": {
+    "name": "RCE-v4-CSG-a01-rq16",
+    "model_type": "RCE_MIL_BiomedCLIP",
+    "model_file": "models/model_RCE_MIL_BiomedCLIP.py",
+    "training_script": "scripts/experiments/run_stage23_rce_v4_csg_region_queries_5fold.sh",
+    "result_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+    "main_components": [
+      "BiomedCLIP features",
+      "dual scale",
+      "rq16",
+      "concept prior",
+      "visual residual",
+      "CSG",
+      "logit calibration"
+    ],
+    "excluded_components": [
+      "DEG",
+      "HCRC",
+      "PRARC"
+    ]
+  },
+  "main_results": {
+    "AUC": {
+      "mean": "0.9702",
+      "std": "0.0130",
+      "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+      "source_file": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv"
+    },
+    "ACC": {
+      "mean": "0.9225",
+      "std": "0.0188",
+      "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+      "source_file": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv"
+    },
+    "F1": {
+      "mean": "0.9145",
+      "std": "0.0207",
+      "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+      "source_file": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv"
+    },
+    "BACC": {
+      "mean": "0.9171",
+      "std": "0.0196",
+      "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+      "source_file": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv"
+    },
+    "PR-AUC": {
+      "mean": "0.9444",
+      "std": "0.0252",
+      "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+      "source_file": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv"
+    }
+  },
+  "ablation_variants": [
+    "stage23_history",
+    "full",
+    "wo_csg",
+    "wo_concept_prior",
+    "wo_visual_residual",
+    "wo_logit_calibration"
+  ],
+  "evidence": {
+    "full_source": "results_stage54_rce_evidence_interpretability/full",
+    "wo_csg_source": "results_stage54_rce_evidence_interpretability/wo_csg",
+    "full_manifest_points_to_stage23_main": true,
+    "full_model_type_is_rce": true,
+    "full_num_slides": 194,
+    "wo_csg_num_slides": 194
+  },
+  "figures": {
+    "num_figures": 7,
+    "all_exist": true,
+    "all_have_provenance": true
+  },
+  "release_readiness": {
+    "blocker_count": 0,
+    "warning_count": 2,
+    "tag_recommendation": "yes_with_warnings"
+  },
+  "warnings": [
+    "Legacy Step54 docs still describe Stage32 fallback as the current full-equivalent source.",
+    "Some Step54B caption/index text still uses the pre-Step54C same-source mismatch wording."
+  ],
+  "blockers": [],
+  "generated_files": {
+    "docs_dir": "docs/stage55_rce_frozen_release",
+    "results_dir": "results_stage55_rce_frozen_release"
+  }
+}
