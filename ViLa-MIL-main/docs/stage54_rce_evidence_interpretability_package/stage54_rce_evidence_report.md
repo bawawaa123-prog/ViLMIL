@@ -1,5 +1,7 @@
 # Stage54 RCE Evidence Report
 
+> Historical note: this Step54 report reflects the pre-Step54C packaging state and is superseded for paper-facing full-model provenance by `results_stage54_rce_evidence_interpretability/full/`. The current preferred full direct export points to `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1` and `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt` with `model_type=RCE_MIL_BiomedCLIP`.
+
 ## 1. Purpose
 
 Step54 packages interpretability evidence for the fixed RCE main model so that the paper can support the claims of region-concept evidence reasoning and CSG-driven evidence ranking / cross-scale concept interaction.
@@ -31,14 +33,15 @@ Step54 packages interpretability evidence for the fixed RCE main model so that t
 ## 4. What Can Be Generated Now
 
 - Prediction-level matched case selection across all 5 folds is available now from Stage23 full and Step52 `wo_csg`.
-- Fold0/test concept-level evidence plots can be generated now from the existing Stage32 export.
-- Aggregate concept-frequency and concept-contribution plots can be generated now from the existing Stage32 long-form concept table.
+- Fold0/test concept-level evidence plots can be generated now from the current preferred full direct export under `results_stage54_rce_evidence_interpretability/full/`.
+- Aggregate concept-frequency and concept-contribution plots can be generated now from the current preferred full direct-export long-form concept table.
 - Full vs `wo_csg` evidence-ranking figures can now be generated from the matched export files.
 
 ## 5. Missing Evidence
 
 - Matched `wo_csg` evidence is available for fold0/test, but not yet for folds 1-4.
-- No Step54-format direct full export has been generated yet; Step54 currently reuses the earlier Stage32 full-equivalent evidence package.
+- Historical Step54 note: before Step54C, no Step54-format direct full export had been generated yet and the package reused the earlier Stage32 full-equivalent evidence package.
+- Current provenance status after Step54C: the preferred full direct export is `results_stage54_rce_evidence_interpretability/full/`, aligned to the Stage23 main model `RCE-v4-CSG-a01-rq16`.
 - No region image crops or overlay assets have been found for direct pathology visual panels.
 - No direct fold1-4 evidence exports have been found; the audited full evidence package is fold0/test only.
 

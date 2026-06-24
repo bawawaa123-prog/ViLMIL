@@ -1437,6 +1437,12 @@ def build_manifest_payload(
     warnings: list[str],
     blockers: list[str],
 ) -> dict[str, Any]:
+    if blockers:
+        tag_recommendation = "no_blockers_unresolved"
+    elif warnings:
+        tag_recommendation = "yes_with_warnings"
+    else:
+        tag_recommendation = "yes_ready_for_manual_tag"
     main_results = {}
     for _, row in main_results_df.iterrows():
         main_results[str(row["metric"])] = {
@@ -1480,7 +1486,7 @@ def build_manifest_payload(
         "release_readiness": {
             "blocker_count": len(blockers),
             "warning_count": len(warnings),
-            "tag_recommendation": "yes_with_warnings" if not blockers else "no_blockers_unresolved",
+            "tag_recommendation": tag_recommendation,
         },
         "warnings": warnings,
         "blockers": blockers,

@@ -6,6 +6,4 @@
 - Complete the separate DEG any-on purity audit before making any later DEG-based claim.
 - Add external validation / additional baselines only in later steps, not in this frozen release.
 
-Current warnings:
-- Legacy Step54 docs still describe Stage32 fallback as the current full-equivalent source.
-- Some Step54B caption/index text still uses the pre-Step54C same-source mismatch wording.
+- No blocker or warning remains inside the Step55 audit.

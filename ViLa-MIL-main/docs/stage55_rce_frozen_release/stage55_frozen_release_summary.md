@@ -18,12 +18,8 @@ Step55 freezes the current RCE paper-ready line as a read-only release package. 
 
 ## Audit Outcome
 - Blocker count: `0`
-- Warning count: `2`
-- Tag recommendation: `yes_with_warnings`
-
-Warnings carried into the frozen release:
-- Legacy Step54 docs still describe Stage32 fallback as the current full-equivalent source.
-- Some Step54B caption/index text still uses the pre-Step54C same-source mismatch wording.
+- Warning count: `0`
+- Tag recommendation: `yes_ready_for_manual_tag`
 
 ## Scope Reminder
 - This release is a conservative fallback package for reproducibility, handoff, and submission support.

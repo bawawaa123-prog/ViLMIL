@@ -1,5 +1,7 @@
 # Stage54 Evidence Resource Audit
 
+> Historical note: this Step54 package records the pre-Step54C audit state. It is superseded for paper-facing full-model provenance by `results_stage54_rce_evidence_interpretability/full/`, whose manifest now points to `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1` and `results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/s_0_checkpoint.pt` with `model_type=RCE_MIL_BiomedCLIP`.
+
 ## Audit Table
 
 | resource | path | status | note |
@@ -21,13 +23,15 @@
 ## Reuse Decision
 
 - Step54 reuses `scripts/analysis/export_stage32_rce_v4_csg_evidence.py` as the main evidence export backend.
-- Existing `results_stage32/stage32_rce_v4_csg_evidence_export/` is reused as the current full-model-equivalent evidence source for fold0/test.
+- Existing `results_stage32/stage32_rce_v4_csg_evidence_export/` is documented here as the historical pre-Step54C full-model-equivalent evidence source for fold0/test.
+- The current preferred full evidence source after Step54C is `results_stage54_rce_evidence_interpretability/full/`.
 - Stage39 summaries are reused as reference assets, but they compare skeleton vs low-high consistency rather than full vs `wo_csg`.
 - New Step54 export orchestration focuses on direct Stage23 full RCE and Step52 `wo_csg`.
 
 ## Current Gaps
 
-- Full model evidence export exists only as the earlier Stage32 equivalent package, not yet in the Step54 directory layout.
+- Historical Step54 note: before Step54C, the full model evidence export existed only as the earlier Stage32-equivalent package.
+- Current provenance status: the preferred full direct export now exists under `results_stage54_rce_evidence_interpretability/full/` and points to the Stage23 main model `RCE-v4-CSG-a01-rq16`.
 - `wo_csg` evidence export is now available under `results_stage54_rce_evidence_interpretability/wo_csg/`.
 - Region thumbnails or image overlays are not present in the audited resources, so image-based qualitative figures remain pending.
 
