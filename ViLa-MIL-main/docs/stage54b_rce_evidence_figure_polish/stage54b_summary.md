@@ -1,11 +1,11 @@
 # Stage54B Summary
 
 ## Audit Outcome
-- Full direct export ready in Step54 layout: `False`.
+- Full direct export ready in Step54 layout: `True`.
 - Step54B did not run full or wo_csg evidence export commands.
-- Full-side figure package currently uses `stage32_legacy_deg_export_fallback`.
+- Full-side figure package currently uses `stage54_full_direct_export`.
 - wo_csg-side figure package uses `stage54_wo_csg_direct_export`.
-- Cross-source provenance must be disclosed in any full vs wo_csg figure or caption.
+- Full vs wo_csg figure provenance is now direct-export based on both sides.
 
 ## Generated Outputs
 - Figure directory: `docs/stage54b_rce_evidence_figure_polish/figures`
@@ -13,6 +13,6 @@
 - Caption drafts, summary, claims, and next steps were regenerated for Step54B.
 
 ## Practical Reading
-- Single-case fallback figures can support interpretability illustration with explicit provenance disclosure.
-- Cross-source comparison figures should stay in supplementary material unless the direct full export is regenerated.
+- Single-case figures now use the refreshed Step54 full direct export.
+- Matched full vs wo_csg comparison figures now come from the Step54 evidence pipeline on both sides.
 - None of the figures should be used to claim localization benchmarking or pathologist-level alignment.

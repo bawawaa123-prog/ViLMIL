@@ -217,6 +217,17 @@ def main() -> None:
         raise FileNotFoundError("Run Step54B audit and case metadata scripts before plotting figures.")
 
     full_source_dir, full_source_label, uses_stage32_fallback = resolve_full_source()
+    main_single_case_flag = "yes_with_fallback_disclosure" if uses_stage32_fallback else "yes"
+    comparison_note = (
+        "Full side uses fallback while wo_csg side uses direct Step54 export."
+        if uses_stage32_fallback
+        else "Both full and wo_csg sides use Step54 direct export."
+    )
+    comparison_support = (
+        "In a selected matched case, CSG may alter concept ranking and confidence behavior."
+        if uses_stage32_fallback
+        else "Matched Step54 direct exports show that CSG may alter concept ranking and confidence behavior in selected cases."
+    )
     wo_source_dir = WO_CSG_DIRECT_DIR
     full_summary = safe_read_csv(full_source_dir / "stage32_slide_evidence_summary.csv")
     full_long = safe_read_csv(full_source_dir / "stage32_top_concepts_long.csv")
@@ -317,7 +328,7 @@ def main() -> None:
                 f"{rel(args.results_dir / 'stage54b_case_level_metadata.csv')}"
             ),
             uses_fallback=uses_stage32_fallback,
-            suggest_main_text="yes_with_fallback_disclosure",
+            suggest_main_text=main_single_case_flag,
             suggest_supplementary="yes",
             supports_claim="Example region-concept evidence can be inspected at low and high scales.",
             cannot_support_claim="This figure is not a localization benchmark or expert annotation surrogate.",
@@ -401,7 +412,7 @@ def main() -> None:
             evidence_source=full_source_label,
             input_data_source=rel(full_source_dir / "stage32_slide_evidence_summary.csv"),
             uses_fallback=uses_stage32_fallback,
-            suggest_main_text="yes_with_fallback_disclosure",
+            suggest_main_text=main_single_case_flag,
             suggest_supplementary="yes",
             supports_claim="Evidence components can be decomposed into low-scale, high-scale, visual residual, and CSG terms.",
             cannot_support_claim="This figure cannot prove that the model localizes pathology at pathologist level.",
@@ -467,9 +478,9 @@ def main() -> None:
                 uses_fallback=uses_stage32_fallback,
                 suggest_main_text="no",
                 suggest_supplementary="yes",
-                supports_claim="In a selected matched case, CSG may alter concept ranking and confidence behavior.",
+                supports_claim=comparison_support,
                 cannot_support_claim="This cross-source example does not establish a fully same-source evidence comparison or statistical significance.",
-                provenance_note="Full side uses fallback while wo_csg side uses direct Step54 export." if uses_stage32_fallback else "Both sides direct.",
+                provenance_note=comparison_note,
             )
 
     if failure_case is not None:
@@ -552,9 +563,17 @@ def main() -> None:
             uses_fallback=uses_stage32_fallback,
             suggest_main_text="no",
             suggest_supplementary="yes",
-            supports_claim="A selected case suggests CSG can improve margin or confidence behavior.",
+            supports_claim=(
+                "A selected case suggests CSG can improve margin or confidence behavior."
+                if uses_stage32_fallback
+                else "A matched direct-export case suggests CSG can improve margin or confidence behavior."
+            ),
             cannot_support_claim="This single case cannot support large ACC gains or a same-source causal proof.",
-            provenance_note="Comparison mixes full fallback evidence with direct wo_csg export." if uses_stage32_fallback else "Both sides direct.",
+            provenance_note=(
+                "Comparison mixes full fallback evidence with direct wo_csg export."
+                if uses_stage32_fallback
+                else "Comparison uses direct Step54 exports on both sides."
+            ),
         )
 
     aggregate_subset = full_long[(full_long["class_type"] == "pred") & (full_long["concept_rank"] <= 3)].copy()
@@ -642,7 +661,11 @@ def main() -> None:
         "- Step54B did not run full or wo_csg evidence export commands.",
         f"- Full-side figure package currently uses `{full_source_label}`.",
         "- wo_csg-side figure package uses `stage54_wo_csg_direct_export`.",
-        "- Cross-source provenance must be disclosed in any full vs wo_csg figure or caption.",
+        (
+            "- Full vs wo_csg figure provenance is now direct-export based on both sides."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Cross-source provenance must be disclosed in any full vs wo_csg figure or caption."
+        ),
         "",
         "## Generated Outputs",
         f"- Figure directory: `{rel(args.figure_dir)}`",
@@ -650,8 +673,16 @@ def main() -> None:
         "- Caption drafts, summary, claims, and next steps were regenerated for Step54B.",
         "",
         "## Practical Reading",
-        "- Single-case fallback figures can support interpretability illustration with explicit provenance disclosure.",
-        "- Cross-source comparison figures should stay in supplementary material unless the direct full export is regenerated.",
+        (
+            "- Single-case figures now use the refreshed Step54 full direct export."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Single-case fallback figures can support interpretability illustration with explicit provenance disclosure."
+        ),
+        (
+            "- Matched full vs wo_csg comparison figures now come from the Step54 evidence pipeline on both sides."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Cross-source comparison figures should stay in supplementary material unless the direct full export is regenerated."
+        ),
         "- None of the figures should be used to claim localization benchmarking or pathologist-level alignment.",
     ]
     (args.docs_dir / "stage54b_summary.md").write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
@@ -662,13 +693,26 @@ def main() -> None:
         "## Claims To Make",
         "- RCE evidence visualizations help inspect region-concept evidence behavior.",
         "- Concept-level evidence provides interpretable clues for model behavior in selected cases.",
-        "- Selected full vs w/o CSG case comparisons suggest CSG can affect evidence ranking or confidence behavior, with provenance differences disclosed when fallback is used.",
+        (
+            "- Full and w/o CSG evidence are both exported through the Step54 evidence pipeline."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Selected full vs w/o CSG case comparisons suggest CSG can affect evidence ranking or confidence behavior, with provenance differences disclosed when fallback is used."
+        ),
+        (
+            "- Full vs w/o CSG evidence-level comparisons can be used as matched interpretability illustrations with explicit variant provenance."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Concept-level evidence comparisons should remain explicitly provenance-aware when sources differ."
+        ),
         "",
         "## Claims To Avoid",
         "- Do not claim pathologist-level localization.",
         "- Do not claim statistically significant localization improvement.",
         "- Do not claim that CSG produces a large ACC gain.",
-        "- Do not describe the current full vs w/o CSG figures as a fully same-source 5-fold evidence comparison while full-side fallback remains in use.",
+        (
+            "- Do not describe the current full vs w/o CSG figures as training-statistical proof."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Do not describe the current full vs w/o CSG figures as a fully same-source 5-fold evidence comparison while full-side fallback remains in use."
+        ),
         "- Do not equate heatmaps or concept evidence with expert pathology annotations.",
     ]
     (args.docs_dir / "stage54b_claims_to_make_and_avoid.md").write_text(
@@ -678,10 +722,26 @@ def main() -> None:
     next_steps_lines = [
         "# Stage54B Next Steps",
         "",
-        "- If a direct full export is needed, run `MODE=full bash scripts/experiments/run_stage54_export_rce_evidence.sh` manually.",
-        "- After a successful full direct export, rerun `python scripts/analysis/build_stage54b_evidence_source_audit.py`.",
-        "- Then rerun `python scripts/analysis/build_stage54b_case_metadata.py` and `python scripts/analysis/plot_stage54b_rce_evidence_figures.py` to replace fallback provenance where possible.",
-        "- Keep full vs w/o CSG comparison figures in supplementary material until provenance is fully same-source.",
+        (
+            "- Full direct export is already available; preserve `results_stage54_rce_evidence_interpretability/full/` as the preferred full-side source."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- If a direct full export is needed, run `MODE=full bash scripts/experiments/run_stage54_export_rce_evidence.sh` manually."
+        ),
+        (
+            "- If full export is regenerated later, rerun the three Step54B scripts to refresh provenance and figures."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- After a successful full direct export, rerun `python scripts/analysis/build_stage54b_evidence_source_audit.py`."
+        ),
+        (
+            "- Keep claims constrained to interpretability illustrations rather than statistical training claims."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Then rerun `python scripts/analysis/build_stage54b_case_metadata.py` and `python scripts/analysis/plot_stage54b_rce_evidence_figures.py` to replace fallback provenance where possible."
+        ),
+        (
+            "- Full vs w/o CSG comparison figures can remain supplementary unless one is specifically promoted into the paper with cautious captioning."
+            if full_direct_ready and not uses_stage32_fallback
+            else "- Keep full vs w/o CSG comparison figures in supplementary material until provenance is fully same-source."
+        ),
     ]
     (args.docs_dir / "stage54b_next_steps.md").write_text("\n".join(next_steps_lines) + "\n", encoding="utf-8")
 

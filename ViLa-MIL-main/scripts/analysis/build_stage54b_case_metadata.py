@@ -120,13 +120,25 @@ def classify_case(row: pd.Series) -> str:
 
 def recommend_figure_use(row: pd.Series) -> str:
     if row["case_type"] == "full_correct_wo_csg_wrong":
-        return "supplementary_comparison_due_source_difference"
+        return (
+            "supplementary_comparison_due_source_difference"
+            if row["uses_stage32_fallback"]
+            else "supplementary_matched_direct_export_comparison"
+        )
     if row["case_type"] == "same_prediction_confidence_shift":
-        return "supplementary_comparison_due_source_difference"
+        return (
+            "supplementary_comparison_due_source_difference"
+            if row["uses_stage32_fallback"]
+            else "supplementary_matched_direct_export_comparison"
+        )
     if row["case_type"] == "full_wrong":
         return "supplementary_single_case"
     if row["case_type"] == "full_correct" and row["full_confidence"] >= 0.99:
-        return "main_text_single_case_with_fallback_disclosure"
+        return (
+            "main_text_single_case_with_fallback_disclosure"
+            if row["uses_stage32_fallback"]
+            else "main_text_single_case_direct_export"
+        )
     if row["case_type"] == "full_correct":
         return "supplementary_single_case"
     return "not_recommended"

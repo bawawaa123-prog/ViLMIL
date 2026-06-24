@@ -251,11 +251,36 @@ def inspect_source(
 
 
 def build_markdown(rows: list[dict[str, object]]) -> str:
+    row_map = {str(row["source_id"]): row for row in rows}
+    full_direct = row_map.get("full_direct_expected", {})
+    full_fallback = row_map.get("full_stage32_fallback", {})
+    wo_csg_direct = row_map.get("wo_csg_direct_export", {})
+
+    full_direct_ready = full_direct.get("provenance_status") == "direct_export_verified"
+    wo_csg_ready = wo_csg_direct.get("provenance_status") == "direct_export_verified"
+
     key_lines = [
-        "- Full direct export under `results_stage54_rce_evidence_interpretability/full/` was not run by Step54B.",
-        "- `wo_csg` direct export is present and points to `results_stage52_rce_core_ablation/wo_csg_5fold_e20_s1`.",
-        "- The currently reused full-side fallback under `results_stage32/stage32_rce_v4_csg_evidence_export/` is not a direct export of `RCE-v4-CSG-a01-rq16`.",
-        "- Any full vs `wo_csg` evidence-level figure in Step54B must disclose the full-side provenance mismatch when fallback is used.",
+        (
+            "- Full direct export under `results_stage54_rce_evidence_interpretability/full/` is present and "
+            "verified against `RCE-v4-CSG-a01-rq16`."
+            if full_direct_ready
+            else "- Full direct export under `results_stage54_rce_evidence_interpretability/full/` is still missing or unverified."
+        ),
+        (
+            "- `wo_csg` direct export is present and points to `results_stage52_rce_core_ablation/wo_csg_5fold_e20_s1`."
+            if wo_csg_ready
+            else "- `wo_csg` direct export is missing or unverified."
+        ),
+        (
+            "- The Stage32 legacy fallback remains available only as backup and should no longer be the preferred full-side source."
+            if full_direct_ready
+            else "- The currently reused full-side fallback under `results_stage32/stage32_rce_v4_csg_evidence_export/` is not a direct export of `RCE-v4-CSG-a01-rq16`."
+        ),
+        (
+            "- Full vs `wo_csg` evidence-level figures can now be refreshed from Step54 direct exports on both sides."
+            if full_direct_ready and wo_csg_ready
+            else "- Any full vs `wo_csg` evidence-level figure in Step54B must disclose the full-side provenance mismatch when fallback is used."
+        ),
     ]
 
     table_columns = [
@@ -290,8 +315,16 @@ def build_markdown(rows: list[dict[str, object]]) -> str:
         markdown_table(table_rows, table_columns),
         "",
         "## Interpretation Guardrails",
-        "- Do not describe the current full-side fallback as a direct Step54 export of the main model.",
-        "- Do not call the current full vs `wo_csg` evidence comparison a fully same-source 5-fold comparison.",
+        (
+            "- Preferred full-side provenance is now the Step54 direct export."
+            if full_direct_ready
+            else "- Do not describe the current full-side fallback as a direct Step54 export of the main model."
+        ),
+        (
+            "- Full vs `wo_csg` evidence comparisons can be described as matched Step54 direct-export illustrations, but not as training-significance evidence."
+            if full_direct_ready and wo_csg_ready
+            else "- Do not call the current full vs `wo_csg` evidence comparison a fully same-source 5-fold comparison."
+        ),
         "- Single-case evidence illustrations from the fallback may still be used for interpretability examples if provenance is stated explicitly.",
         "- CSG-related fields in the `wo_csg` export are structurally present but expected to be empty because the module is disabled.",
     ]
