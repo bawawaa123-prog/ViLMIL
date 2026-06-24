@@ -39,7 +39,13 @@ parser.add_argument("--drop_out", action="store_true", default=False, help="enab
 parser.add_argument(
     "--model_type",
     type=str,
-    choices=["ViLa_MIL", "ViLa_MIL_BiomedCLIP", "RCE_MIL_BiomedCLIP", "DEG_MIL_BiomedCLIP"],
+    choices=[
+        "ViLa_MIL",
+        "ViLa_MIL_BiomedCLIP",
+        "RCE_MIL_BiomedCLIP",
+        "RCE_MIL_BiomedCLIP_v2",
+        "DEG_MIL_BiomedCLIP",
+    ],
     default="ViLa_MIL_BiomedCLIP",
     help="type of model",
 )
