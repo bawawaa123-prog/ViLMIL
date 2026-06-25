@@ -44,6 +44,9 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_use_cross_scale_graph = bool(getattr(config, "rce_use_cross_scale_graph", False))
         self.rce_cross_scale_graph_init = float(getattr(config, "rce_cross_scale_graph_init", 0.05))
         self.rce_cross_scale_graph_norm = str(getattr(config, "rce_cross_scale_graph_norm", "sqrt"))
+        self.enable_logit_breakdown_audit = bool(
+            getattr(config, "enable_logit_breakdown_audit", False)
+        )
 
         if self.scale_mode not in {"dual", "low_only", "high_only"}:
             raise ValueError(f"Unsupported scale_mode: {self.scale_mode}")
@@ -130,6 +133,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_cross_scale_logits = None
         self.last_cross_scale_alpha = None
         self.last_cross_scale_adj = None
+        self.last_logit_breakdown = None
 
         self._initialize_concept_prompt_pool(config)
         if self.rce_use_cross_scale_graph and self.scale_mode != "dual":
@@ -226,6 +230,170 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             cross_scale_logits = cross_scale_logits / max(norm, 1.0)
         return cross_scale_logits, effective_adj
 
+    @staticmethod
+    def _detach_cpu(tensor):
+        return tensor.detach().cpu() if tensor is not None else None
+
+    @staticmethod
+    def _compute_margin_dict(logits, label=None):
+        topk = min(2, logits.size(1))
+        top_values, top_indices = torch.topk(logits, k=topk, dim=1)
+        top1_margin = torch.zeros(
+            logits.size(0),
+            device=logits.device,
+            dtype=logits.dtype,
+        )
+        if topk > 1:
+            top1_margin = top_values[:, 0] - top_values[:, 1]
+
+        if label is None:
+            true_class_margin = None
+        else:
+            label = label.view(-1, 1)
+            true_logits = logits.gather(1, label).squeeze(1)
+            competitor_logits = logits.clone()
+            competitor_logits.scatter_(1, label, float("-inf"))
+            alt_logits = competitor_logits.max(dim=1).values
+            true_class_margin = true_logits - alt_logits
+
+        return {
+            "top1_margin": top1_margin,
+            "top1_index": top_indices[:, 0],
+            "true_class_margin": true_class_margin,
+        }
+
+    def _apply_logit_calibration(self, logits):
+        if logits is None:
+            return None
+        if not self.rce_use_logit_calibration:
+            return logits
+        scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)
+        return logits * scale + self.rce_class_bias
+
+    def _cache_logit_breakdown(
+        self,
+        label,
+        logits_low,
+        logits_high,
+        logits_low_high,
+        concept_only_pre,
+        weighted_cross_scale_logits,
+        raw_cross_scale_logits,
+        weighted_visual_logits,
+        raw_visual_logits,
+        full_pre,
+        full_final,
+    ):
+        if not self.enable_logit_breakdown_audit:
+            self.last_logit_breakdown = None
+            return
+
+        low_post = self._apply_logit_calibration(logits_low)
+        high_post = self._apply_logit_calibration(logits_high)
+        low_high_post = self._apply_logit_calibration(logits_low_high)
+        csg_post = self._apply_logit_calibration(weighted_cross_scale_logits)
+        concept_post = self._apply_logit_calibration(concept_only_pre)
+        visual_post = self._apply_logit_calibration(weighted_visual_logits)
+        full_without_visual_post = concept_post
+
+        pred_indices = torch.argmax(full_final, dim=1, keepdim=True)
+        low_high_abs = torch.zeros_like(pred_indices, dtype=full_pre.dtype).squeeze(1)
+        csg_abs = torch.zeros_like(low_high_abs)
+        visual_abs = torch.zeros_like(low_high_abs)
+        if logits_low_high is not None:
+            low_high_abs = logits_low_high.gather(1, pred_indices).abs().squeeze(1)
+        if weighted_cross_scale_logits is not None:
+            csg_abs = weighted_cross_scale_logits.gather(1, pred_indices).abs().squeeze(1)
+        if weighted_visual_logits is not None:
+            visual_abs = weighted_visual_logits.gather(1, pred_indices).abs().squeeze(1)
+
+        total_abs = (low_high_abs + csg_abs + visual_abs).clamp_min(1e-8)
+        concept_abs = low_high_abs + csg_abs
+        visual_ratio = visual_abs / total_abs
+        concept_ratio = concept_abs / total_abs
+        csg_ratio = csg_abs / total_abs
+
+        branch_logits_pre = {
+            "low_only": logits_low,
+            "high_only": logits_high,
+            "low_high": logits_low_high,
+            "csg_only": weighted_cross_scale_logits,
+            "concept_only": concept_only_pre,
+            "visual_only": weighted_visual_logits,
+            "full_without_visual": concept_only_pre,
+            "full": full_pre,
+        }
+        branch_logits_post = {
+            "low_only": low_post,
+            "high_only": high_post,
+            "low_high": low_high_post,
+            "csg_only": csg_post,
+            "concept_only": concept_post,
+            "visual_only": visual_post,
+            "full_without_visual": full_without_visual_post,
+            "full": full_final,
+        }
+        margin_pre = {
+            name: self._compute_margin_dict(logits, label)
+            for name, logits in branch_logits_pre.items()
+            if logits is not None
+        }
+        margin_post = {
+            name: self._compute_margin_dict(logits, label)
+            for name, logits in branch_logits_post.items()
+            if logits is not None
+        }
+
+        self.last_logit_breakdown = {
+            "audit_enabled": True,
+            "uses_logit_calibration": bool(self.rce_use_logit_calibration),
+            "calibration_space": {
+                "pre_calibration": "additive branch logits before optional global scale+bias calibration",
+                "post_calibration": "branch logits after applying the model's final scale+bias calibration",
+            },
+            "pre_calibration": {
+                "low_evidence_logits": self._detach_cpu(logits_low),
+                "high_evidence_logits": self._detach_cpu(logits_high),
+                "low_high_evidence_logits": self._detach_cpu(logits_low_high),
+                "csg_logits": self._detach_cpu(weighted_cross_scale_logits),
+                "csg_logits_raw": self._detach_cpu(raw_cross_scale_logits),
+                "concept_only_logits": self._detach_cpu(concept_only_pre),
+                "visual_residual_logits": self._detach_cpu(weighted_visual_logits),
+                "visual_residual_logits_raw": self._detach_cpu(raw_visual_logits),
+                "full_without_visual_logits": self._detach_cpu(concept_only_pre),
+                "full_logits": self._detach_cpu(full_pre),
+            },
+            "post_calibration": {
+                "low_evidence_logits": self._detach_cpu(low_post),
+                "high_evidence_logits": self._detach_cpu(high_post),
+                "low_high_evidence_logits": self._detach_cpu(low_high_post),
+                "csg_logits": self._detach_cpu(csg_post),
+                "concept_only_logits": self._detach_cpu(concept_post),
+                "visual_residual_logits": self._detach_cpu(visual_post),
+                "full_without_visual_logits": self._detach_cpu(full_without_visual_post),
+                "full_logits": self._detach_cpu(full_final),
+            },
+            "ratios": {
+                "visual_contribution_ratio": self._detach_cpu(visual_ratio),
+                "concept_contribution_ratio": self._detach_cpu(concept_ratio),
+                "csg_contribution_ratio": self._detach_cpu(csg_ratio),
+                "reference_pred_class": self._detach_cpu(pred_indices.squeeze(1)),
+            },
+            "margins_pre_calibration": {
+                name: {key: self._detach_cpu(value) for key, value in payload.items()}
+                for name, payload in margin_pre.items()
+            },
+            "margins_post_calibration": {
+                name: {key: self._detach_cpu(value) for key, value in payload.items()}
+                for name, payload in margin_post.items()
+            },
+        }
+
+    def set_logit_breakdown_audit(self, enabled=True):
+        self.enable_logit_breakdown_audit = bool(enabled)
+        if not self.enable_logit_breakdown_audit:
+            self.last_logit_breakdown = None
+
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
         del coord_s, coords_l, slide_id
 
@@ -261,20 +429,23 @@ class RCE_MIL_BiomedCLIP(nn.Module):
 
         low_visual_logits = None
         high_visual_logits = None
-        visual_logits = None
+        raw_visual_logits = None
+        weighted_visual_logits = None
+        raw_cross_scale_logits = None
+        weighted_cross_scale_logits = None
 
         if self.scale_mode == "low_only":
             final_logits = logits_low
             if self.rce_use_visual_residual:
                 low_region_pool = low_region_features.mean(dim=1)
                 low_visual_logits = self.low_visual_head(low_region_pool)
-                visual_logits = low_visual_logits
+                raw_visual_logits = low_visual_logits
         elif self.scale_mode == "high_only":
             final_logits = logits_high
             if self.rce_use_visual_residual:
                 high_region_pool = high_region_features.mean(dim=1)
                 high_visual_logits = self.high_visual_head(high_region_pool)
-                visual_logits = high_visual_logits
+                raw_visual_logits = high_visual_logits
         else:
             final_logits = logits_low + logits_high
             if self.rce_use_visual_residual:
@@ -282,11 +453,14 @@ class RCE_MIL_BiomedCLIP(nn.Module):
                 high_region_pool = high_region_features.mean(dim=1)
                 low_visual_logits = self.low_visual_head(low_region_pool)
                 high_visual_logits = self.high_visual_head(high_region_pool)
-                visual_logits = low_visual_logits + high_visual_logits
+                raw_visual_logits = low_visual_logits + high_visual_logits
+
+        logits_low_high = final_logits
 
         if self.rce_use_visual_residual:
             alpha = torch.sigmoid(self.rce_visual_residual_alpha)
-            final_logits = final_logits + alpha * visual_logits
+            weighted_visual_logits = alpha * raw_visual_logits
+            final_logits = final_logits + weighted_visual_logits
             self.last_visual_residual_alpha = alpha.detach().cpu()
             self.last_low_visual_logits = (
                 low_visual_logits.detach().cpu() if low_visual_logits is not None else None
@@ -294,7 +468,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_high_visual_logits = (
                 high_visual_logits.detach().cpu() if high_visual_logits is not None else None
             )
-            self.last_visual_logits = visual_logits.detach().cpu()
+            self.last_visual_logits = weighted_visual_logits.detach().cpu()
         else:
             self.last_visual_residual_alpha = None
             self.last_low_visual_logits = None
@@ -302,13 +476,14 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_visual_logits = None
 
         if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
-            cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
+            raw_cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
                 low_prompt_evidence,
                 high_prompt_evidence,
             )
             alpha = self.rce_cross_scale_graph_alpha
-            final_logits = final_logits + alpha * cross_scale_logits
-            self.last_cross_scale_logits = cross_scale_logits.detach().cpu()
+            weighted_cross_scale_logits = alpha * raw_cross_scale_logits
+            final_logits = final_logits + weighted_cross_scale_logits
+            self.last_cross_scale_logits = weighted_cross_scale_logits.detach().cpu()
             self.last_cross_scale_alpha = alpha.detach().cpu()
             self.last_cross_scale_adj = effective_adj.detach().cpu()
         else:
@@ -316,9 +491,9 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_cross_scale_alpha = None
             self.last_cross_scale_adj = None
 
+        full_pre_calibration_logits = final_logits
         if self.rce_use_logit_calibration:
-            scale = torch.exp(self.rce_logit_scale).clamp(max=100.0)
-            final_logits = final_logits * scale + self.rce_class_bias
+            final_logits = self._apply_logit_calibration(final_logits)
 
         self.last_low_prompt_weights = low_prompt_weights.detach().cpu()
         self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
@@ -329,6 +504,19 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_low_region_features = low_region_features.detach().cpu()
         self.last_high_region_features = high_region_features.detach().cpu()
         self.last_final_logits = final_logits.detach().cpu()
+        self._cache_logit_breakdown(
+            label=label,
+            logits_low=logits_low,
+            logits_high=logits_high,
+            logits_low_high=logits_low_high,
+            concept_only_pre=logits_low_high + (weighted_cross_scale_logits if weighted_cross_scale_logits is not None else 0.0),
+            weighted_cross_scale_logits=weighted_cross_scale_logits,
+            raw_cross_scale_logits=raw_cross_scale_logits,
+            weighted_visual_logits=weighted_visual_logits,
+            raw_visual_logits=raw_visual_logits,
+            full_pre=full_pre_calibration_logits,
+            full_final=final_logits,
+        )
 
         loss = self.loss_ce(final_logits, label)
         Y_prob = F.softmax(final_logits, dim=1)
