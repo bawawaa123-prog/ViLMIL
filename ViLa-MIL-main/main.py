@@ -133,6 +133,23 @@ parser.add_argument(
     default="sqrt",
     help="normalization for the learnable cross-scale graph residual.",
 )
+parser.add_argument("--rce_use_dynamic_csg", action="store_true", default=False)
+parser.add_argument(
+    "--rce_dynamic_csg_mode",
+    type=str,
+    choices=["evidence_outer"],
+    default="evidence_outer",
+)
+parser.add_argument("--rce_dynamic_csg_alpha_init", type=float, default=0.0)
+parser.add_argument("--rce_dynamic_csg_scale", type=float, default=1.0)
+parser.add_argument(
+    "--rce_dynamic_csg_norm",
+    type=str,
+    choices=["softmax", "l1", "none"],
+    default="softmax",
+)
+parser.add_argument("--rce_dynamic_csg_detach_evidence", action="store_true", default=False)
+parser.add_argument("--rce_dynamic_csg_clip", type=float, default=5.0)
 parser.add_argument("--rce_use_hcrc", action="store_true", default=False)
 parser.add_argument("--rce_hcrc_alpha_init", type=float, default=0.05)
 parser.add_argument("--rce_hcrc_num_anchors", type=int, default=16)

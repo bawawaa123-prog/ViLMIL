@@ -1,0 +1,50 @@
+{
+  "smoke_pass": true,
+  "alpha_init": 0.0,
+  "dynamic_breakdown": {
+    "dynamic_csg_enabled": 1.0,
+    "dynamic_csg_alpha": 0.0,
+    "dynamic_csg_mode": "evidence_outer",
+    "dynamic_delta_mean": 0.00694444,
+    "dynamic_delta_std": 7.064e-05,
+    "dynamic_adj_mean": 0.01084373,
+    "dynamic_adj_std": 0.00709313,
+    "static_csg_logits_mean": 0.00240076,
+    "dynamic_csg_logits_mean": 0.00240076,
+    "csg_logits_delta_mean": 0.0,
+    "csg_logits_delta_abs_mean": 0.0,
+    "dynamic_csg_scale": 1.0,
+    "dynamic_csg_norm": "softmax",
+    "dynamic_csg_detach_evidence": 0.0,
+    "dynamic_csg_clip": 5.0
+  },
+  "dynamic_breakdown_keys_present": {
+    "dynamic_csg_enabled": true,
+    "dynamic_csg_alpha": true,
+    "dynamic_csg_mode": true,
+    "dynamic_delta_mean": true,
+    "dynamic_delta_std": true,
+    "dynamic_adj_mean": true,
+    "dynamic_adj_std": true,
+    "static_csg_logits_mean": true,
+    "dynamic_csg_logits_mean": true,
+    "csg_logits_delta_mean": true,
+    "csg_logits_delta_abs_mean": true
+  },
+  "load_state_dict": {
+    "missing_keys": [
+      "rce_dynamic_csg_alpha"
+    ],
+    "unexpected_keys": [],
+    "strict": false
+  },
+  "residual_constraint_still_enabled": true,
+  "concept_aux_still_enabled": true,
+  "loss_breakdown": {
+    "ce_loss": 7.975e-05,
+    "residual_constraint_loss": 0.0,
+    "concept_aux_loss": 0.00912933,
+    "total_loss": 0.00190561,
+    "visual_ratio_mean": 0.39726886
+  }
+}

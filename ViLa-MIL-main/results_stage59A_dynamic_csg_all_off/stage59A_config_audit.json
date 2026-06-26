@@ -1,0 +1,44 @@
+{
+  "original_rce_modified": false,
+  "main_has_new_args": {
+    "rce_use_dynamic_csg": true,
+    "rce_dynamic_csg_mode": true,
+    "rce_dynamic_csg_alpha_init": true,
+    "rce_dynamic_csg_scale": true,
+    "rce_dynamic_csg_norm": true,
+    "rce_dynamic_csg_detach_evidence": true,
+    "rce_dynamic_csg_clip": true
+  },
+  "core_utils_has_new_args": {
+    "rce_use_dynamic_csg": true,
+    "rce_dynamic_csg_mode": true,
+    "rce_dynamic_csg_alpha_init": true,
+    "rce_dynamic_csg_scale": true,
+    "rce_dynamic_csg_norm": true,
+    "rce_dynamic_csg_detach_evidence": true,
+    "rce_dynamic_csg_clip": true
+  },
+  "model_has_dynamic_attrs": {
+    "rce_use_dynamic_csg": true,
+    "rce_dynamic_csg_mode": true,
+    "rce_dynamic_csg_alpha": true,
+    "last_dynamic_csg_breakdown": true
+  },
+  "smoke_script_exists": true,
+  "smoke_script_print_only_ok": true,
+  "smoke_script_syntax_ok": true,
+  "forward_return_format": {
+    "type": "tuple",
+    "length": 3,
+    "y_prob_shape": [
+      1,
+      2
+    ],
+    "y_hat_shape": [
+      1,
+      1
+    ],
+    "loss_is_scalar": true
+  },
+  "dynamic_default_enabled": false
+}

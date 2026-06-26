@@ -1,0 +1,16 @@
+{
+  "dynamic_off_equivalence": {
+    "prob_max_abs_diff": 0.0,
+    "loss_abs_diff": 0.0,
+    "y_hat_equal": true,
+    "pass": true,
+    "atol": 1e-07
+  },
+  "full_all_off_equivalence": {
+    "prob_max_abs_diff": 0.0,
+    "loss_abs_diff": 0.0,
+    "y_hat_equal": true,
+    "pass": true,
+    "atol": 1e-07
+  }
+}

@@ -60,6 +60,15 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_use_cross_scale_graph = bool(getattr(config, "rce_use_cross_scale_graph", False))
         self.rce_cross_scale_graph_init = float(getattr(config, "rce_cross_scale_graph_init", 0.05))
         self.rce_cross_scale_graph_norm = str(getattr(config, "rce_cross_scale_graph_norm", "sqrt"))
+        self.rce_use_dynamic_csg = bool(getattr(config, "rce_use_dynamic_csg", False))
+        self.rce_dynamic_csg_mode = str(getattr(config, "rce_dynamic_csg_mode", "evidence_outer"))
+        self.rce_dynamic_csg_alpha_init = float(getattr(config, "rce_dynamic_csg_alpha_init", 0.0))
+        self.rce_dynamic_csg_scale = float(getattr(config, "rce_dynamic_csg_scale", 1.0))
+        self.rce_dynamic_csg_norm = str(getattr(config, "rce_dynamic_csg_norm", "softmax"))
+        self.rce_dynamic_csg_detach_evidence = bool(
+            getattr(config, "rce_dynamic_csg_detach_evidence", False)
+        )
+        self.rce_dynamic_csg_clip = float(getattr(config, "rce_dynamic_csg_clip", 5.0))
         self.enable_logit_breakdown_audit = bool(
             getattr(config, "enable_logit_breakdown_audit", False)
         )
@@ -70,6 +79,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             raise ValueError(
                 f"Unsupported rce_cross_scale_graph_norm: {self.rce_cross_scale_graph_norm}"
             )
+        if self.rce_dynamic_csg_mode not in {"evidence_outer"}:
+            raise ValueError(f"Unsupported rce_dynamic_csg_mode: {self.rce_dynamic_csg_mode}")
+        if self.rce_dynamic_csg_norm not in {"softmax", "l1", "none"}:
+            raise ValueError(f"Unsupported rce_dynamic_csg_norm: {self.rce_dynamic_csg_norm}")
         if self.rce_residual_constraint_type not in {"relu_l2"}:
             raise ValueError(
                 f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
@@ -136,6 +149,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
 
         self.rce_cross_scale_graph_adj = None
         self.rce_cross_scale_graph_alpha = None
+        self.rce_dynamic_csg_alpha = None
 
         self.last_low_prompt_weights = None
         self.last_high_prompt_weights = None
@@ -153,6 +167,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_cross_scale_logits = None
         self.last_cross_scale_alpha = None
         self.last_cross_scale_adj = None
+        self.last_dynamic_csg_breakdown = None
         self.last_logit_breakdown = None
         self.last_loss_breakdown = None
 
@@ -194,6 +209,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.rce_cross_scale_graph_alpha = nn.Parameter(
                 torch.tensor(self.rce_cross_scale_graph_init, dtype=torch.float32)
             )
+            if self.rce_use_dynamic_csg:
+                self.rce_dynamic_csg_alpha = nn.Parameter(
+                    torch.tensor(self.rce_dynamic_csg_alpha_init, dtype=torch.float32)
+                )
         print(
             f"[ConceptPromptPool] enabled for RCE_MIL_BiomedCLIP | "
             f"path={self.concept_prompt_path} | low_shape={tuple(low_prompt_features.shape)} | "
@@ -238,18 +257,103 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
         return logits_scale, prompt_weights, prompt_evidence, sim
 
+    @staticmethod
+    def _tensor_stats(tensor):
+        if tensor is None:
+            return None, None
+        tensor = tensor.float()
+        return float(tensor.mean().detach().item()), float(tensor.std(unbiased=False).detach().item())
+
+    def _build_dynamic_csg_delta(self, low_prompt_evidence, high_prompt_evidence):
+        low_basis = low_prompt_evidence.float()
+        high_basis = high_prompt_evidence.float()
+        if self.rce_dynamic_csg_detach_evidence:
+            low_basis = low_basis.detach()
+            high_basis = high_basis.detach()
+
+        if self.rce_dynamic_csg_mode == "evidence_outer":
+            raw_delta = torch.einsum("bcl,bch->bclh", low_basis, high_basis)
+        else:
+            raise ValueError(f"Unsupported rce_dynamic_csg_mode: {self.rce_dynamic_csg_mode}")
+
+        scaled_delta = raw_delta * float(self.rce_dynamic_csg_scale)
+        if self.rce_dynamic_csg_norm == "softmax":
+            delta = F.softmax(scaled_delta.flatten(2), dim=-1).view_as(raw_delta)
+        elif self.rce_dynamic_csg_norm == "l1":
+            denom = scaled_delta.abs().flatten(2).sum(dim=-1, keepdim=True).clamp_min(1e-6)
+            delta = (scaled_delta.flatten(2) / denom).view_as(raw_delta)
+        else:
+            delta = scaled_delta
+
+        clip_value = max(float(self.rce_dynamic_csg_clip), 1e-6)
+        return delta.clamp(min=-clip_value, max=clip_value)
+
     def _compute_cross_scale_logits(self, low_prompt_evidence, high_prompt_evidence):
-        effective_adj = torch.tanh(self.rce_cross_scale_graph_adj)
-        cross_scale_logits = torch.einsum(
+        static_adj = torch.tanh(self.rce_cross_scale_graph_adj)
+        static_cross_scale_logits = torch.einsum(
             "bcl,clh,bch->bc",
             low_prompt_evidence.float(),
-            effective_adj,
+            static_adj,
             high_prompt_evidence.float(),
         )
+        effective_adj = static_adj
+        dynamic_cross_scale_logits = static_cross_scale_logits
+        dynamic_delta = None
+        dynamic_enabled = bool(
+            self.rce_use_cross_scale_graph
+            and self.rce_use_dynamic_csg
+            and self.rce_dynamic_csg_alpha is not None
+        )
+
+        if dynamic_enabled:
+            dynamic_delta = self._build_dynamic_csg_delta(low_prompt_evidence, high_prompt_evidence)
+            dynamic_adj = static_adj.unsqueeze(0) + self.rce_dynamic_csg_alpha * dynamic_delta
+            clip_value = max(float(self.rce_dynamic_csg_clip), 1e-6)
+            dynamic_adj = dynamic_adj.clamp(min=-clip_value, max=clip_value)
+            dynamic_cross_scale_logits = torch.einsum(
+                "bcl,bclh,bch->bc",
+                low_prompt_evidence.float(),
+                dynamic_adj,
+                high_prompt_evidence.float(),
+            )
+            effective_adj = dynamic_adj
+
         if self.rce_cross_scale_graph_norm == "sqrt":
             norm = math.sqrt(float(low_prompt_evidence.size(-1) * high_prompt_evidence.size(-1)))
-            cross_scale_logits = cross_scale_logits / max(norm, 1.0)
-        return cross_scale_logits, effective_adj
+            static_cross_scale_logits = static_cross_scale_logits / max(norm, 1.0)
+            dynamic_cross_scale_logits = dynamic_cross_scale_logits / max(norm, 1.0)
+
+        static_logits_mean, _ = self._tensor_stats(static_cross_scale_logits)
+        dynamic_logits_mean, _ = self._tensor_stats(dynamic_cross_scale_logits)
+        delta_mean, delta_std = self._tensor_stats(dynamic_delta)
+        adj_mean, adj_std = self._tensor_stats(effective_adj)
+        logits_delta = dynamic_cross_scale_logits - static_cross_scale_logits
+        logits_delta_mean, _ = self._tensor_stats(logits_delta if dynamic_enabled else None)
+        logits_delta_abs_mean = (
+            float(logits_delta.abs().mean().detach().item()) if dynamic_enabled else None
+        )
+
+        breakdown = {
+            "dynamic_csg_enabled": dynamic_enabled,
+            "dynamic_csg_alpha": None
+            if self.rce_dynamic_csg_alpha is None
+            else float(self.rce_dynamic_csg_alpha.detach().item()),
+            "dynamic_csg_mode": self.rce_dynamic_csg_mode,
+            "dynamic_csg_scale": float(self.rce_dynamic_csg_scale),
+            "dynamic_csg_norm": self.rce_dynamic_csg_norm,
+            "dynamic_csg_detach_evidence": bool(self.rce_dynamic_csg_detach_evidence),
+            "dynamic_csg_clip": float(self.rce_dynamic_csg_clip),
+            "dynamic_delta_mean": delta_mean,
+            "dynamic_delta_std": delta_std,
+            "dynamic_adj_mean": adj_mean,
+            "dynamic_adj_std": adj_std,
+            "static_csg_logits_mean": static_logits_mean,
+            "dynamic_csg_logits_mean": dynamic_logits_mean,
+            "csg_logits_delta_mean": logits_delta_mean,
+            "csg_logits_delta_abs_mean": logits_delta_abs_mean,
+        }
+        selected_logits = dynamic_cross_scale_logits if dynamic_enabled else static_cross_scale_logits
+        return selected_logits, effective_adj, breakdown
 
     @staticmethod
     def _detach_cpu(tensor):
@@ -443,6 +547,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
                 name: {key: self._detach_cpu(value) for key, value in payload.items()}
                 for name, payload in margin_post.items()
             },
+            "dynamic_csg": self.last_dynamic_csg_breakdown,
         }
 
     def set_logit_breakdown_audit(self, enabled=True):
@@ -532,17 +637,33 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_visual_logits = None
 
         if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
-            raw_cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
+            raw_cross_scale_logits, effective_adj, dynamic_csg_breakdown = self._compute_cross_scale_logits(
                 low_prompt_evidence,
                 high_prompt_evidence,
             )
             alpha = self.rce_cross_scale_graph_alpha
             weighted_cross_scale_logits = alpha * raw_cross_scale_logits
             final_logits = final_logits + weighted_cross_scale_logits
+            self.last_dynamic_csg_breakdown = dynamic_csg_breakdown
             self.last_cross_scale_logits = weighted_cross_scale_logits.detach().cpu()
             self.last_cross_scale_alpha = alpha.detach().cpu()
             self.last_cross_scale_adj = effective_adj.detach().cpu()
         else:
+            self.last_dynamic_csg_breakdown = {
+                "dynamic_csg_enabled": False,
+                "dynamic_csg_alpha": None
+                if self.rce_dynamic_csg_alpha is None
+                else float(self.rce_dynamic_csg_alpha.detach().item()),
+                "dynamic_csg_mode": self.rce_dynamic_csg_mode,
+                "dynamic_delta_mean": None,
+                "dynamic_delta_std": None,
+                "dynamic_adj_mean": None,
+                "dynamic_adj_std": None,
+                "static_csg_logits_mean": None,
+                "dynamic_csg_logits_mean": None,
+                "csg_logits_delta_mean": None,
+                "csg_logits_delta_abs_mean": None,
+            }
             self.last_cross_scale_logits = None
             self.last_cross_scale_alpha = None
             self.last_cross_scale_adj = None
