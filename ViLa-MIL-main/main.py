@@ -88,6 +88,19 @@ parser.add_argument("--rce_logit_scale_init", type=float, default=10.0)
 parser.add_argument("--rce_concept_prior_strength", type=float, default=1.0)
 parser.add_argument("--rce_use_visual_residual", action="store_true", default=False)
 parser.add_argument("--rce_visual_residual_init", type=float, default=0.1)
+parser.add_argument("--rce_use_residual_constraint", action="store_true", default=False)
+parser.add_argument("--rce_residual_constraint_lambda", type=float, default=0.0)
+parser.add_argument("--rce_residual_ratio_target", type=float, default=0.5)
+parser.add_argument(
+    "--rce_residual_constraint_type",
+    type=str,
+    choices=["relu_l2"],
+    default="relu_l2",
+)
+parser.add_argument("--rce_use_concept_aux_loss", action="store_true", default=False)
+parser.add_argument("--rce_concept_aux_loss_weight", type=float, default=0.0)
+parser.add_argument("--rce_residual_ratio_eps", type=float, default=1e-6)
+parser.add_argument("--rce_residual_ratio_detach", action="store_true", default=False)
 parser.add_argument("--rce_use_visual_evidence_gate", action="store_true", default=False)
 parser.add_argument("--rce_visual_gate_init", type=float, default=1.0)
 parser.add_argument("--rce_use_prarc_gate", action="store_true", default=False)
@@ -334,6 +347,14 @@ settings = {
     "rce_concept_prior_strength": args.rce_concept_prior_strength,
     "rce_use_visual_residual": args.rce_use_visual_residual,
     "rce_visual_residual_init": args.rce_visual_residual_init,
+    "rce_use_residual_constraint": args.rce_use_residual_constraint,
+    "rce_residual_constraint_lambda": args.rce_residual_constraint_lambda,
+    "rce_residual_ratio_target": args.rce_residual_ratio_target,
+    "rce_residual_constraint_type": args.rce_residual_constraint_type,
+    "rce_use_concept_aux_loss": args.rce_use_concept_aux_loss,
+    "rce_concept_aux_loss_weight": args.rce_concept_aux_loss_weight,
+    "rce_residual_ratio_eps": args.rce_residual_ratio_eps,
+    "rce_residual_ratio_detach": args.rce_residual_ratio_detach,
     "rce_use_visual_evidence_gate": args.rce_use_visual_evidence_gate,
     "rce_visual_gate_init": args.rce_visual_gate_init,
     "rce_use_prarc_gate": args.rce_use_prarc_gate,

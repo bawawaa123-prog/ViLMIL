@@ -41,6 +41,22 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_concept_prior_strength = float(getattr(config, "rce_concept_prior_strength", 1.0))
         self.rce_use_visual_residual = bool(getattr(config, "rce_use_visual_residual", False))
         self.rce_visual_residual_init = float(getattr(config, "rce_visual_residual_init", 0.1))
+        self.rce_use_residual_constraint = bool(
+            getattr(config, "rce_use_residual_constraint", False)
+        )
+        self.rce_residual_constraint_lambda = float(
+            getattr(config, "rce_residual_constraint_lambda", 0.0)
+        )
+        self.rce_residual_ratio_target = float(getattr(config, "rce_residual_ratio_target", 0.5))
+        self.rce_residual_constraint_type = str(
+            getattr(config, "rce_residual_constraint_type", "relu_l2")
+        )
+        self.rce_use_concept_aux_loss = bool(getattr(config, "rce_use_concept_aux_loss", False))
+        self.rce_concept_aux_loss_weight = float(
+            getattr(config, "rce_concept_aux_loss_weight", 0.0)
+        )
+        self.rce_residual_ratio_eps = float(getattr(config, "rce_residual_ratio_eps", 1e-6))
+        self.rce_residual_ratio_detach = bool(getattr(config, "rce_residual_ratio_detach", False))
         self.rce_use_cross_scale_graph = bool(getattr(config, "rce_use_cross_scale_graph", False))
         self.rce_cross_scale_graph_init = float(getattr(config, "rce_cross_scale_graph_init", 0.05))
         self.rce_cross_scale_graph_norm = str(getattr(config, "rce_cross_scale_graph_norm", "sqrt"))
@@ -53,6 +69,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         if self.rce_cross_scale_graph_norm not in {"sqrt", "none"}:
             raise ValueError(
                 f"Unsupported rce_cross_scale_graph_norm: {self.rce_cross_scale_graph_norm}"
+            )
+        if self.rce_residual_constraint_type not in {"relu_l2"}:
+            raise ValueError(
+                f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
             )
 
         if int(getattr(config, "input_size", self.input_size)) != self.input_size:
@@ -134,6 +154,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_cross_scale_alpha = None
         self.last_cross_scale_adj = None
         self.last_logit_breakdown = None
+        self.last_loss_breakdown = None
 
         self._initialize_concept_prompt_pool(config)
         if self.rce_use_cross_scale_graph and self.scale_mode != "dual":
@@ -262,6 +283,30 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             "true_class_margin": true_class_margin,
         }
 
+    def _compute_residual_constraint_loss(self, concept_logits, visual_residual_logits):
+        if visual_residual_logits is None:
+            return None, None
+
+        concept_norm_input = concept_logits
+        visual_norm_input = visual_residual_logits
+        if self.rce_residual_ratio_detach:
+            concept_norm_input = concept_norm_input.detach()
+            visual_norm_input = visual_norm_input.detach()
+
+        concept_norm = torch.norm(concept_norm_input, dim=1)
+        visual_norm = torch.norm(visual_norm_input, dim=1)
+        ratio = visual_norm / (concept_norm + visual_norm + self.rce_residual_ratio_eps)
+
+        if self.rce_residual_constraint_type == "relu_l2":
+            penalty = torch.relu(ratio - self.rce_residual_ratio_target)
+            constraint_loss = torch.mean(penalty.pow(2))
+        else:
+            raise ValueError(
+                f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
+            )
+
+        return constraint_loss, ratio
+
     def _apply_logit_calibration(self, logits):
         if logits is None:
             return None
@@ -283,6 +328,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         raw_visual_logits,
         full_pre,
         full_final,
+        loss_breakdown,
     ):
         if not self.enable_logit_breakdown_audit:
             self.last_logit_breakdown = None
@@ -347,6 +393,16 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_logit_breakdown = {
             "audit_enabled": True,
             "uses_logit_calibration": bool(self.rce_use_logit_calibration),
+            "residual_constraint_enabled": bool(
+                loss_breakdown.get("residual_constraint_enabled", False)
+            ),
+            "concept_aux_enabled": bool(loss_breakdown.get("concept_aux_enabled", False)),
+            "visual_ratio_for_loss": self._detach_cpu(loss_breakdown.get("visual_ratio")),
+            "residual_constraint_loss": self._detach_cpu(
+                loss_breakdown.get("residual_constraint_loss_tensor")
+            ),
+            "concept_aux_loss": self._detach_cpu(loss_breakdown.get("concept_aux_loss_tensor")),
+            "total_loss": self._detach_cpu(loss_breakdown.get("total_loss_tensor")),
             "calibration_space": {
                 "pre_calibration": "additive branch logits before optional global scale+bias calibration",
                 "post_calibration": "branch logits after applying the model's final scale+bias calibration",
@@ -495,6 +551,66 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         if self.rce_use_logit_calibration:
             final_logits = self._apply_logit_calibration(final_logits)
 
+        concept_logits_pre = logits_low_high + (
+            weighted_cross_scale_logits if weighted_cross_scale_logits is not None else 0.0
+        )
+        concept_logits_final = self._apply_logit_calibration(concept_logits_pre)
+
+        ce_loss = self.loss_ce(final_logits, label)
+        residual_constraint_enabled = bool(
+            self.rce_use_residual_constraint
+            and self.rce_residual_constraint_lambda > 0.0
+            and weighted_visual_logits is not None
+            and label is not None
+        )
+        concept_aux_enabled = bool(
+            self.rce_use_concept_aux_loss
+            and self.rce_concept_aux_loss_weight > 0.0
+            and label is not None
+        )
+
+        residual_constraint_loss = final_logits.new_zeros(())
+        visual_ratio = None
+        if residual_constraint_enabled:
+            residual_constraint_loss, visual_ratio = self._compute_residual_constraint_loss(
+                concept_logits=concept_logits_pre,
+                visual_residual_logits=weighted_visual_logits,
+            )
+
+        concept_aux_loss = final_logits.new_zeros(())
+        if concept_aux_enabled:
+            concept_aux_loss = self.loss_ce(concept_logits_final, label)
+
+        total_loss = ce_loss
+        if residual_constraint_enabled:
+            total_loss = total_loss + self.rce_residual_constraint_lambda * residual_constraint_loss
+        if concept_aux_enabled:
+            total_loss = total_loss + self.rce_concept_aux_loss_weight * concept_aux_loss
+
+        visual_ratio_mean = (
+            visual_ratio.mean() if visual_ratio is not None else final_logits.new_tensor(math.nan)
+        )
+        visual_ratio_median = (
+            visual_ratio.median() if visual_ratio is not None else final_logits.new_tensor(math.nan)
+        )
+
+        self.last_loss_breakdown = {
+            "ce_loss": float(ce_loss.detach().item()),
+            "residual_constraint_enabled": residual_constraint_enabled,
+            "residual_constraint_lambda": float(self.rce_residual_constraint_lambda),
+            "residual_constraint_loss": float(residual_constraint_loss.detach().item()),
+            "concept_aux_enabled": concept_aux_enabled,
+            "concept_aux_loss_weight": float(self.rce_concept_aux_loss_weight),
+            "concept_aux_loss": float(concept_aux_loss.detach().item()),
+            "total_loss": float(total_loss.detach().item()),
+            "visual_ratio_mean": None
+            if visual_ratio is None
+            else float(visual_ratio_mean.detach().item()),
+            "visual_ratio_median": None
+            if visual_ratio is None
+            else float(visual_ratio_median.detach().item()),
+        }
+
         self.last_low_prompt_weights = low_prompt_weights.detach().cpu()
         self.last_high_prompt_weights = high_prompt_weights.detach().cpu()
         self.last_low_prompt_evidence = low_prompt_evidence.detach().cpu()
@@ -509,16 +625,22 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             logits_low=logits_low,
             logits_high=logits_high,
             logits_low_high=logits_low_high,
-            concept_only_pre=logits_low_high + (weighted_cross_scale_logits if weighted_cross_scale_logits is not None else 0.0),
+            concept_only_pre=concept_logits_pre,
             weighted_cross_scale_logits=weighted_cross_scale_logits,
             raw_cross_scale_logits=raw_cross_scale_logits,
             weighted_visual_logits=weighted_visual_logits,
             raw_visual_logits=raw_visual_logits,
             full_pre=full_pre_calibration_logits,
             full_final=final_logits,
+            loss_breakdown={
+                "residual_constraint_enabled": residual_constraint_enabled,
+                "concept_aux_enabled": concept_aux_enabled,
+                "visual_ratio": visual_ratio_mean if visual_ratio is not None else None,
+                "residual_constraint_loss_tensor": residual_constraint_loss,
+                "concept_aux_loss_tensor": concept_aux_loss,
+                "total_loss_tensor": total_loss,
+            },
         )
-
-        loss = self.loss_ce(final_logits, label)
         Y_prob = F.softmax(final_logits, dim=1)
         Y_hat = torch.topk(Y_prob, 1, dim=1)[1]
-        return Y_prob, Y_hat, loss
+        return Y_prob, Y_hat, total_loss

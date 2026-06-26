@@ -1,0 +1,10 @@
+cd /home/ljh/ViLMIL/ViLa-MIL-main
+python scripts/analysis/build_stage58A_residual_constraint_audit.py
+
+# Optional 1-fold / 1-epoch training smoke
+PYTHON_BIN=/home/ljh/anaconda3/envs/vila_mil/bin/python \
+DATA_ROOT_DIR=/xiangmu/data/VILMIL \
+RESULTS_DIR=results_stage58A_residual_constrained_rce \
+SEED=1 \
+MAX_EPOCHS=1 \
+bash scripts/experiments/run_stage58A_residual_constrained_rce_smoke.sh

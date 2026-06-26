@@ -1,0 +1,85 @@
+{
+  "smoke_attempted": true,
+  "sample_slide_id": "2460239-B2",
+  "modes": {
+    "all_off": {
+      "forward_return_format_unchanged": true,
+      "loss": 3.767e-05,
+      "y_hat": 0,
+      "loss_breakdown_present": true,
+      "logit_breakdown_has_step58a_fields": {
+        "residual_constraint_enabled": true,
+        "concept_aux_enabled": true,
+        "visual_ratio_for_loss": true,
+        "residual_constraint_loss": true,
+        "concept_aux_loss": true,
+        "total_loss": true
+      },
+      "loss_breakdown": {
+        "ce_loss": 3.766942609217949e-05,
+        "residual_constraint_enabled": false,
+        "residual_constraint_lambda": 0.0,
+        "residual_constraint_loss": 0.0,
+        "concept_aux_enabled": false,
+        "concept_aux_loss_weight": 0.0,
+        "concept_aux_loss": 0.0,
+        "total_loss": 3.766942609217949e-05,
+        "visual_ratio_mean": null,
+        "visual_ratio_median": null
+      }
+    },
+    "residual_enabled": {
+      "forward_return_format_unchanged": true,
+      "loss": 0.00284167,
+      "y_hat": 0,
+      "loss_breakdown_present": true,
+      "logit_breakdown_has_step58a_fields": {
+        "residual_constraint_enabled": true,
+        "concept_aux_enabled": true,
+        "visual_ratio_for_loss": true,
+        "residual_constraint_loss": true,
+        "concept_aux_loss": true,
+        "total_loss": true
+      },
+      "loss_breakdown": {
+        "ce_loss": 3.766942609217949e-05,
+        "residual_constraint_enabled": true,
+        "residual_constraint_lambda": 0.05,
+        "residual_constraint_loss": 0.0560799203813076,
+        "concept_aux_enabled": false,
+        "concept_aux_loss_weight": 0.0,
+        "concept_aux_loss": 0.0,
+        "total_loss": 0.0028416654095053673,
+        "visual_ratio_mean": 0.7368119955062866,
+        "visual_ratio_median": 0.7368119955062866
+      }
+    },
+    "concept_aux_enabled": {
+      "forward_return_format_unchanged": true,
+      "loss": 0.05119043,
+      "y_hat": 0,
+      "loss_breakdown_present": true,
+      "logit_breakdown_has_step58a_fields": {
+        "residual_constraint_enabled": true,
+        "concept_aux_enabled": true,
+        "visual_ratio_for_loss": true,
+        "residual_constraint_loss": true,
+        "concept_aux_loss": true,
+        "total_loss": true
+      },
+      "loss_breakdown": {
+        "ce_loss": 3.766942609217949e-05,
+        "residual_constraint_enabled": false,
+        "residual_constraint_lambda": 0.0,
+        "residual_constraint_loss": 0.0,
+        "concept_aux_enabled": true,
+        "concept_aux_loss_weight": 0.2,
+        "concept_aux_loss": 0.25576379895210266,
+        "total_loss": 0.05119043216109276,
+        "visual_ratio_mean": null,
+        "visual_ratio_median": null
+      }
+    }
+  },
+  "smoke_passed": true
+}

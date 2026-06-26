@@ -1,0 +1,38 @@
+{
+  "modified_original_rce_file": false,
+  "modified_rce_v2_file": true,
+  "new_args_found_in_main": {
+    "--rce_use_residual_constraint": true,
+    "--rce_residual_constraint_lambda": true,
+    "--rce_residual_ratio_target": true,
+    "--rce_residual_constraint_type": true,
+    "--rce_use_concept_aux_loss": true,
+    "--rce_concept_aux_loss_weight": true,
+    "--rce_residual_ratio_eps": true,
+    "--rce_residual_ratio_detach": true
+  },
+  "all_new_args_found_in_main": true,
+  "new_args_wired_in_core_utils": {
+    "rce_use_residual_constraint": true,
+    "rce_residual_constraint_lambda": true,
+    "rce_residual_ratio_target": true,
+    "rce_residual_constraint_type": true,
+    "rce_use_concept_aux_loss": true,
+    "rce_concept_aux_loss_weight": true,
+    "rce_residual_ratio_eps": true,
+    "rce_residual_ratio_detach": true
+  },
+  "all_new_args_wired_in_core_utils": true,
+  "model_attrs_present": {
+    "rce_use_residual_constraint": true,
+    "rce_residual_constraint_lambda": true,
+    "rce_residual_ratio_target": true,
+    "rce_residual_constraint_type": true,
+    "rce_use_concept_aux_loss": true,
+    "rce_concept_aux_loss_weight": true,
+    "rce_residual_ratio_eps": true,
+    "rce_residual_ratio_detach": true,
+    "last_loss_breakdown": true
+  },
+  "all_model_attrs_present": true
+}

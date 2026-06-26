@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "default_flags": {
+    "rce_use_residual_constraint": false,
+    "rce_residual_constraint_lambda": 0.0,
+    "rce_use_concept_aux_loss": false,
+    "rce_concept_aux_loss_weight": 0.0
+  },
+  "forward_return_format_unchanged": true,
+  "explicit_off_matches_default": {
+    "y_prob_max_abs_diff": 0.0,
+    "loss_abs_diff": 0.0,
+    "y_hat_equal": true
+  },
+  "default_loss_breakdown": {
+    "ce_loss": 3.766942609217949e-05,
+    "residual_constraint_enabled": false,
+    "residual_constraint_lambda": 0.0,
+    "residual_constraint_loss": 0.0,
+    "concept_aux_enabled": false,
+    "concept_aux_loss_weight": 0.0,
+    "concept_aux_loss": 0.0,
+    "total_loss": 3.766942609217949e-05,
+    "visual_ratio_mean": null,
+    "visual_ratio_median": null
+  }
+}
