@@ -1,0 +1,40 @@
+{
+  "status": "completed",
+  "completed_configs": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "pending_configs": [],
+  "selected_config": "D",
+  "audit_invocations": {
+    "A": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58B_residual_constraint_sweep/audits/config_A"
+    },
+    "B": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58B_residual_constraint_sweep/audits/config_B"
+    },
+    "C": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58B_residual_constraint_sweep/audits/config_C"
+    },
+    "D": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58B_residual_constraint_sweep/audits/config_D"
+    },
+    "E": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58B_residual_constraint_sweep/audits/config_E"
+    }
+  },
+  "warnings": []
+}

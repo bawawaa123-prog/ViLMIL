@@ -1,0 +1,12 @@
+cd /home/ljh/ViLMIL/ViLa-MIL-main
+RUN_TRAIN=1 bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+
+# Single config examples
+RUN_TRAIN=1 CONFIGS=A bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+RUN_TRAIN=1 CONFIGS=B bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+RUN_TRAIN=1 CONFIGS=C bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+RUN_TRAIN=1 CONFIGS=D bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+RUN_TRAIN=1 CONFIGS=E bash scripts/experiments/run_stage58B_residual_constraint_sweep.sh
+
+# Refresh summary
+/home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage58B_residual_constraint_sweep_summary.py
