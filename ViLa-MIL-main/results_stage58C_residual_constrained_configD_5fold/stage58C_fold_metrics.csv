@@ -1,0 +1,11 @@
+model_name,source_dir,fold,AUC,ACC,F1,Balanced_ACC,PR_AUC,delta_vs_stage57C_auc,delta_vs_stage57C_acc,delta_vs_stage57C_f1,delta_vs_stage57C_bacc,delta_vs_stage57C_pr_auc
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,1,0.975734,0.907216,0.898783,0.90767,0.954798,0.0,0.0,0.0,0.0,0.0
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,2,0.954545,0.912371,0.902041,0.900568,0.920913,0.0,0.0,0.0,0.0,0.0
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,3,0.992008,0.958763,0.954401,0.954401,0.986152,0.0,0.0,0.0,0.0,0.0
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,4,0.968146,0.911917,0.902493,0.903961,0.943354,0.0,0.0,0.0,0.0,0.0
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,5,0.96063,0.92228,0.914564,0.919112,0.916778,0.0,0.0,0.0,0.0,0.0
+stage58C_configD_residual_constrained,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,1,0.968395,0.927835,0.918389,0.912287,0.945293,-0.007339,0.020619,0.019607,0.004616,-0.009505
+stage58C_configD_residual_constrained,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,2,0.945904,0.907216,0.896662,0.896662,0.910277,-0.008641,-0.005155,-0.005379,-0.003906,-0.010636
+stage58C_configD_residual_constrained,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,3,0.98531,0.943299,0.93562,0.924962,0.966764,-0.006699,-0.015464,-0.018781,-0.029439,-0.019388
+stage58C_configD_residual_constrained,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,4,0.962419,0.932642,0.925436,0.926986,0.930931,-0.005727,0.020725,0.022943,0.023026,-0.012423
+stage58C_configD_residual_constrained,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,5,0.962181,0.927461,0.922016,0.937604,0.904491,0.001551,0.005181,0.007452,0.018492,-0.012287

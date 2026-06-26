@@ -1,0 +1,40 @@
+{
+  "status": "completed",
+  "completed_folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "stage58c_aggregate_source": "results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/result.csv",
+  "stage58c_fold_source": "results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/fold_summary.csv",
+  "audit_status": {
+    "0": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58C_residual_constrained_configD_5fold/audits/fold_0"
+    },
+    "1": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58C_residual_constrained_configD_5fold/audits/fold_1"
+    },
+    "2": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58C_residual_constrained_configD_5fold/audits/fold_2"
+    },
+    "3": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58C_residual_constrained_configD_5fold/audits/fold_3"
+    },
+    "4": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage58C_residual_constrained_configD_5fold/audits/fold_4"
+    }
+  },
+  "warnings": []
+}
