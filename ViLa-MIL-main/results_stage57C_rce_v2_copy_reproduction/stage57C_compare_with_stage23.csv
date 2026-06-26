@@ -1,0 +1,3 @@
+model_name,source_dir,AUC,ACC,F1,Balanced_ACC,PR_AUC,delta_vs_stage23_auc,delta_vs_stage23_acc,delta_vs_stage23_f1,delta_vs_stage23_bacc,delta_vs_stage23_pr_auc
+RCE_MIL_BiomedCLIP,results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1,0.9702127532300916,0.9225094813311256,0.9144563517525356,0.9171426221612052,0.9443991016694444,0.0,0.0,0.0,0.0,0.0
+RCE_MIL_BiomedCLIP_v2,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,0.9702127532300916,0.9225094813311256,0.9144563517525356,0.9171426221612052,0.9443991016694444,0.0,0.0,0.0,0.0,0.0

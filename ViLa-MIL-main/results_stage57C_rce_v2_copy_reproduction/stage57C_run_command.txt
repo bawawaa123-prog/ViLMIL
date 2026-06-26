@@ -1,0 +1,11 @@
+cd /home/ljh/ViLMIL/ViLa-MIL-main
+# Existing partial output directory detected at
+# results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1
+# For a clean reproduction rerun, move or remove that directory before launching.
+PYTHON_BIN=/home/ljh/anaconda3/envs/vila_mil/bin/python \
+DATA_ROOT_DIR=/xiangmu/data/VILMIL \
+RESULTS_DIR=results_stage57C_rce_v2_copy_reproduction \
+SEED=1 \
+MAX_EPOCHS=20 \
+VARIANT=rq16 \
+bash scripts/experiments/run_stage57C_rce_v2_copy_reproduction_5fold.sh

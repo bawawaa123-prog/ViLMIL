@@ -1,0 +1,95 @@
+{
+  "step": "57C",
+  "branch": "dev-rce-innovation",
+  "training_config_match_stage23": true,
+  "modified_original_rce_file": false,
+  "modified_rce_v2_model_logic": false,
+  "stage23": {
+    "model_name": "RCE_MIL_BiomedCLIP",
+    "source_dir": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1",
+    "status": "completed",
+    "completed": true,
+    "started": true,
+    "aggregate_metrics_path": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv",
+    "fold_metrics_path": "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/fold_summary.csv",
+    "fold_count": 5,
+    "checkpoint_count": 5,
+    "checkpoint_files": [
+      "s_0_checkpoint.pt",
+      "s_1_checkpoint.pt",
+      "s_2_checkpoint.pt",
+      "s_3_checkpoint.pt",
+      "s_4_checkpoint.pt"
+    ],
+    "csv_files": [
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/concept_class_mapping.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/epoch_details.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/fold_summary.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/result.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/splits_0.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/splits_1.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/splits_2.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/splits_3.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/splits_4.csv",
+      "results_stage23/rce_v4_csg_a01_rq16_5fold_e20_s1/summary.csv"
+    ],
+    "aggregate_metrics": {
+      "AUC": 0.970213,
+      "ACC": 0.922509,
+      "F1": 0.914456,
+      "Balanced_ACC": 0.917143,
+      "PR_AUC": 0.944399
+    }
+  },
+  "stage57c": {
+    "model_name": "RCE_MIL_BiomedCLIP_v2",
+    "source_dir": "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1",
+    "status": "completed",
+    "completed": true,
+    "started": true,
+    "aggregate_metrics_path": "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/result.csv",
+    "fold_metrics_path": "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/fold_summary.csv",
+    "fold_count": 5,
+    "checkpoint_count": 5,
+    "checkpoint_files": [
+      "s_0_checkpoint.pt",
+      "s_1_checkpoint.pt",
+      "s_2_checkpoint.pt",
+      "s_3_checkpoint.pt",
+      "s_4_checkpoint.pt"
+    ],
+    "csv_files": [
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/concept_class_mapping.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/epoch_details.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/fold_summary.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/result.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/splits_0.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/splits_1.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/splits_2.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/splits_3.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/splits_4.csv",
+      "results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1/summary.csv"
+    ],
+    "aggregate_metrics": {
+      "AUC": 0.970213,
+      "ACC": 0.922509,
+      "F1": 0.914456,
+      "Balanced_ACC": 0.917143,
+      "PR_AUC": 0.944399
+    }
+  },
+  "comparison": {
+    "target_stage23_acc_reference": 0.9225,
+    "delta_vs_stage23_auc": 0.0,
+    "delta_vs_stage23_acc": 0.0,
+    "delta_vs_stage23_f1": 0.0,
+    "delta_vs_stage23_bacc": 0.0,
+    "delta_vs_stage23_pr_auc": 0.0,
+    "rce_v2_acc_close_to_0_9225": true
+  },
+  "artifacts": {
+    "compare_csv": "results_stage57C_rce_v2_copy_reproduction/stage57C_compare_with_stage23.csv",
+    "fold_metrics_csv": "results_stage57C_rce_v2_copy_reproduction/stage57C_fold_metrics.csv",
+    "run_command_txt": "results_stage57C_rce_v2_copy_reproduction/stage57C_run_command.txt"
+  }
+}
