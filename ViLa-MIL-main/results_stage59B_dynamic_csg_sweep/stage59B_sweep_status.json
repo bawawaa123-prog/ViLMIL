@@ -1,0 +1,48 @@
+{
+  "status": "completed",
+  "completed_configs": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "pending_configs": [],
+  "skipped_configs": [
+    "F",
+    "G"
+  ],
+  "supported_norms": {
+    "softmax": true,
+    "l1": true,
+    "none": true
+  },
+  "audit_invocations": {
+    "A": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage59B_dynamic_csg_sweep/audits/config_A"
+    },
+    "B": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage59B_dynamic_csg_sweep/audits/config_B"
+    },
+    "C": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage59B_dynamic_csg_sweep/audits/config_C"
+    },
+    "D": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage59B_dynamic_csg_sweep/audits/config_D"
+    },
+    "E": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage59B_dynamic_csg_sweep/audits/config_E"
+    }
+  },
+  "warnings": []
+}

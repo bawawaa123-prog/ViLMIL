@@ -1,0 +1,13 @@
+{
+  "prompt_json_path": "/home/ljh/ViLMIL/ViLa-MIL-main/dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json",
+  "class_mapping": [
+    {
+      "class_id": 0,
+      "class_name": "Adenocarcinoma"
+    },
+    {
+      "class_id": 1,
+      "class_name": "NonAdenocarcinoma"
+    }
+  ]
+}

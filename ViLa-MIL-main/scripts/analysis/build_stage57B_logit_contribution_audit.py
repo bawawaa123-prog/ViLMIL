@@ -121,6 +121,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data_folder_s", type=str, default=None)
     parser.add_argument("--data_folder_l", type=str, default=None)
     parser.add_argument("--concept_prompt_path", type=str, default=None)
+    parser.add_argument("--rce_use_dynamic_csg", action="store_true")
+    parser.add_argument("--rce_dynamic_csg_mode", type=str, default=None)
+    parser.add_argument("--rce_dynamic_csg_alpha_init", type=float, default=None)
+    parser.add_argument("--rce_dynamic_csg_scale", type=float, default=None)
+    parser.add_argument("--rce_dynamic_csg_norm", type=str, default=None)
+    parser.add_argument("--rce_dynamic_csg_detach_evidence", action="store_true")
+    parser.add_argument("--rce_dynamic_csg_clip", type=float, default=None)
     parser.add_argument("--output_dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--max_folds", type=int, default=None, help="optional cap on audited folds after discovery")
     return parser.parse_args()
@@ -257,6 +264,31 @@ def build_runtime_config(
     resolved["text_finetune_mode"] = str(resolved.get("text_finetune_mode", "proj"))
     resolved["text_unfreeze_last_n"] = int(resolved.get("text_unfreeze_last_n", 2))
     resolved["enable_logit_breakdown_audit"] = True
+    resolved["rce_use_dynamic_csg"] = bool(args.rce_use_dynamic_csg or resolved.get("rce_use_dynamic_csg", False))
+    resolved["rce_dynamic_csg_mode"] = str(
+        args.rce_dynamic_csg_mode or resolved.get("rce_dynamic_csg_mode", "evidence_outer")
+    )
+    resolved["rce_dynamic_csg_alpha_init"] = float(
+        args.rce_dynamic_csg_alpha_init
+        if args.rce_dynamic_csg_alpha_init is not None
+        else resolved.get("rce_dynamic_csg_alpha_init", 0.0)
+    )
+    resolved["rce_dynamic_csg_scale"] = float(
+        args.rce_dynamic_csg_scale
+        if args.rce_dynamic_csg_scale is not None
+        else resolved.get("rce_dynamic_csg_scale", 1.0)
+    )
+    resolved["rce_dynamic_csg_norm"] = str(
+        args.rce_dynamic_csg_norm or resolved.get("rce_dynamic_csg_norm", "softmax")
+    )
+    resolved["rce_dynamic_csg_detach_evidence"] = bool(
+        args.rce_dynamic_csg_detach_evidence or resolved.get("rce_dynamic_csg_detach_evidence", False)
+    )
+    resolved["rce_dynamic_csg_clip"] = float(
+        args.rce_dynamic_csg_clip
+        if args.rce_dynamic_csg_clip is not None
+        else resolved.get("rce_dynamic_csg_clip", 5.0)
+    )
 
     if not resolved["concept_prompt_path"]:
         warnings.append("concept_prompt_path missing; model init may fail")
@@ -397,6 +429,15 @@ def initiate_rce_v2_model(runtime_args: SimpleNamespace, ckpt_path: Path) -> RCE
     config.rce_use_cross_scale_graph = bool(getattr(runtime_args, "rce_use_cross_scale_graph", False))
     config.rce_cross_scale_graph_init = float(getattr(runtime_args, "rce_cross_scale_graph_init", 0.05))
     config.rce_cross_scale_graph_norm = str(getattr(runtime_args, "rce_cross_scale_graph_norm", "sqrt"))
+    config.rce_use_dynamic_csg = bool(getattr(runtime_args, "rce_use_dynamic_csg", False))
+    config.rce_dynamic_csg_mode = str(getattr(runtime_args, "rce_dynamic_csg_mode", "evidence_outer"))
+    config.rce_dynamic_csg_alpha_init = float(getattr(runtime_args, "rce_dynamic_csg_alpha_init", 0.0))
+    config.rce_dynamic_csg_scale = float(getattr(runtime_args, "rce_dynamic_csg_scale", 1.0))
+    config.rce_dynamic_csg_norm = str(getattr(runtime_args, "rce_dynamic_csg_norm", "softmax"))
+    config.rce_dynamic_csg_detach_evidence = bool(
+        getattr(runtime_args, "rce_dynamic_csg_detach_evidence", False)
+    )
+    config.rce_dynamic_csg_clip = float(getattr(runtime_args, "rce_dynamic_csg_clip", 5.0))
     config.scale_mode = str(getattr(runtime_args, "scale_mode", "dual"))
     config.finetune_text_encoder = bool(getattr(runtime_args, "finetune_text_encoder", False))
     config.enable_logit_breakdown_audit = True

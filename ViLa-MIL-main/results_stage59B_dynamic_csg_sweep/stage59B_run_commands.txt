@@ -1,0 +1,6 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+RUN_TRAIN=1 bash scripts/experiments/run_stage59B_dynamic_csg_sweep.sh
+RUN_TRAIN=1 CONFIGS=extended bash scripts/experiments/run_stage59B_dynamic_csg_sweep.sh
+
+# Refresh Step59B summary
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage59B_dynamic_csg_sweep_summary.py
