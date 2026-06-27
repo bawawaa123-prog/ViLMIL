@@ -1,0 +1,157 @@
+{
+  "decision": "secondary_preferred_over_config_d",
+  "next_step": "use_config_c_as_ccra_representative",
+  "close_to_step58c": true,
+  "beats_step60c": true,
+  "visual_low": true,
+  "visual_not_rebounded": true,
+  "concept_high": true,
+  "concept_above_step57b": true,
+  "alpha_nonzero_multi_fold": true,
+  "delta_nonzero_multi_fold": true,
+  "alpha_nonzero_folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "delta_nonzero_folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "branch_ok": true,
+  "severe_fold_collapse": false,
+  "collapse_folds": [],
+  "anomaly_folds": [],
+  "delta_vs_step58c": {
+    "auc": 0.003759,
+    "acc": -0.005197,
+    "f1": -0.004509,
+    "bacc": 0.000386,
+    "pr_auc": 0.005546
+  },
+  "delta_vs_step60c": {
+    "auc": 0.010376,
+    "acc": 0.006202,
+    "f1": 0.008944,
+    "bacc": 0.016342,
+    "pr_auc": -0.001035
+  },
+  "full_minus_concept": {
+    "acc": -0.003093,
+    "auc": -0.002586
+  },
+  "reasons": [
+    "delta_vs_step58c_acc=-0.005197",
+    "delta_vs_step58c_auc=+0.003759",
+    "delta_vs_step58c_f1=-0.004509",
+    "delta_vs_step58c_bacc=+0.000386",
+    "delta_vs_step58c_pr_auc=+0.005546",
+    "delta_vs_step60c_acc=+0.006202",
+    "delta_vs_step60c_auc=+0.010376",
+    "delta_vs_step60c_f1=+0.008944",
+    "delta_vs_step60c_bacc=+0.016342",
+    "delta_vs_step60c_pr_auc=-0.001035",
+    "visual_ratio_mean=0.357331 vs step57B=0.719580",
+    "concept_ratio_mean=0.642669 vs step57B=0.280420",
+    "csg_ratio_mean=0.002062",
+    "learned_ccra_alpha_mean=0.040617",
+    "low_ccra_delta_abs_mean=0.341818",
+    "high_ccra_delta_abs_mean=0.573899",
+    "alpha_nonzero_folds=[1, 2, 3, 4, 5]",
+    "delta_nonzero_folds=[1, 2, 3, 4, 5]",
+    "full_minus_concept_acc=-0.003093",
+    "full_minus_concept_auc=-0.002586",
+    "anomaly_folds=[]",
+    "collapse_folds=[]"
+  ],
+  "config_c_source_status": "completed",
+  "expected_ccra_config": {
+    "rce_use_ccra": true,
+    "rce_ccra_mode": "concept_query_residual",
+    "rce_ccra_alpha_init": 0.01,
+    "rce_ccra_scale": 1.0,
+    "rce_ccra_num_queries": 0,
+    "rce_ccra_query_source": "prompt_mean",
+    "rce_ccra_detach_prompt": false,
+    "rce_ccra_norm": "layernorm",
+    "rce_ccra_dropout": 0.0,
+    "rce_ccra_clip": 5.0,
+    "rce_use_dynamic_csg": false
+  },
+  "stage57c_baseline_metrics": {
+    "AUC": 0.970213,
+    "ACC": 0.922509,
+    "F1": 0.914456,
+    "Balanced_ACC": 0.917143,
+    "PR_AUC": 0.944399
+  },
+  "stage58c_baseline_metrics": {
+    "AUC": 0.964842,
+    "ACC": 0.927691,
+    "F1": 0.919625,
+    "Balanced_ACC": 0.9197,
+    "PR_AUC": 0.931551
+  },
+  "stage59c_reference_metrics": {
+    "AUC": 0.969323,
+    "ACC": 0.922504,
+    "F1": 0.913797,
+    "Balanced_ACC": 0.913596,
+    "PR_AUC": 0.941877
+  },
+  "stage60c_configd_metrics": {
+    "AUC": 0.958225,
+    "ACC": 0.916292,
+    "F1": 0.906171,
+    "Balanced_ACC": 0.903745,
+    "PR_AUC": 0.938132
+  },
+  "stage60d_configc_metrics": {
+    "AUC": 0.968601,
+    "ACC": 0.922493,
+    "F1": 0.915115,
+    "Balanced_ACC": 0.920087,
+    "PR_AUC": 0.937097
+  },
+  "contribution_means": {
+    "visual_ratio_mean": 0.357331,
+    "visual_ratio_median": 0.339165,
+    "visual_ratio_gt_0_5_percent": 0.184958,
+    "concept_ratio_mean": 0.642669,
+    "concept_ratio_median": 0.660835,
+    "csg_ratio_mean": 0.002062,
+    "csg_ratio_median": 0.001754,
+    "full_margin_mean": 8.338523,
+    "concept_margin_mean": 4.443521,
+    "visual_margin_mean": 3.894139,
+    "csg_margin_mean": 0.00761,
+    "delta_visual_ratio_vs_step58C": 0.029892,
+    "delta_concept_ratio_vs_step58C": -0.029892,
+    "delta_csg_ratio_vs_step58C": -0.001287
+  },
+  "ccra_means": {
+    "ccra_norm": "layernorm",
+    "ccra_query_source": "prompt_mean",
+    "detach_prompt": false,
+    "learned_alpha_final": 0.040617,
+    "ccra_enabled": 1.0,
+    "ccra_scale": 1.0,
+    "ccra_dropout": 0.0,
+    "ccra_clip": 5.0,
+    "low_ccra_delta_abs_mean": 0.341818,
+    "high_ccra_delta_abs_mean": 0.573899,
+    "low_original_region_norm": 22.782566,
+    "high_original_region_norm": 22.599735,
+    "low_fused_region_norm": 22.086912,
+    "high_fused_region_norm": 22.460393,
+    "low_ccra_region_norm": 221.542361,
+    "high_ccra_region_norm": 382.531769,
+    "low_ccra_delta_vs_original_ratio": 0.015004,
+    "high_ccra_delta_vs_original_ratio": 0.025395
+  }
+}

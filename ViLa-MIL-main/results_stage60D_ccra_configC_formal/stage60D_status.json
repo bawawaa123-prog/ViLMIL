@@ -1,0 +1,42 @@
+{
+  "status": "completed",
+  "completed_folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "stage60d_source_dir": "results_stage60C_ccra_configD_5fold/rce_v2_rcD_ccraC_5fold_e20_s1",
+  "stage60d_aggregate_source": "results_stage60C_ccra_configD_5fold/rce_v2_rcD_ccraC_5fold_e20_s1/result.csv",
+  "stage60d_fold_source": "results_stage60C_ccra_configD_5fold/rce_v2_rcD_ccraC_5fold_e20_s1/fold_summary.csv",
+  "audit_status": {
+    "0": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60D_ccra_configC_formal/audits/fold_0"
+    },
+    "1": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60D_ccra_configC_formal/audits/fold_1"
+    },
+    "2": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60D_ccra_configC_formal/audits/fold_2"
+    },
+    "3": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60D_ccra_configC_formal/audits/fold_3"
+    },
+    "4": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60D_ccra_configC_formal/audits/fold_4"
+    }
+  },
+  "warnings": [],
+  "pending_train_command": "TARGET_CONFIG=C RUN_TRAIN=1 bash scripts/experiments/run_stage60C_ccra_configD_5fold.sh"
+}

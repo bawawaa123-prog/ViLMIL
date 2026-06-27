@@ -1,0 +1,9 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+# Default: only inspect existing config C results and refresh formal summary
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage60D_ccra_configC_formal_summary.py
+
+# Only if config C results are missing or incomplete
+TARGET_CONFIG=C RUN_TRAIN=1 bash scripts/experiments/run_stage60C_ccra_configD_5fold.sh
+
+# Rebuild Step60D outputs after training
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage60D_ccra_configC_formal_summary.py
