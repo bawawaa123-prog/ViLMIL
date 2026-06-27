@@ -1,0 +1,4 @@
+model_name,source_dir,AUC,ACC,F1,Balanced_ACC,PR_AUC,BACC,delta_vs_stage58C_auc,delta_vs_stage58C_acc,delta_vs_stage58C_f1,delta_vs_stage58C_bacc,delta_vs_stage58C_pr_auc,visual_ratio_mean,concept_ratio_mean,csg_ratio_mean,csg_logits_delta_abs_mean,learned_alpha_final
+stage57C_rce_v2_baseline,results_stage57C_rce_v2_copy_reproduction/rce_v2_copy_csg_a01_rq16_5fold_e20_s1,0.970213,0.922509,0.914456,0.917143,0.944399,0.917143,,,,,,,,,,
+stage58C_residual_constrained_configD,results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1,0.964842,0.927691,0.919625,0.9197,0.931551,0.9197,0.0,0.0,0.0,0.0,0.0,,,,,
+stage59C_dynamic_csg_configA,results_stage59C_dynamic_csg_configA_5fold/rce_v2_rcD_dynCSG_A_5fold_e20_s1,0.969323,0.922504,0.913797,0.913596,0.941877,0.913596,0.004482,-0.005187,-0.005828,-0.006104,0.010326,0.337585,0.662415,0.001467,4.6e-05,0.017729

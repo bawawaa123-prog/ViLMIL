@@ -1,0 +1,8 @@
+branch,available,num_samples,logit_space,acc,balanced_acc,macro_f1,auc,pr_auc
+full,False,0,post_calibration,,,,,
+concept_only,False,0,post_calibration,,,,,
+full_without_visual,False,0,post_calibration,,,,,
+visual_only,False,0,post_calibration,,,,,
+low_only,False,0,post_calibration,,,,,
+high_only,False,0,post_calibration,,,,,
+csg_only,False,0,post_calibration,,,,,

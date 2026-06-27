@@ -1,0 +1,12 @@
+metric_name,count,mean,std,median,min,max
+full_margin,0,,,,,
+concept_margin,0,,,,,
+visual_margin,0,,,,,
+csg_margin,0,,,,,
+full_top1_margin,0,,,,,
+concept_top1_margin,0,,,,,
+visual_top1_margin,0,,,,,
+csg_top1_margin,0,,,,,
+visual_contribution_ratio,0,,,,,
+concept_contribution_ratio,0,,,,,
+csg_contribution_ratio,0,,,,,

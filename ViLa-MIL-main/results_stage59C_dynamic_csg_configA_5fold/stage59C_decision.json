@@ -1,0 +1,97 @@
+{
+  "decision": "candidate_primary",
+  "next_step": "promote_dynamic_csg_candidate",
+  "performance_close_to_step58c": true,
+  "visual_low": true,
+  "visual_not_rebounded": true,
+  "concept_high": true,
+  "concept_above_step57b": true,
+  "csg_observable": true,
+  "alpha_nonzero_multi_fold": true,
+  "alpha_nonzero_folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "branch_ok": true,
+  "severe_fold_collapse": false,
+  "collapse_folds": [],
+  "delta_vs_stage58c": {
+    "auc": 0.004482,
+    "acc": -0.005187,
+    "f1": -0.005828,
+    "bacc": -0.006104,
+    "pr_auc": 0.010326
+  },
+  "full_minus_concept": {
+    "acc": 0.001031,
+    "auc": 0.003895
+  },
+  "reasons": [
+    "delta_acc=-0.005187",
+    "delta_auc=+0.004482",
+    "delta_f1=-0.005828",
+    "delta_bacc=-0.006104",
+    "delta_pr_auc=+0.010326",
+    "visual_ratio_mean=0.337585 vs step57B=0.719580",
+    "concept_ratio_mean=0.662415 vs step57B=0.280420",
+    "csg_ratio_mean=0.001467",
+    "csg_logits_delta_abs_mean=0.000046",
+    "learned_alpha_mean=0.017729",
+    "alpha_nonzero_folds=[0, 1, 2, 3, 4]",
+    "full_minus_concept_acc=0.001031",
+    "full_minus_concept_auc=0.003895",
+    "collapse_folds=[]"
+  ],
+  "stage57c_baseline_metrics": {
+    "AUC": 0.970213,
+    "ACC": 0.922509,
+    "F1": 0.914456,
+    "Balanced_ACC": 0.917143,
+    "PR_AUC": 0.944399
+  },
+  "stage58c_baseline_metrics": {
+    "AUC": 0.964842,
+    "ACC": 0.927691,
+    "F1": 0.919625,
+    "Balanced_ACC": 0.9197,
+    "PR_AUC": 0.931551
+  },
+  "stage59c_metrics": {
+    "AUC": 0.969323,
+    "ACC": 0.922504,
+    "F1": 0.913797,
+    "Balanced_ACC": 0.913596,
+    "PR_AUC": 0.941877
+  },
+  "contribution_means": {
+    "visual_ratio_mean": 0.337585,
+    "visual_ratio_median": 0.298609,
+    "visual_ratio_gt_0_5_percent": 0.183778,
+    "concept_ratio_mean": 0.662415,
+    "concept_ratio_median": 0.701391,
+    "csg_ratio_mean": 0.001467,
+    "csg_ratio_median": 0.001143,
+    "full_margin_mean": 6.922581,
+    "concept_margin_mean": 3.820522,
+    "visual_margin_mean": 3.102078,
+    "csg_margin_mean": 0.007647
+  },
+  "dynamic_means": {
+    "dynamic_csg_norm": "softmax",
+    "learned_alpha_final": 0.017729,
+    "dynamic_csg_enabled": 1.0,
+    "dynamic_csg_scale": 1.0,
+    "dynamic_csg_clip": 5.0,
+    "dynamic_delta_mean": 0.006944,
+    "dynamic_delta_std": 0.000122,
+    "dynamic_adj_mean": 0.007207,
+    "dynamic_adj_std": 0.018428,
+    "static_csg_logits_mean": 0.002061,
+    "dynamic_csg_logits_mean": 0.002077,
+    "csg_logits_delta_mean": 1.6e-05,
+    "csg_logits_delta_abs_mean": 4.6e-05
+  }
+}

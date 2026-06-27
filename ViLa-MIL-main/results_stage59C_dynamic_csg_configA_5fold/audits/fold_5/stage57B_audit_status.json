@@ -1,0 +1,19 @@
+{
+  "status": "static_only",
+  "executed_folds": [],
+  "num_samples": 0,
+  "num_flip_cases": 0,
+  "visual_assessment": "insufficient_audit",
+  "visual_details": {},
+  "csg_assessment": "insufficient_audit",
+  "csg_details": {},
+  "best_branch": null,
+  "best_branch_metric": "balanced_acc",
+  "recommendation": "先补充审计",
+  "warnings": [
+    "missing checkpoint for fold 5: /home/ljh/ViLMIL/ViLa-MIL-main/results_stage59C_dynamic_csg_configA_5fold/rce_v2_rcD_dynCSG_A_5fold_e20_s1/s_5_checkpoint.pt",
+    "no fold plan available; only static audit outputs will be generated"
+  ],
+  "errors": [],
+  "duration_seconds": 0.01
+}
