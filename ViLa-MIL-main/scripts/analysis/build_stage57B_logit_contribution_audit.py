@@ -128,6 +128,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rce_dynamic_csg_norm", type=str, default=None)
     parser.add_argument("--rce_dynamic_csg_detach_evidence", action="store_true")
     parser.add_argument("--rce_dynamic_csg_clip", type=float, default=None)
+    parser.add_argument("--rce_use_ccra", action="store_true")
+    parser.add_argument("--rce_ccra_mode", type=str, default=None)
+    parser.add_argument("--rce_ccra_alpha_init", type=float, default=None)
+    parser.add_argument("--rce_ccra_scale", type=float, default=None)
+    parser.add_argument("--rce_ccra_num_queries", type=int, default=None)
+    parser.add_argument("--rce_ccra_query_source", type=str, default=None)
+    parser.add_argument("--rce_ccra_detach_prompt", action="store_true")
+    parser.add_argument("--rce_ccra_norm", type=str, default=None)
+    parser.add_argument("--rce_ccra_dropout", type=float, default=None)
+    parser.add_argument("--rce_ccra_clip", type=float, default=None)
     parser.add_argument("--output_dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--max_folds", type=int, default=None, help="optional cap on audited folds after discovery")
     return parser.parse_args()
@@ -289,6 +299,42 @@ def build_runtime_config(
         if args.rce_dynamic_csg_clip is not None
         else resolved.get("rce_dynamic_csg_clip", 5.0)
     )
+    resolved["rce_use_ccra"] = bool(args.rce_use_ccra or resolved.get("rce_use_ccra", False))
+    resolved["rce_ccra_mode"] = str(
+        args.rce_ccra_mode or resolved.get("rce_ccra_mode", "concept_query_residual")
+    )
+    resolved["rce_ccra_alpha_init"] = float(
+        args.rce_ccra_alpha_init
+        if args.rce_ccra_alpha_init is not None
+        else resolved.get("rce_ccra_alpha_init", 0.0)
+    )
+    resolved["rce_ccra_scale"] = float(
+        args.rce_ccra_scale
+        if args.rce_ccra_scale is not None
+        else resolved.get("rce_ccra_scale", 1.0)
+    )
+    resolved["rce_ccra_num_queries"] = int(
+        args.rce_ccra_num_queries
+        if args.rce_ccra_num_queries is not None
+        else resolved.get("rce_ccra_num_queries", 0)
+    )
+    resolved["rce_ccra_query_source"] = str(
+        args.rce_ccra_query_source or resolved.get("rce_ccra_query_source", "prompt_mean")
+    )
+    resolved["rce_ccra_detach_prompt"] = bool(
+        args.rce_ccra_detach_prompt or resolved.get("rce_ccra_detach_prompt", False)
+    )
+    resolved["rce_ccra_norm"] = str(args.rce_ccra_norm or resolved.get("rce_ccra_norm", "layernorm"))
+    resolved["rce_ccra_dropout"] = float(
+        args.rce_ccra_dropout
+        if args.rce_ccra_dropout is not None
+        else resolved.get("rce_ccra_dropout", 0.0)
+    )
+    resolved["rce_ccra_clip"] = float(
+        args.rce_ccra_clip
+        if args.rce_ccra_clip is not None
+        else resolved.get("rce_ccra_clip", 5.0)
+    )
 
     if not resolved["concept_prompt_path"]:
         warnings.append("concept_prompt_path missing; model init may fail")
@@ -438,6 +484,16 @@ def initiate_rce_v2_model(runtime_args: SimpleNamespace, ckpt_path: Path) -> RCE
         getattr(runtime_args, "rce_dynamic_csg_detach_evidence", False)
     )
     config.rce_dynamic_csg_clip = float(getattr(runtime_args, "rce_dynamic_csg_clip", 5.0))
+    config.rce_use_ccra = bool(getattr(runtime_args, "rce_use_ccra", False))
+    config.rce_ccra_mode = str(getattr(runtime_args, "rce_ccra_mode", "concept_query_residual"))
+    config.rce_ccra_alpha_init = float(getattr(runtime_args, "rce_ccra_alpha_init", 0.0))
+    config.rce_ccra_scale = float(getattr(runtime_args, "rce_ccra_scale", 1.0))
+    config.rce_ccra_num_queries = int(getattr(runtime_args, "rce_ccra_num_queries", 0))
+    config.rce_ccra_query_source = str(getattr(runtime_args, "rce_ccra_query_source", "prompt_mean"))
+    config.rce_ccra_detach_prompt = bool(getattr(runtime_args, "rce_ccra_detach_prompt", False))
+    config.rce_ccra_norm = str(getattr(runtime_args, "rce_ccra_norm", "layernorm"))
+    config.rce_ccra_dropout = float(getattr(runtime_args, "rce_ccra_dropout", 0.0))
+    config.rce_ccra_clip = float(getattr(runtime_args, "rce_ccra_clip", 5.0))
     config.scale_mode = str(getattr(runtime_args, "scale_mode", "dual"))
     config.finetune_text_encoder = bool(getattr(runtime_args, "finetune_text_encoder", False))
     config.enable_logit_breakdown_audit = True

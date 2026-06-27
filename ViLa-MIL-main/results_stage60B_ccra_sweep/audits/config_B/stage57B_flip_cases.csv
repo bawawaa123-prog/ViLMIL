@@ -1,0 +1,2 @@
+flip_type,fold,sample_id,slide_id,label,pred_full,pred_concept_only,pred_visual_only,pred_full_without_visual,full_correct,concept_correct,visual_correct,full_without_visual_correct,full_margin,concept_margin,visual_margin,csg_margin,visual_contribution_ratio,concept_contribution_ratio,csg_contribution_ratio
+visual_only_correct_concept_wrong,0,25020556B4,25020556B4,1,0,0,1,0,False,False,True,False,-1.2015442848205566,-1.8498640060424805,0.6561934947967529,0.010477344505488873,0.0541936419904232,0.9458063244819641,0.00010509591811569408

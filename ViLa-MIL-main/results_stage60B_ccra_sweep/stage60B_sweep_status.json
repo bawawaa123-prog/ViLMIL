@@ -1,0 +1,53 @@
+{
+  "status": "completed",
+  "completed_configs": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "pending_configs": [],
+  "skipped_configs": [
+    "G"
+  ],
+  "supported_ccra_features": {
+    "layernorm": true,
+    "none": true,
+    "detach_prompt": true
+  },
+  "audit_invocations": {
+    "A": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_A"
+    },
+    "B": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_B"
+    },
+    "C": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_C"
+    },
+    "D": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_D"
+    },
+    "E": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_E"
+    },
+    "F": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage60B_ccra_sweep/audits/config_F"
+    }
+  },
+  "warnings": []
+}

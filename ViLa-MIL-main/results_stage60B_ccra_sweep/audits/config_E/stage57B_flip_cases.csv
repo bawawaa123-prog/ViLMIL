@@ -1,0 +1,1 @@
+flip_type,fold,sample_id,slide_id,label,pred_full,pred_concept_only,pred_visual_only,pred_full_without_visual,full_correct,concept_correct,visual_correct,full_without_visual_correct,full_margin,concept_margin,visual_margin,csg_margin,visual_contribution_ratio,concept_contribution_ratio,csg_contribution_ratio
