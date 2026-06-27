@@ -1,0 +1,51 @@
+{
+  "original_rce_modified": false,
+  "main_has_new_args": {
+    "rce_use_ccra": true,
+    "rce_ccra_mode": true,
+    "rce_ccra_alpha_init": true,
+    "rce_ccra_scale": true,
+    "rce_ccra_num_queries": true,
+    "rce_ccra_query_source": true,
+    "rce_ccra_detach_prompt": true,
+    "rce_ccra_norm": true,
+    "rce_ccra_dropout": true,
+    "rce_ccra_clip": true
+  },
+  "core_utils_has_new_args": {
+    "rce_use_ccra": true,
+    "rce_ccra_mode": true,
+    "rce_ccra_alpha_init": true,
+    "rce_ccra_scale": true,
+    "rce_ccra_num_queries": true,
+    "rce_ccra_query_source": true,
+    "rce_ccra_detach_prompt": true,
+    "rce_ccra_norm": true,
+    "rce_ccra_dropout": true,
+    "rce_ccra_clip": true
+  },
+  "model_has_ccra_attrs": {
+    "rce_use_ccra": true,
+    "rce_ccra_mode": true,
+    "rce_ccra_alpha": true,
+    "last_ccra_breakdown": true
+  },
+  "dynamic_csg_attrs_present": true,
+  "smoke_script_exists": true,
+  "smoke_script_print_only_ok": true,
+  "smoke_script_syntax_ok": true,
+  "forward_return_format": {
+    "type": "tuple",
+    "length": 3,
+    "y_prob_shape": [
+      1,
+      2
+    ],
+    "y_hat_shape": [
+      1,
+      1
+    ],
+    "loss_is_scalar": true
+  },
+  "ccra_default_enabled": false
+}

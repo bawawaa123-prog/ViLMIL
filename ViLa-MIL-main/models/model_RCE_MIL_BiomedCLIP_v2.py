@@ -69,6 +69,16 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             getattr(config, "rce_dynamic_csg_detach_evidence", False)
         )
         self.rce_dynamic_csg_clip = float(getattr(config, "rce_dynamic_csg_clip", 5.0))
+        self.rce_use_ccra = bool(getattr(config, "rce_use_ccra", False))
+        self.rce_ccra_mode = str(getattr(config, "rce_ccra_mode", "concept_query_residual"))
+        self.rce_ccra_alpha_init = float(getattr(config, "rce_ccra_alpha_init", 0.0))
+        self.rce_ccra_scale = float(getattr(config, "rce_ccra_scale", 1.0))
+        self.rce_ccra_num_queries = int(getattr(config, "rce_ccra_num_queries", 0))
+        self.rce_ccra_query_source = str(getattr(config, "rce_ccra_query_source", "prompt_mean"))
+        self.rce_ccra_detach_prompt = bool(getattr(config, "rce_ccra_detach_prompt", False))
+        self.rce_ccra_norm = str(getattr(config, "rce_ccra_norm", "layernorm"))
+        self.rce_ccra_dropout = float(getattr(config, "rce_ccra_dropout", 0.0))
+        self.rce_ccra_clip = float(getattr(config, "rce_ccra_clip", 5.0))
         self.enable_logit_breakdown_audit = bool(
             getattr(config, "enable_logit_breakdown_audit", False)
         )
@@ -83,6 +93,12 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             raise ValueError(f"Unsupported rce_dynamic_csg_mode: {self.rce_dynamic_csg_mode}")
         if self.rce_dynamic_csg_norm not in {"softmax", "l1", "none"}:
             raise ValueError(f"Unsupported rce_dynamic_csg_norm: {self.rce_dynamic_csg_norm}")
+        if self.rce_ccra_mode not in {"concept_query_residual"}:
+            raise ValueError(f"Unsupported rce_ccra_mode: {self.rce_ccra_mode}")
+        if self.rce_ccra_query_source not in {"prompt_mean"}:
+            raise ValueError(f"Unsupported rce_ccra_query_source: {self.rce_ccra_query_source}")
+        if self.rce_ccra_norm not in {"layernorm", "none"}:
+            raise ValueError(f"Unsupported rce_ccra_norm: {self.rce_ccra_norm}")
         if self.rce_residual_constraint_type not in {"relu_l2"}:
             raise ValueError(
                 f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
@@ -150,6 +166,12 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_cross_scale_graph_adj = None
         self.rce_cross_scale_graph_alpha = None
         self.rce_dynamic_csg_alpha = None
+        self.rce_ccra_alpha = None
+        self.ccra_prompt_dropout = None
+        self.ccra_norm_low = None
+        self.ccra_norm_high = None
+        self.ccra_attention_low = None
+        self.ccra_attention_high = None
 
         self.last_low_prompt_weights = None
         self.last_high_prompt_weights = None
@@ -168,6 +190,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_cross_scale_alpha = None
         self.last_cross_scale_adj = None
         self.last_dynamic_csg_breakdown = None
+        self.last_ccra_breakdown = None
         self.last_logit_breakdown = None
         self.last_loss_breakdown = None
 
@@ -177,6 +200,8 @@ class RCE_MIL_BiomedCLIP(nn.Module):
                 "rce_use_cross_scale_graph=True but scale_mode=%s; cross-scale graph will be skipped.",
                 self.scale_mode,
             )
+        if self.rce_use_ccra:
+            self._initialize_ccra_modules()
 
     def _initialize_concept_prompt_pool(self, config):
         low_prompt_features, high_prompt_features, _, _, _, _ = build_concept_prompt_bundle(
@@ -256,6 +281,149 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         prompt_weights = F.softmax(weight_logits, dim=-1)
         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
         return logits_scale, prompt_weights, prompt_evidence, sim
+
+    def _initialize_ccra_modules(self):
+        self.rce_ccra_alpha = nn.Parameter(
+            torch.tensor(self.rce_ccra_alpha_init, dtype=torch.float32)
+        )
+        self.ccra_prompt_dropout = nn.Dropout(p=float(self.rce_ccra_dropout))
+        if self.rce_ccra_norm == "layernorm":
+            self.ccra_norm_low = nn.LayerNorm(self.input_size)
+            self.ccra_norm_high = nn.LayerNorm(self.input_size)
+        self.ccra_attention_low = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
+        self.ccra_attention_high = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
+
+    def _build_ccra_prompt_query(self, prompt_features, target_queries):
+        prompt_features = prompt_features.float()
+        if self.rce_ccra_detach_prompt:
+            prompt_features = prompt_features.detach()
+        if self.rce_ccra_query_source == "prompt_mean":
+            prompt_query = prompt_features.mean(dim=(0, 1), keepdim=True)
+        else:
+            raise ValueError(f"Unsupported rce_ccra_query_source: {self.rce_ccra_query_source}")
+        prompt_query = self.ccra_prompt_dropout(prompt_query)
+        if target_queries > 1:
+            prompt_query = prompt_query.expand(target_queries, -1, -1).contiguous()
+        return prompt_query
+
+    def _apply_ccra_to_scale(
+        self,
+        patch_features,
+        original_region_features,
+        prompt_features,
+        attention_layer,
+        norm_layer,
+    ):
+        if patch_features.dim() == 2:
+            patch_tokens = patch_features.unsqueeze(1)
+        elif patch_features.dim() == 3 and patch_features.size(0) == 1 and patch_features.size(1) != 1:
+            patch_tokens = patch_features.transpose(0, 1).contiguous()
+        elif patch_features.dim() == 3:
+            patch_tokens = patch_features
+        else:
+            raise ValueError(f"Expected patch features rank=2/3, got rank={patch_features.dim()}")
+
+        batch_size = patch_tokens.size(1)
+        target_queries = original_region_features.size(1)
+        if self.rce_ccra_num_queries > 0:
+            target_queries = int(self.rce_ccra_num_queries)
+        prompt_query = self._build_ccra_prompt_query(prompt_features.to(patch_tokens.device), target_queries)
+        prompt_query = prompt_query.expand(-1, batch_size, -1).contiguous()
+
+        ccra_region, _ = attention_layer(prompt_query, patch_tokens, patch_tokens)
+        ccra_region = ccra_region.permute(1, 0, 2).contiguous()
+        if ccra_region.size(1) != original_region_features.size(1):
+            if ccra_region.size(1) > original_region_features.size(1):
+                ccra_region = ccra_region[:, : original_region_features.size(1), :]
+            else:
+                repeat_factor = math.ceil(original_region_features.size(1) / ccra_region.size(1))
+                ccra_region = ccra_region.repeat(1, repeat_factor, 1)[:, : original_region_features.size(1), :]
+
+        scale_factor = self.rce_ccra_alpha * float(self.rce_ccra_scale)
+        clip_value = max(float(self.rce_ccra_clip), 1e-6)
+        ccra_delta = torch.clamp(scale_factor * ccra_region, min=-clip_value, max=clip_value)
+        fused_region = original_region_features + ccra_delta
+        if norm_layer is not None:
+            fused_region = norm_layer(fused_region)
+        return {
+            "prompt_query": prompt_query,
+            "ccra_region": ccra_region,
+            "ccra_delta": ccra_delta,
+            "fused_region": fused_region,
+        }
+
+    def _build_ccra_breakdown(
+        self,
+        low_patch_features,
+        high_patch_features,
+        low_prompt_features,
+        high_prompt_features,
+        low_original_region_features,
+        high_original_region_features,
+        low_ccra_payload,
+        high_ccra_payload,
+    ):
+        if not self.rce_use_ccra or low_ccra_payload is None or high_ccra_payload is None:
+            self.last_ccra_breakdown = {
+                "ccra_enabled": False,
+                "ccra_mode": self.rce_ccra_mode,
+                "ccra_alpha": None if self.rce_ccra_alpha is None else float(self.rce_ccra_alpha.detach().item()),
+                "ccra_scale": float(self.rce_ccra_scale),
+                "ccra_query_source": self.rce_ccra_query_source,
+                "ccra_norm": self.rce_ccra_norm,
+                "low_ccra_delta_abs_mean": None,
+                "high_ccra_delta_abs_mean": None,
+                "low_original_region_norm": None,
+                "high_original_region_norm": None,
+                "low_fused_region_norm": None,
+                "high_fused_region_norm": None,
+                "low_ccra_region_norm": None,
+                "high_ccra_region_norm": None,
+                "low_original_region_shape": None,
+                "high_original_region_shape": None,
+                "low_ccra_region_shape": None,
+                "high_ccra_region_shape": None,
+                "low_fused_region_shape": None,
+                "high_fused_region_shape": None,
+                "low_prompt_feature_shape": None,
+                "high_prompt_feature_shape": None,
+                "low_patch_feature_shape": None,
+                "high_patch_feature_shape": None,
+            }
+            return
+
+        def _norm_mean(tensor):
+            return float(torch.norm(tensor.float(), dim=-1).mean().detach().item())
+
+        def _shape_list(tensor):
+            return list(tensor.shape) if tensor is not None else None
+
+        self.last_ccra_breakdown = {
+            "ccra_enabled": True,
+            "ccra_mode": self.rce_ccra_mode,
+            "ccra_alpha": None if self.rce_ccra_alpha is None else float(self.rce_ccra_alpha.detach().item()),
+            "ccra_scale": float(self.rce_ccra_scale),
+            "ccra_query_source": self.rce_ccra_query_source,
+            "ccra_norm": self.rce_ccra_norm,
+            "low_ccra_delta_abs_mean": float(low_ccra_payload["ccra_delta"].abs().mean().detach().item()),
+            "high_ccra_delta_abs_mean": float(high_ccra_payload["ccra_delta"].abs().mean().detach().item()),
+            "low_original_region_norm": _norm_mean(low_original_region_features),
+            "high_original_region_norm": _norm_mean(high_original_region_features),
+            "low_fused_region_norm": _norm_mean(low_ccra_payload["fused_region"]),
+            "high_fused_region_norm": _norm_mean(high_ccra_payload["fused_region"]),
+            "low_ccra_region_norm": _norm_mean(low_ccra_payload["ccra_region"]),
+            "high_ccra_region_norm": _norm_mean(high_ccra_payload["ccra_region"]),
+            "low_original_region_shape": _shape_list(low_original_region_features),
+            "high_original_region_shape": _shape_list(high_original_region_features),
+            "low_ccra_region_shape": _shape_list(low_ccra_payload["ccra_region"]),
+            "high_ccra_region_shape": _shape_list(high_ccra_payload["ccra_region"]),
+            "low_fused_region_shape": _shape_list(low_ccra_payload["fused_region"]),
+            "high_fused_region_shape": _shape_list(high_ccra_payload["fused_region"]),
+            "low_prompt_feature_shape": _shape_list(low_prompt_features),
+            "high_prompt_feature_shape": _shape_list(high_prompt_features),
+            "low_patch_feature_shape": _shape_list(low_patch_features),
+            "high_patch_feature_shape": _shape_list(high_patch_features),
+        }
 
     @staticmethod
     def _tensor_stats(tensor):
@@ -560,6 +728,8 @@ class RCE_MIL_BiomedCLIP(nn.Module):
 
         low_patches = x_s.float()
         high_patches = x_l.float()
+        low_prompt_features = self.low_prompt_features.to(x_s.device)
+        high_prompt_features = self.high_prompt_features.to(x_s.device)
 
         low_region_features = self._aggregate_region_features(
             low_patches,
@@ -573,18 +743,50 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.region_attention_high,
             self.norm_high,
         )
+        low_original_region_features = low_region_features
+        high_original_region_features = high_region_features
+
+        low_ccra_payload = None
+        high_ccra_payload = None
+        if self.rce_use_ccra:
+            low_ccra_payload = self._apply_ccra_to_scale(
+                low_patches,
+                low_region_features,
+                low_prompt_features,
+                self.ccra_attention_low,
+                self.ccra_norm_low,
+            )
+            high_ccra_payload = self._apply_ccra_to_scale(
+                high_patches,
+                high_region_features,
+                high_prompt_features,
+                self.ccra_attention_high,
+                self.ccra_norm_high,
+            )
+            low_region_features = low_ccra_payload["fused_region"]
+            high_region_features = high_ccra_payload["fused_region"]
+        self._build_ccra_breakdown(
+            low_patch_features=low_patches,
+            high_patch_features=high_patches,
+            low_prompt_features=low_prompt_features,
+            high_prompt_features=high_prompt_features,
+            low_original_region_features=low_original_region_features,
+            high_original_region_features=high_original_region_features,
+            low_ccra_payload=low_ccra_payload,
+            high_ccra_payload=high_ccra_payload,
+        )
 
         low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
         high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
 
         logits_low, low_prompt_weights, low_prompt_evidence, low_region_concept_sim = self._compute_scale_logits(
             low_region_features,
-            self.low_prompt_features.to(x_s.device),
+            low_prompt_features,
             concept_prior=low_concept_prior,
         )
         logits_high, high_prompt_weights, high_prompt_evidence, high_region_concept_sim = self._compute_scale_logits(
             high_region_features,
-            self.high_prompt_features.to(x_s.device),
+            high_prompt_features,
             concept_prior=high_concept_prior,
         )
 

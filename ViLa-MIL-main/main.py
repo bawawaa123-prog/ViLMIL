@@ -150,6 +150,31 @@ parser.add_argument(
 )
 parser.add_argument("--rce_dynamic_csg_detach_evidence", action="store_true", default=False)
 parser.add_argument("--rce_dynamic_csg_clip", type=float, default=5.0)
+parser.add_argument("--rce_use_ccra", action="store_true", default=False)
+parser.add_argument(
+    "--rce_ccra_mode",
+    type=str,
+    choices=["concept_query_residual"],
+    default="concept_query_residual",
+)
+parser.add_argument("--rce_ccra_alpha_init", type=float, default=0.0)
+parser.add_argument("--rce_ccra_scale", type=float, default=1.0)
+parser.add_argument("--rce_ccra_num_queries", type=int, default=0)
+parser.add_argument(
+    "--rce_ccra_query_source",
+    type=str,
+    choices=["prompt_mean"],
+    default="prompt_mean",
+)
+parser.add_argument("--rce_ccra_detach_prompt", action="store_true", default=False)
+parser.add_argument(
+    "--rce_ccra_norm",
+    type=str,
+    choices=["layernorm", "none"],
+    default="layernorm",
+)
+parser.add_argument("--rce_ccra_dropout", type=float, default=0.0)
+parser.add_argument("--rce_ccra_clip", type=float, default=5.0)
 parser.add_argument("--rce_use_hcrc", action="store_true", default=False)
 parser.add_argument("--rce_hcrc_alpha_init", type=float, default=0.05)
 parser.add_argument("--rce_hcrc_num_anchors", type=int, default=16)

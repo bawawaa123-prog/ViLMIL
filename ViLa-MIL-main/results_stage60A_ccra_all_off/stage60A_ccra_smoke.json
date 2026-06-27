@@ -1,0 +1,123 @@
+{
+  "smoke_pass": true,
+  "alpha_init": 0.0,
+  "ccra_breakdown": {
+    "ccra_enabled": 1.0,
+    "ccra_mode": "concept_query_residual",
+    "ccra_alpha": 0.0,
+    "ccra_scale": 1.0,
+    "ccra_query_source": "prompt_mean",
+    "ccra_norm": "layernorm",
+    "low_ccra_delta_abs_mean": 0.0,
+    "high_ccra_delta_abs_mean": 0.0,
+    "low_original_region_norm": 21.93148422,
+    "high_original_region_norm": 22.39650726,
+    "low_fused_region_norm": 22.62729645,
+    "high_fused_region_norm": 22.62730026,
+    "low_ccra_region_norm": 26.84848213,
+    "high_ccra_region_norm": 27.19106865,
+    "low_original_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "high_original_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "low_ccra_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "high_ccra_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "low_fused_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "high_fused_region_shape": [
+      1,
+      16,
+      512
+    ],
+    "low_prompt_feature_shape": [
+      2,
+      12,
+      512
+    ],
+    "high_prompt_feature_shape": [
+      2,
+      12,
+      512
+    ],
+    "low_patch_feature_shape": [
+      187,
+      512
+    ],
+    "high_patch_feature_shape": [
+      2592,
+      512
+    ]
+  },
+  "ccra_breakdown_keys_present": {
+    "ccra_enabled": true,
+    "ccra_mode": true,
+    "ccra_alpha": true,
+    "ccra_scale": true,
+    "ccra_query_source": true,
+    "ccra_norm": true,
+    "low_ccra_delta_abs_mean": true,
+    "high_ccra_delta_abs_mean": true,
+    "low_original_region_norm": true,
+    "high_original_region_norm": true,
+    "low_fused_region_norm": true,
+    "high_fused_region_norm": true,
+    "low_ccra_region_norm": true,
+    "high_ccra_region_norm": true,
+    "low_original_region_shape": true,
+    "high_original_region_shape": true,
+    "low_ccra_region_shape": true,
+    "high_ccra_region_shape": true,
+    "low_fused_region_shape": true,
+    "high_fused_region_shape": true,
+    "low_prompt_feature_shape": true,
+    "high_prompt_feature_shape": true,
+    "low_patch_feature_shape": true,
+    "high_patch_feature_shape": true
+  },
+  "dynamic_breakdown_present": true,
+  "load_state_dict": {
+    "missing_keys": [
+      "rce_ccra_alpha",
+      "ccra_norm_low.weight",
+      "ccra_norm_low.bias",
+      "ccra_norm_high.weight",
+      "ccra_norm_high.bias",
+      "ccra_attention_low.in_proj_weight",
+      "ccra_attention_low.in_proj_bias",
+      "ccra_attention_low.out_proj.weight",
+      "ccra_attention_low.out_proj.bias",
+      "ccra_attention_high.in_proj_weight",
+      "ccra_attention_high.in_proj_bias",
+      "ccra_attention_high.out_proj.weight",
+      "ccra_attention_high.out_proj.bias"
+    ],
+    "unexpected_keys": [],
+    "strict": false
+  },
+  "residual_constraint_still_enabled": true,
+  "concept_aux_still_enabled": true,
+  "loss_breakdown": {
+    "ce_loss": 7.415e-05,
+    "residual_constraint_loss": 0.0,
+    "concept_aux_loss": 0.00912968,
+    "total_loss": 0.00190008,
+    "visual_ratio_mean": 0.4009231
+  }
+}

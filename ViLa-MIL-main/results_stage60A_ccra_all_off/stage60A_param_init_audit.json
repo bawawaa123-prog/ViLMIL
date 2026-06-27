@@ -1,0 +1,18 @@
+{
+  "ccra_param_names_when_off": [],
+  "ccra_param_names_when_on": [
+    "rce_ccra_alpha",
+    "ccra_norm_low.weight",
+    "ccra_norm_low.bias",
+    "ccra_norm_high.weight",
+    "ccra_norm_high.bias",
+    "ccra_attention_low.in_proj_weight",
+    "ccra_attention_low.in_proj_bias",
+    "ccra_attention_low.out_proj.weight",
+    "ccra_attention_low.out_proj.bias",
+    "ccra_attention_high.in_proj_weight",
+    "ccra_attention_high.in_proj_bias",
+    "ccra_attention_high.out_proj.weight",
+    "ccra_attention_high.out_proj.bias"
+  ]
+}
