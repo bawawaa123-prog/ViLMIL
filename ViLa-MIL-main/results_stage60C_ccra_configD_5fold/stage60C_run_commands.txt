@@ -1,0 +1,8 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+RUN_TRAIN=1 bash scripts/experiments/run_stage60C_ccra_configD_5fold.sh
+
+# Optional: run secondary config C only if config D shows trade-off
+TARGET_CONFIG=C RUN_TRAIN=1 bash scripts/experiments/run_stage60C_ccra_configD_5fold.sh
+
+# Refresh Step60C summary after training
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage60C_ccra_5fold_summary.py
