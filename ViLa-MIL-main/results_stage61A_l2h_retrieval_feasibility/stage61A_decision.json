@@ -1,0 +1,153 @@
+{
+  "decision": "feasible_for_step61B",
+  "next_step": "enter_step61B_low_to_high_retrieval_all_off_implementation",
+  "features_ok": true,
+  "coords_ok": true,
+  "mapping_good": true,
+  "export_ok": true,
+  "scale_ratio_known": true,
+  "raw_attrs_available_rate": 0.978306,
+  "reasons": [
+    "overlap_rate=1.000000",
+    "low_coord_rate=1.000000",
+    "high_coord_rate=1.000000",
+    "both_coord_rate=1.000000",
+    "avg_high_patches_per_low_patch=13.215211",
+    "percent_low_patches_with_zero_high_match=0.000000",
+    "percent_low_patches_with_5plus_high_matches=0.965634",
+    "retrieval_requires_new_export_fields=True"
+  ],
+  "pairing_stats": {
+    "total_slides": 968,
+    "slides_with_both_5x_20x": 968,
+    "missing_5x_slides": 0,
+    "missing_20x_slides": 0,
+    "overlap_rate": 1.0
+  },
+  "coord_stats": {
+    "low_coord_rate": 1.0,
+    "high_coord_rate": 1.0,
+    "both_coord_rate": 1.0,
+    "low_coord_key_counts": {
+      "coords": 968
+    },
+    "high_coord_key_counts": {
+      "coords": 968
+    },
+    "low_dtype_counts": {
+      "int64": 968
+    },
+    "high_dtype_counts": {
+      "int64": 968
+    },
+    "slides_with_both_coords": 968,
+    "low_duplicate_slides": 0,
+    "high_duplicate_slides": 0,
+    "low_negative_slides": 0,
+    "high_negative_slides": 0,
+    "low_nan_slides": 0,
+    "high_nan_slides": 0,
+    "raw_attrs_available_rate": 0.9783057851239669,
+    "coords_shape_examples": [
+      {
+        "slide_id": "2460239-B2",
+        "low_coords_shape": [
+          187,
+          2
+        ],
+        "high_coords_shape": [
+          2592,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460242-B2",
+        "low_coords_shape": [
+          426,
+          2
+        ],
+        "high_coords_shape": [
+          6128,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460399-B2",
+        "low_coords_shape": [
+          285,
+          2
+        ],
+        "high_coords_shape": [
+          4103,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460404-B3",
+        "low_coords_shape": [
+          308,
+          2
+        ],
+        "high_coords_shape": [
+          4243,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460405-B2",
+        "low_coords_shape": [
+          128,
+          2
+        ],
+        "high_coords_shape": [
+          1742,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      }
+    ]
+  },
+  "mapping_summary": {
+    "estimated_scale_ratio": 1.0,
+    "estimated_patch_footprint_ratio": 4.000134,
+    "avg_high_patches_per_low_patch": 13.215211,
+    "median_high_patches_per_low_patch": 14.25,
+    "percent_low_patches_with_zero_high_match": 0.0,
+    "percent_low_patches_with_1_to_4_high_matches": 0.034366,
+    "percent_low_patches_with_5plus_high_matches": 0.965634,
+    "mapping_quality_label": "strong_same_coord_system_mapping",
+    "sampled_slide_count": 20,
+    "sampled_low_patch_count": 3550,
+    "sampled_high_patch_count": 49693,
+    "sample_low_coord_set_match_rate": 1.0,
+    "sample_high_coord_set_match_rate": 1.0
+  },
+  "evidence_export_summary": {
+    "has_low_region_features": true,
+    "has_high_region_features": true,
+    "has_low_concept_evidence": true,
+    "has_high_concept_evidence": true,
+    "has_per_region_evidence": true,
+    "retrieval_requires_new_export_fields": true,
+    "recommended_export_fields_for_step61B": [
+      "last_low_patch_concept_scores",
+      "last_low_patch_topk_indices",
+      "last_low_patch_topk_scores",
+      "last_low_patch_coords",
+      "last_retrieved_high_patch_indices",
+      "last_retrieved_high_patch_coords",
+      "last_retrieved_high_patch_match_counts",
+      "last_retrieved_high_patch_mask",
+      "last_retrieval_debug"
+    ]
+  }
+}

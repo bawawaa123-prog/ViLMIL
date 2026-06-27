@@ -1,0 +1,3 @@
+cd /home/ljh/ViLMIL/ViLa-MIL-main
+python -m py_compile scripts/analysis/build_stage61A_l2h_retrieval_feasibility_audit.py
+python scripts/analysis/build_stage61A_l2h_retrieval_feasibility_audit.py

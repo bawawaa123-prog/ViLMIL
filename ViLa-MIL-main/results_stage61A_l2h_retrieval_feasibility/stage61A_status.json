@@ -1,0 +1,148 @@
+{
+  "status": "completed",
+  "input_paths": {
+    "data_root_dir": "/xiangmu/data/VILMIL",
+    "low_feature_dir": "/xiangmu/data/VILMIL/features_biomedclip_5x",
+    "high_feature_dir": "/xiangmu/data/VILMIL/features_biomedclip_20x",
+    "low_raw_coord_dir": "/xiangmu/data/VILMIL/patches_coords_5x/patches_256",
+    "high_raw_coord_dir": "/xiangmu/data/VILMIL/patches_coords_20x/patches_256",
+    "csv_path": "dataset_csv/all_data.csv"
+  },
+  "pairing_stats": {
+    "total_slides": 968,
+    "slides_with_both_5x_20x": 968,
+    "missing_5x_slides": 0,
+    "missing_20x_slides": 0,
+    "overlap_rate": 1.0
+  },
+  "coord_stats": {
+    "low_coord_rate": 1.0,
+    "high_coord_rate": 1.0,
+    "both_coord_rate": 1.0,
+    "low_coord_key_counts": {
+      "coords": 968
+    },
+    "high_coord_key_counts": {
+      "coords": 968
+    },
+    "low_dtype_counts": {
+      "int64": 968
+    },
+    "high_dtype_counts": {
+      "int64": 968
+    },
+    "slides_with_both_coords": 968,
+    "low_duplicate_slides": 0,
+    "high_duplicate_slides": 0,
+    "low_negative_slides": 0,
+    "high_negative_slides": 0,
+    "low_nan_slides": 0,
+    "high_nan_slides": 0,
+    "raw_attrs_available_rate": 0.9783057851239669,
+    "coords_shape_examples": [
+      {
+        "slide_id": "2460239-B2",
+        "low_coords_shape": [
+          187,
+          2
+        ],
+        "high_coords_shape": [
+          2592,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460242-B2",
+        "low_coords_shape": [
+          426,
+          2
+        ],
+        "high_coords_shape": [
+          6128,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460399-B2",
+        "low_coords_shape": [
+          285,
+          2
+        ],
+        "high_coords_shape": [
+          4103,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460404-B3",
+        "low_coords_shape": [
+          308,
+          2
+        ],
+        "high_coords_shape": [
+          4243,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      },
+      {
+        "slide_id": "2460405-B2",
+        "low_coords_shape": [
+          128,
+          2
+        ],
+        "high_coords_shape": [
+          1742,
+          2
+        ],
+        "low_coords_dtype": "int64",
+        "high_coords_dtype": "int64"
+      }
+    ]
+  },
+  "mapping_summary": {
+    "estimated_scale_ratio": 1.0,
+    "estimated_patch_footprint_ratio": 4.000134,
+    "avg_high_patches_per_low_patch": 13.215211,
+    "median_high_patches_per_low_patch": 14.25,
+    "percent_low_patches_with_zero_high_match": 0.0,
+    "percent_low_patches_with_1_to_4_high_matches": 0.034366,
+    "percent_low_patches_with_5plus_high_matches": 0.965634,
+    "mapping_quality_label": "strong_same_coord_system_mapping",
+    "sampled_slide_count": 20,
+    "sampled_low_patch_count": 3550,
+    "sampled_high_patch_count": 49693,
+    "sample_low_coord_set_match_rate": 1.0,
+    "sample_high_coord_set_match_rate": 1.0
+  },
+  "sampled_mapping_slides": [
+    "2461861-B2",
+    "2464443-B",
+    "2466581-B2",
+    "2468954-B2",
+    "2469496-B",
+    "2475184-B2",
+    "2482461-B2",
+    "2491552B",
+    "25014217B2",
+    "25015421B3",
+    "25015798B2",
+    "25016031B2",
+    "25019379B",
+    "25023174B2",
+    "25028010B2a",
+    "25028014B5",
+    "25030118B2",
+    "25031387B2",
+    "25045403B",
+    "25053683B2"
+  ],
+  "stage41_reference_present": true
+}
