@@ -175,6 +175,20 @@ parser.add_argument(
 )
 parser.add_argument("--rce_ccra_dropout", type=float, default=0.0)
 parser.add_argument("--rce_ccra_clip", type=float, default=5.0)
+parser.add_argument("--rce_use_l2h_retrieval", action="store_true", default=False)
+parser.add_argument("--rce_l2h_mode", type=str, default="low_topk_coord_window")
+parser.add_argument("--rce_l2h_low_topk", type=int, default=8)
+parser.add_argument("--rce_l2h_high_max_per_low", type=int, default=16)
+parser.add_argument("--rce_l2h_scale_ratio", type=float, default=1.0)
+parser.add_argument("--rce_l2h_patch_footprint_ratio", type=float, default=4.0)
+parser.add_argument("--rce_l2h_alpha_init", type=float, default=0.0)
+parser.add_argument("--rce_l2h_scale", type=float, default=1.0)
+parser.add_argument("--rce_l2h_fusion", type=str, default="high_region_residual")
+parser.add_argument("--rce_l2h_aggregate", type=str, default="mean")
+parser.add_argument("--rce_l2h_score_mode", type=str, default="low_prompt_max")
+parser.add_argument("--rce_l2h_detach_low_scores", action="store_true", default=False)
+parser.add_argument("--rce_l2h_min_high_matches", type=int, default=1)
+parser.add_argument("--rce_l2h_clip", type=float, default=5.0)
 parser.add_argument("--rce_use_hcrc", action="store_true", default=False)
 parser.add_argument("--rce_hcrc_alpha_init", type=float, default=0.05)
 parser.add_argument("--rce_hcrc_num_anchors", type=int, default=16)
@@ -423,6 +437,20 @@ settings = {
     "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
     "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
     "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,
+    "rce_use_l2h_retrieval": args.rce_use_l2h_retrieval,
+    "rce_l2h_mode": args.rce_l2h_mode,
+    "rce_l2h_low_topk": args.rce_l2h_low_topk,
+    "rce_l2h_high_max_per_low": args.rce_l2h_high_max_per_low,
+    "rce_l2h_scale_ratio": args.rce_l2h_scale_ratio,
+    "rce_l2h_patch_footprint_ratio": args.rce_l2h_patch_footprint_ratio,
+    "rce_l2h_alpha_init": args.rce_l2h_alpha_init,
+    "rce_l2h_scale": args.rce_l2h_scale,
+    "rce_l2h_fusion": args.rce_l2h_fusion,
+    "rce_l2h_aggregate": args.rce_l2h_aggregate,
+    "rce_l2h_score_mode": args.rce_l2h_score_mode,
+    "rce_l2h_detach_low_scores": args.rce_l2h_detach_low_scores,
+    "rce_l2h_min_high_matches": args.rce_l2h_min_high_matches,
+    "rce_l2h_clip": args.rce_l2h_clip,
     "rce_use_hcrc": args.rce_use_hcrc,
     "rce_hcrc_alpha_init": args.rce_hcrc_alpha_init,
     "rce_hcrc_num_anchors": args.rce_hcrc_num_anchors,

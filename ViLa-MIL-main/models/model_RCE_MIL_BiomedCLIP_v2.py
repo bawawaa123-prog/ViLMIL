@@ -79,6 +79,24 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_ccra_norm = str(getattr(config, "rce_ccra_norm", "layernorm"))
         self.rce_ccra_dropout = float(getattr(config, "rce_ccra_dropout", 0.0))
         self.rce_ccra_clip = float(getattr(config, "rce_ccra_clip", 5.0))
+        self.rce_use_l2h_retrieval = bool(getattr(config, "rce_use_l2h_retrieval", False))
+        self.rce_l2h_mode = str(getattr(config, "rce_l2h_mode", "low_topk_coord_window"))
+        self.rce_l2h_low_topk = int(getattr(config, "rce_l2h_low_topk", 8))
+        self.rce_l2h_high_max_per_low = int(getattr(config, "rce_l2h_high_max_per_low", 16))
+        self.rce_l2h_scale_ratio = float(getattr(config, "rce_l2h_scale_ratio", 1.0))
+        self.rce_l2h_patch_footprint_ratio = float(
+            getattr(config, "rce_l2h_patch_footprint_ratio", 4.0)
+        )
+        self.rce_l2h_alpha_init = float(getattr(config, "rce_l2h_alpha_init", 0.0))
+        self.rce_l2h_scale = float(getattr(config, "rce_l2h_scale", 1.0))
+        self.rce_l2h_fusion = str(getattr(config, "rce_l2h_fusion", "high_region_residual"))
+        self.rce_l2h_aggregate = str(getattr(config, "rce_l2h_aggregate", "mean"))
+        self.rce_l2h_score_mode = str(getattr(config, "rce_l2h_score_mode", "low_prompt_max"))
+        self.rce_l2h_detach_low_scores = bool(
+            getattr(config, "rce_l2h_detach_low_scores", False)
+        )
+        self.rce_l2h_min_high_matches = int(getattr(config, "rce_l2h_min_high_matches", 1))
+        self.rce_l2h_clip = float(getattr(config, "rce_l2h_clip", 5.0))
         self.enable_logit_breakdown_audit = bool(
             getattr(config, "enable_logit_breakdown_audit", False)
         )
@@ -99,6 +117,14 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             raise ValueError(f"Unsupported rce_ccra_query_source: {self.rce_ccra_query_source}")
         if self.rce_ccra_norm not in {"layernorm", "none"}:
             raise ValueError(f"Unsupported rce_ccra_norm: {self.rce_ccra_norm}")
+        if self.rce_l2h_mode not in {"low_topk_coord_window"}:
+            raise ValueError(f"Unsupported rce_l2h_mode: {self.rce_l2h_mode}")
+        if self.rce_l2h_fusion not in {"high_region_residual"}:
+            raise ValueError(f"Unsupported rce_l2h_fusion: {self.rce_l2h_fusion}")
+        if self.rce_l2h_aggregate not in {"mean"}:
+            raise ValueError(f"Unsupported rce_l2h_aggregate: {self.rce_l2h_aggregate}")
+        if self.rce_l2h_score_mode not in {"low_prompt_max"}:
+            raise ValueError(f"Unsupported rce_l2h_score_mode: {self.rce_l2h_score_mode}")
         if self.rce_residual_constraint_type not in {"relu_l2"}:
             raise ValueError(
                 f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
@@ -167,6 +193,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.rce_cross_scale_graph_alpha = None
         self.rce_dynamic_csg_alpha = None
         self.rce_ccra_alpha = None
+        self.rce_l2h_alpha = None
         self.ccra_prompt_dropout = None
         self.ccra_norm_low = None
         self.ccra_norm_high = None
@@ -193,6 +220,15 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         self.last_ccra_breakdown = None
         self.last_logit_breakdown = None
         self.last_loss_breakdown = None
+        self.last_l2h_retrieval_debug = None
+        self.last_low_patch_concept_scores = None
+        self.last_low_patch_topk_indices = None
+        self.last_low_patch_topk_scores = None
+        self.last_low_patch_coords = None
+        self.last_retrieved_high_patch_indices = None
+        self.last_retrieved_high_patch_coords = None
+        self.last_retrieved_high_patch_match_counts = None
+        self.last_retrieved_high_patch_mask = None
 
         self._initialize_concept_prompt_pool(config)
         if self.rce_use_cross_scale_graph and self.scale_mode != "dual":
@@ -202,6 +238,8 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             )
         if self.rce_use_ccra:
             self._initialize_ccra_modules()
+        if self.rce_use_l2h_retrieval:
+            self._initialize_l2h_modules()
 
     def _initialize_concept_prompt_pool(self, config):
         low_prompt_features, high_prompt_features, _, _, _, _ = build_concept_prompt_bundle(
@@ -292,6 +330,313 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.ccra_norm_high = nn.LayerNorm(self.input_size)
         self.ccra_attention_low = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
         self.ccra_attention_high = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
+
+    def _initialize_l2h_modules(self):
+        self.rce_l2h_alpha = nn.Parameter(
+            torch.tensor(self.rce_l2h_alpha_init, dtype=torch.float32)
+        )
+
+    @staticmethod
+    def _shape_list(tensor):
+        return list(tensor.shape) if tensor is not None else None
+
+    @staticmethod
+    def _coords_to_batch_first(coords):
+        if coords is None:
+            return None
+        if coords.dim() == 2:
+            coords = coords.unsqueeze(0)
+        elif coords.dim() != 3:
+            raise ValueError(f"Expected coords rank=2/3, got rank={coords.dim()}")
+        if coords.size(-1) > 2:
+            coords = coords[..., :2]
+        return coords.float()
+
+    @staticmethod
+    def _patch_features_to_batch_first(patch_features):
+        if patch_features.dim() == 2:
+            return patch_features.unsqueeze(0)
+        if patch_features.dim() == 3 and patch_features.size(0) == 1 and patch_features.size(1) != 1:
+            return patch_features
+        if patch_features.dim() == 3 and patch_features.size(1) == 1:
+            return patch_features.transpose(0, 1).contiguous()
+        if patch_features.dim() != 3:
+            raise ValueError(f"Expected patch features rank=2/3, got rank={patch_features.dim()}")
+        return patch_features
+
+    @staticmethod
+    def _estimate_patch_extent(coords):
+        if coords is None or coords.numel() == 0:
+            return None
+        if coords.dim() == 3:
+            coords = coords[0]
+        axis_extents = []
+        for axis in range(min(2, coords.size(-1))):
+            values = torch.unique(coords[:, axis].float())
+            if values.numel() <= 1:
+                continue
+            values = torch.sort(values).values
+            diffs = values[1:] - values[:-1]
+            diffs = diffs[diffs > 0]
+            if diffs.numel() > 0:
+                axis_extents.append(float(diffs.median().item()))
+        if not axis_extents:
+            return None
+        return max(axis_extents)
+
+    def _reset_l2h_exports(self):
+        self.last_l2h_retrieval_debug = None
+        self.last_low_patch_concept_scores = None
+        self.last_low_patch_topk_indices = None
+        self.last_low_patch_topk_scores = None
+        self.last_low_patch_coords = None
+        self.last_retrieved_high_patch_indices = None
+        self.last_retrieved_high_patch_coords = None
+        self.last_retrieved_high_patch_match_counts = None
+        self.last_retrieved_high_patch_mask = None
+
+    def _export_l2h_debug(
+        self,
+        debug,
+        low_patch_scores=None,
+        topk_indices=None,
+        topk_scores=None,
+        low_patch_coords=None,
+        retrieved_indices=None,
+        retrieved_coords=None,
+        retrieved_match_counts=None,
+        retrieved_mask=None,
+    ):
+        self.last_l2h_retrieval_debug = debug
+        self.last_low_patch_concept_scores = self._detach_cpu(low_patch_scores)
+        self.last_low_patch_topk_indices = self._detach_cpu(topk_indices)
+        self.last_low_patch_topk_scores = self._detach_cpu(topk_scores)
+        self.last_low_patch_coords = self._detach_cpu(low_patch_coords)
+        self.last_retrieved_high_patch_indices = self._detach_cpu(retrieved_indices)
+        self.last_retrieved_high_patch_coords = self._detach_cpu(retrieved_coords)
+        self.last_retrieved_high_patch_match_counts = self._detach_cpu(retrieved_match_counts)
+        self.last_retrieved_high_patch_mask = self._detach_cpu(retrieved_mask)
+
+    def _build_l2h_disabled_debug(self):
+        alpha_value = None
+        if self.rce_l2h_alpha is not None:
+            alpha_value = float(self.rce_l2h_alpha.detach().item())
+        return {
+            "l2h_enabled": False,
+            "l2h_mode": self.rce_l2h_mode,
+            "l2h_alpha": alpha_value,
+            "l2h_scale": float(self.rce_l2h_scale),
+            "l2h_score_mode": self.rce_l2h_score_mode,
+            "l2h_low_topk": int(self.rce_l2h_low_topk),
+            "l2h_high_max_per_low": int(self.rce_l2h_high_max_per_low),
+            "l2h_scale_ratio": float(self.rce_l2h_scale_ratio),
+            "l2h_patch_footprint_ratio": float(self.rce_l2h_patch_footprint_ratio),
+            "low_patch_concept_scores_shape": None,
+            "low_patch_features_shape": None,
+            "high_patch_features_shape": None,
+            "low_coords_shape": None,
+            "high_coords_shape": None,
+            "high_region_features_shape": None,
+            "retrieved_high_patch_features_shape": None,
+            "fused_high_region_features_shape": None,
+            "skipped_reason": "l2h_disabled",
+        }
+
+    def _apply_l2h_retrieval(
+        self,
+        low_patches,
+        high_patches,
+        low_prompt_features,
+        high_region_features,
+        low_coords,
+        high_coords,
+    ):
+        debug = {
+            "l2h_enabled": True,
+            "l2h_mode": self.rce_l2h_mode,
+            "l2h_alpha": None
+            if self.rce_l2h_alpha is None
+            else float(self.rce_l2h_alpha.detach().item()),
+            "l2h_scale": float(self.rce_l2h_scale),
+            "l2h_score_mode": self.rce_l2h_score_mode,
+            "l2h_low_topk": int(self.rce_l2h_low_topk),
+            "l2h_high_max_per_low": int(self.rce_l2h_high_max_per_low),
+            "l2h_scale_ratio": float(self.rce_l2h_scale_ratio),
+            "l2h_patch_footprint_ratio": float(self.rce_l2h_patch_footprint_ratio),
+            "low_patch_concept_scores_shape": None,
+            "low_patch_features_shape": self._shape_list(low_patches),
+            "high_patch_features_shape": self._shape_list(high_patches),
+            "low_coords_shape": self._shape_list(low_coords),
+            "high_coords_shape": self._shape_list(high_coords),
+            "high_region_features_shape": self._shape_list(high_region_features),
+            "retrieved_high_patch_features_shape": None,
+            "fused_high_region_features_shape": None,
+            "skipped_reason": None,
+        }
+
+        if low_coords is None or high_coords is None:
+            debug["skipped_reason"] = "missing_coords"
+            self._export_l2h_debug(debug)
+            return high_region_features
+
+        low_patch_tokens = self._patch_features_to_batch_first(low_patches)
+        high_patch_tokens = self._patch_features_to_batch_first(high_patches)
+        low_coords_bf = self._coords_to_batch_first(low_coords)
+        high_coords_bf = self._coords_to_batch_first(high_coords)
+
+        if low_patch_tokens.size(0) != low_coords_bf.size(0) or high_patch_tokens.size(0) != high_coords_bf.size(0):
+            debug["skipped_reason"] = "coord_batch_mismatch"
+            self._export_l2h_debug(debug)
+            return high_region_features
+        if low_patch_tokens.size(1) != low_coords_bf.size(1) or high_patch_tokens.size(1) != high_coords_bf.size(1):
+            debug["skipped_reason"] = "coord_patch_mismatch"
+            self._export_l2h_debug(debug)
+            return high_region_features
+
+        low_norm = F.normalize(low_patch_tokens.float(), dim=-1)
+        prompt_norm = F.normalize(low_prompt_features.float(), dim=-1)
+        low_patch_sim = torch.einsum("bnd,cpd->bncp", low_norm, prompt_norm)
+        low_patch_scores = low_patch_sim.amax(dim=(-1, -2))
+        if self.rce_l2h_detach_low_scores:
+            low_patch_scores_for_topk = low_patch_scores.detach()
+        else:
+            low_patch_scores_for_topk = low_patch_scores
+        debug["low_patch_concept_scores_shape"] = self._shape_list(low_patch_scores)
+
+        topk = min(max(int(self.rce_l2h_low_topk), 1), low_patch_scores_for_topk.size(1))
+        topk_scores, topk_indices = torch.topk(low_patch_scores_for_topk, k=topk, dim=1)
+        gather_index = topk_indices.unsqueeze(-1).expand(-1, -1, low_coords_bf.size(-1))
+        topk_low_coords = torch.gather(low_coords_bf, 1, gather_index)
+
+        high_extent = self._estimate_patch_extent(high_coords_bf)
+        low_extent = self._estimate_patch_extent(low_coords_bf)
+        if high_extent is None and low_extent is None:
+            debug["skipped_reason"] = "unable_to_estimate_patch_extent"
+            self._export_l2h_debug(
+                debug,
+                low_patch_scores=low_patch_scores,
+                topk_indices=topk_indices,
+                topk_scores=topk_scores,
+                low_patch_coords=topk_low_coords,
+            )
+            return high_region_features
+
+        if high_extent is None:
+            high_extent = low_extent / max(float(self.rce_l2h_patch_footprint_ratio), 1e-6)
+        if low_extent is None:
+            low_extent = high_extent * float(self.rce_l2h_patch_footprint_ratio)
+        query_side = max(
+            float(low_extent) / max(float(self.rce_l2h_scale_ratio), 1e-6),
+            float(high_extent) * float(self.rce_l2h_patch_footprint_ratio),
+        )
+        debug["estimated_low_patch_extent"] = float(low_extent)
+        debug["estimated_high_patch_extent"] = float(high_extent)
+        debug["query_window_side"] = float(query_side)
+
+        batch_size = high_patch_tokens.size(0)
+        max_per_low = max(int(self.rce_l2h_high_max_per_low), 1)
+        retrieved_indices = torch.full(
+            (batch_size, topk, max_per_low),
+            -1,
+            device=high_patch_tokens.device,
+            dtype=torch.long,
+        )
+        retrieved_coords = torch.zeros(
+            (batch_size, topk, max_per_low, high_coords_bf.size(-1)),
+            device=high_coords_bf.device,
+            dtype=high_coords_bf.dtype,
+        )
+        retrieved_mask = torch.zeros(
+            (batch_size, topk, max_per_low),
+            device=high_patch_tokens.device,
+            dtype=torch.bool,
+        )
+        retrieved_features = torch.zeros(
+            (batch_size, topk, max_per_low, high_patch_tokens.size(-1)),
+            device=high_patch_tokens.device,
+            dtype=high_patch_tokens.dtype,
+        )
+        retrieved_match_counts = torch.zeros(
+            (batch_size, topk),
+            device=high_patch_tokens.device,
+            dtype=torch.long,
+        )
+
+        scaled_topk_low_coords = topk_low_coords.float() * float(self.rce_l2h_scale_ratio)
+        for batch_idx in range(batch_size):
+            batch_high_coords = high_coords_bf[batch_idx]
+            batch_high_features = high_patch_tokens[batch_idx]
+            for low_idx in range(topk):
+                low_coord = scaled_topk_low_coords[batch_idx, low_idx]
+                within_x = (batch_high_coords[:, 0] >= low_coord[0]) & (
+                    batch_high_coords[:, 0] <= low_coord[0] + query_side
+                )
+                within_y = (batch_high_coords[:, 1] >= low_coord[1]) & (
+                    batch_high_coords[:, 1] <= low_coord[1] + query_side
+                )
+                match_indices = torch.nonzero(within_x & within_y, as_tuple=False).flatten()
+                if match_indices.numel() == 0:
+                    continue
+                distances = torch.norm(batch_high_coords[match_indices] - low_coord.unsqueeze(0), dim=-1)
+                sort_order = torch.argsort(distances)
+                match_indices = match_indices[sort_order]
+                if match_indices.numel() > max_per_low:
+                    match_indices = match_indices[:max_per_low]
+                if match_indices.numel() < int(self.rce_l2h_min_high_matches):
+                    continue
+                count = match_indices.numel()
+                retrieved_indices[batch_idx, low_idx, :count] = match_indices
+                retrieved_coords[batch_idx, low_idx, :count] = batch_high_coords[match_indices]
+                retrieved_features[batch_idx, low_idx, :count] = batch_high_features[match_indices]
+                retrieved_mask[batch_idx, low_idx, :count] = True
+                retrieved_match_counts[batch_idx, low_idx] = count
+
+        if not retrieved_mask.any():
+            debug["skipped_reason"] = "no_valid_high_matches"
+            debug["retrieved_high_patch_features_shape"] = self._shape_list(retrieved_features)
+            self._export_l2h_debug(
+                debug,
+                low_patch_scores=low_patch_scores,
+                topk_indices=topk_indices,
+                topk_scores=topk_scores,
+                low_patch_coords=topk_low_coords,
+                retrieved_indices=retrieved_indices,
+                retrieved_coords=retrieved_coords,
+                retrieved_match_counts=retrieved_match_counts,
+                retrieved_mask=retrieved_mask,
+            )
+            return high_region_features
+
+        debug["valid_low_patch_count"] = int((retrieved_match_counts > 0).sum().item())
+        debug["retrieved_high_patch_features_shape"] = self._shape_list(retrieved_features)
+        mask_float = retrieved_mask.unsqueeze(-1).float()
+        context_denom = mask_float.sum(dim=(1, 2)).clamp_min(1.0)
+        retrieved_high_context = (retrieved_features.float() * mask_float).sum(dim=(1, 2)) / context_denom
+
+        if self.rce_l2h_aggregate != "mean":
+            raise ValueError(f"Unsupported rce_l2h_aggregate: {self.rce_l2h_aggregate}")
+        if self.rce_l2h_fusion != "high_region_residual":
+            raise ValueError(f"Unsupported rce_l2h_fusion: {self.rce_l2h_fusion}")
+
+        residual = retrieved_high_context.unsqueeze(1)
+        residual = residual * (self.rce_l2h_alpha * float(self.rce_l2h_scale))
+        clip_value = max(float(self.rce_l2h_clip), 1e-6)
+        residual = residual.clamp(min=-clip_value, max=clip_value)
+        fused_high_region_features = high_region_features + residual
+        debug["fused_high_region_features_shape"] = self._shape_list(fused_high_region_features)
+
+        self._export_l2h_debug(
+            debug,
+            low_patch_scores=low_patch_scores,
+            topk_indices=topk_indices,
+            topk_scores=topk_scores,
+            low_patch_coords=topk_low_coords,
+            retrieved_indices=retrieved_indices,
+            retrieved_coords=retrieved_coords,
+            retrieved_match_counts=retrieved_match_counts,
+            retrieved_mask=retrieved_mask,
+        )
+        return fused_high_region_features
 
     def _build_ccra_prompt_query(self, prompt_features, target_queries):
         prompt_features = prompt_features.float()
@@ -724,7 +1069,8 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             self.last_logit_breakdown = None
 
     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
-        del coord_s, coords_l, slide_id
+        del slide_id
+        self._reset_l2h_exports()
 
         low_patches = x_s.float()
         high_patches = x_l.float()
@@ -745,6 +1091,18 @@ class RCE_MIL_BiomedCLIP(nn.Module):
         )
         low_original_region_features = low_region_features
         high_original_region_features = high_region_features
+
+        if self.rce_use_l2h_retrieval:
+            high_region_features = self._apply_l2h_retrieval(
+                low_patches=low_patches,
+                high_patches=high_patches,
+                low_prompt_features=low_prompt_features,
+                high_region_features=high_region_features,
+                low_coords=coord_s,
+                high_coords=coords_l,
+            )
+        else:
+            self.last_l2h_retrieval_debug = self._build_l2h_disabled_debug()
 
         low_ccra_payload = None
         high_ccra_payload = None

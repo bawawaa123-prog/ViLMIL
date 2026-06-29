@@ -1,0 +1,69 @@
+{
+  "original_rce_modified": false,
+  "main_has_new_args": {
+    "rce_use_l2h_retrieval": true,
+    "rce_l2h_mode": true,
+    "rce_l2h_low_topk": true,
+    "rce_l2h_high_max_per_low": true,
+    "rce_l2h_scale_ratio": true,
+    "rce_l2h_patch_footprint_ratio": true,
+    "rce_l2h_alpha_init": true,
+    "rce_l2h_scale": true,
+    "rce_l2h_fusion": true,
+    "rce_l2h_aggregate": true,
+    "rce_l2h_score_mode": true,
+    "rce_l2h_detach_low_scores": true,
+    "rce_l2h_min_high_matches": true,
+    "rce_l2h_clip": true
+  },
+  "core_utils_has_new_args": {
+    "rce_use_l2h_retrieval": true,
+    "rce_l2h_mode": true,
+    "rce_l2h_low_topk": true,
+    "rce_l2h_high_max_per_low": true,
+    "rce_l2h_scale_ratio": true,
+    "rce_l2h_patch_footprint_ratio": true,
+    "rce_l2h_alpha_init": true,
+    "rce_l2h_scale": true,
+    "rce_l2h_fusion": true,
+    "rce_l2h_aggregate": true,
+    "rce_l2h_score_mode": true,
+    "rce_l2h_detach_low_scores": true,
+    "rce_l2h_min_high_matches": true,
+    "rce_l2h_clip": true
+  },
+  "model_has_l2h_attrs": {
+    "self.rce_use_l2h_retrieval": true,
+    "self.rce_l2h_mode": true,
+    "self.rce_l2h_alpha": true,
+    "self.last_l2h_retrieval_debug": true
+  },
+  "model_has_l2h_exports": {
+    "last_low_patch_concept_scores": true,
+    "last_low_patch_topk_indices": true,
+    "last_low_patch_topk_scores": true,
+    "last_low_patch_coords": true,
+    "last_retrieved_high_patch_indices": true,
+    "last_retrieved_high_patch_coords": true,
+    "last_retrieved_high_patch_match_counts": true,
+    "last_retrieved_high_patch_mask": true
+  },
+  "coords_skip_logic_present": true,
+  "smoke_script_exists": true,
+  "smoke_script_print_only_ok": true,
+  "smoke_script_syntax_ok": true,
+  "forward_return_format": {
+    "type": "tuple",
+    "length": 3,
+    "y_prob_shape": [
+      1,
+      2
+    ],
+    "y_hat_shape": [
+      1,
+      1
+    ],
+    "loss_is_scalar": true
+  },
+  "l2h_default_enabled": false
+}

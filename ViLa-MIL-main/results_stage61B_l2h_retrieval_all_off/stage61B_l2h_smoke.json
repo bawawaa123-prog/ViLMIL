@@ -1,0 +1,137 @@
+{
+  "smoke_pass": true,
+  "retrieval_smoke_pass": true,
+  "forward_smoke_pass": true,
+  "l2h_breakdown": {
+    "l2h_enabled": 1.0,
+    "l2h_mode": "low_topk_coord_window",
+    "l2h_alpha": 0.0,
+    "l2h_scale": 1.0,
+    "l2h_score_mode": "low_prompt_max",
+    "l2h_low_topk": 8.0,
+    "l2h_high_max_per_low": 16.0,
+    "l2h_scale_ratio": 1.0,
+    "l2h_patch_footprint_ratio": 4.0,
+    "low_patch_concept_scores_shape": [
+      1,
+      187
+    ],
+    "low_patch_features_shape": [
+      187,
+      512
+    ],
+    "high_patch_features_shape": [
+      2592,
+      512
+    ],
+    "low_coords_shape": [
+      187,
+      2
+    ],
+    "high_coords_shape": [
+      2592,
+      2
+    ],
+    "high_region_features_shape": [
+      1,
+      16,
+      512
+    ],
+    "retrieved_high_patch_features_shape": [
+      1,
+      8,
+      16,
+      512
+    ],
+    "fused_high_region_features_shape": [
+      1,
+      16,
+      512
+    ],
+    "skipped_reason": null
+  },
+  "l2h_breakdown_keys_present": {
+    "l2h_enabled": true,
+    "l2h_mode": true,
+    "l2h_alpha": true,
+    "l2h_scale": true,
+    "l2h_score_mode": true,
+    "l2h_low_topk": true,
+    "l2h_high_max_per_low": true,
+    "l2h_scale_ratio": true,
+    "l2h_patch_footprint_ratio": true,
+    "low_patch_concept_scores_shape": true,
+    "low_patch_features_shape": true,
+    "high_patch_features_shape": true,
+    "low_coords_shape": true,
+    "high_coords_shape": true,
+    "high_region_features_shape": true,
+    "retrieved_high_patch_features_shape": true,
+    "fused_high_region_features_shape": true,
+    "skipped_reason": true
+  },
+  "l2h_export_shapes": {
+    "last_low_patch_concept_scores": [
+      1,
+      187
+    ],
+    "last_low_patch_topk_indices": [
+      1,
+      8
+    ],
+    "last_low_patch_topk_scores": [
+      1,
+      8
+    ],
+    "last_low_patch_coords": [
+      1,
+      8,
+      2
+    ],
+    "last_retrieved_high_patch_indices": [
+      1,
+      8,
+      16
+    ],
+    "last_retrieved_high_patch_coords": [
+      1,
+      8,
+      16,
+      2
+    ],
+    "last_retrieved_high_patch_match_counts": [
+      1,
+      8
+    ],
+    "last_retrieved_high_patch_mask": [
+      1,
+      8,
+      16
+    ]
+  },
+  "retrieved_match_count_stats": {
+    "shape": [
+      1,
+      8
+    ],
+    "sum": 16,
+    "max": 4,
+    "mean": 2.0
+  },
+  "load_state_dict": {
+    "missing_keys": [
+      "rce_l2h_alpha"
+    ],
+    "unexpected_keys": [],
+    "strict": false
+  },
+  "residual_constraint_still_enabled": true,
+  "concept_aux_still_enabled": true,
+  "loss_breakdown": {
+    "ce_loss": 7.975e-05,
+    "residual_constraint_loss": 0.0,
+    "concept_aux_loss": 0.00912933,
+    "total_loss": 0.00190561,
+    "visual_ratio_mean": 0.39726886
+  }
+}
