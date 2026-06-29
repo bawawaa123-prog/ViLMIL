@@ -379,7 +379,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
             diffs = values[1:] - values[:-1]
             diffs = diffs[diffs > 0]
             if diffs.numel() > 0:
-                axis_extents.append(float(diffs.median().item()))
+                axis_extents.append(float(torch.quantile(diffs, 0.95).item()))
         if not axis_extents:
             return None
         return max(axis_extents)

@@ -28,7 +28,7 @@
 - low/high coords shape in smoke: `[187, 2]` / `[2592, 2]`
 - retrieved_high_patch_features_shape in smoke: `[1, 8, 16, 512]`
 - fused_high_region_features_shape in smoke: `[1, 16, 512]`
-- retrieved match count stats in smoke: `{'shape': [1, 8], 'sum': 16, 'max': 4, 'mean': 2.0}`
+- retrieved match count stats in smoke: `{'shape': [1, 8], 'sum': 100, 'max': 16, 'mean': 12.5}`
 - smoke training script syntax check: `True`
 
 ## Recommendation

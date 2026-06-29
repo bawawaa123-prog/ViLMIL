@@ -114,9 +114,9 @@
       1,
       8
     ],
-    "sum": 16,
-    "max": 4,
-    "mean": 2.0
+    "sum": 100,
+    "max": 16,
+    "mean": 12.5
   },
   "load_state_dict": {
     "missing_keys": [

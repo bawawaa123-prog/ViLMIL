@@ -1,0 +1,6 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+RUN_TRAIN=1 bash scripts/experiments/run_stage61C_l2h_retrieval_sweep.sh
+RUN_TRAIN=1 CONFIGS=extended bash scripts/experiments/run_stage61C_l2h_retrieval_sweep.sh
+
+# Refresh Step61C summary
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage61C_l2h_retrieval_sweep_summary.py
