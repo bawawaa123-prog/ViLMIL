@@ -1,0 +1,9 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+RUN_TRAIN=1 bash scripts/experiments/run_stage61D_l2h_configG_5fold.sh
+
+# Optional secondary fallback only if config G shows trade-off
+SECONDARY_CONFIG=E RUN_TRAIN=1 bash scripts/experiments/run_stage61D_l2h_configG_5fold.sh
+SECONDARY_CONFIG=F RUN_TRAIN=1 bash scripts/experiments/run_stage61D_l2h_configG_5fold.sh
+
+# Refresh Step61D summary after training
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 /home/ljh/anaconda3/envs/vila_mil/bin/python scripts/analysis/build_stage61D_l2h_5fold_summary.py

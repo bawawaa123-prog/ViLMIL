@@ -1,0 +1,31 @@
+{
+  "status": "completed",
+  "executed_folds": [
+    2
+  ],
+  "num_samples": 194,
+  "num_flip_cases": 7,
+  "visual_assessment": "no_clear_dominance",
+  "visual_details": {
+    "mean_visual_contribution_ratio": 0.24102686563525924,
+    "median_visual_contribution_ratio": 0.23379889130592346,
+    "pct_visual_ratio_gt_0_5": 0.041237113402061855,
+    "visual_only_acc": 0.8969072164948454,
+    "concept_only_acc": 0.9329896907216495,
+    "full_acc": 0.9329896907216495,
+    "full_without_visual_acc": 0.9329896907216495
+  },
+  "csg_assessment": "yes",
+  "csg_details": {
+    "mean_csg_contribution_ratio": 0.0006582495602842334,
+    "csg_only_acc": 0.5773195876288659,
+    "concept_only_acc": 0.9329896907216495,
+    "mean_low_high_acc": 0.865979381443299
+  },
+  "best_branch": "full",
+  "best_branch_metric": "balanced_acc",
+  "recommendation": "dynamic CSG",
+  "warnings": [],
+  "errors": [],
+  "duration_seconds": 14.52
+}

@@ -138,6 +138,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rce_ccra_norm", type=str, default=None)
     parser.add_argument("--rce_ccra_dropout", type=float, default=None)
     parser.add_argument("--rce_ccra_clip", type=float, default=None)
+    parser.add_argument("--rce_use_l2h_retrieval", action="store_true")
+    parser.add_argument("--rce_l2h_mode", type=str, default=None)
+    parser.add_argument("--rce_l2h_low_topk", type=int, default=None)
+    parser.add_argument("--rce_l2h_high_max_per_low", type=int, default=None)
+    parser.add_argument("--rce_l2h_scale_ratio", type=float, default=None)
+    parser.add_argument("--rce_l2h_patch_footprint_ratio", type=float, default=None)
+    parser.add_argument("--rce_l2h_alpha_init", type=float, default=None)
+    parser.add_argument("--rce_l2h_scale", type=float, default=None)
+    parser.add_argument("--rce_l2h_fusion", type=str, default=None)
+    parser.add_argument("--rce_l2h_aggregate", type=str, default=None)
+    parser.add_argument("--rce_l2h_score_mode", type=str, default=None)
+    parser.add_argument("--rce_l2h_detach_low_scores", action="store_true")
+    parser.add_argument("--rce_l2h_min_high_matches", type=int, default=None)
+    parser.add_argument("--rce_l2h_clip", type=float, default=None)
     parser.add_argument("--output_dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--max_folds", type=int, default=None, help="optional cap on audited folds after discovery")
     return parser.parse_args()
@@ -335,6 +349,64 @@ def build_runtime_config(
         if args.rce_ccra_clip is not None
         else resolved.get("rce_ccra_clip", 5.0)
     )
+    resolved["rce_use_l2h_retrieval"] = bool(
+        args.rce_use_l2h_retrieval or resolved.get("rce_use_l2h_retrieval", False)
+    )
+    resolved["rce_l2h_mode"] = str(
+        args.rce_l2h_mode or resolved.get("rce_l2h_mode", "low_topk_coord_window")
+    )
+    resolved["rce_l2h_low_topk"] = int(
+        args.rce_l2h_low_topk
+        if args.rce_l2h_low_topk is not None
+        else resolved.get("rce_l2h_low_topk", 8)
+    )
+    resolved["rce_l2h_high_max_per_low"] = int(
+        args.rce_l2h_high_max_per_low
+        if args.rce_l2h_high_max_per_low is not None
+        else resolved.get("rce_l2h_high_max_per_low", 16)
+    )
+    resolved["rce_l2h_scale_ratio"] = float(
+        args.rce_l2h_scale_ratio
+        if args.rce_l2h_scale_ratio is not None
+        else resolved.get("rce_l2h_scale_ratio", 1.0)
+    )
+    resolved["rce_l2h_patch_footprint_ratio"] = float(
+        args.rce_l2h_patch_footprint_ratio
+        if args.rce_l2h_patch_footprint_ratio is not None
+        else resolved.get("rce_l2h_patch_footprint_ratio", 4.0)
+    )
+    resolved["rce_l2h_alpha_init"] = float(
+        args.rce_l2h_alpha_init
+        if args.rce_l2h_alpha_init is not None
+        else resolved.get("rce_l2h_alpha_init", 0.0)
+    )
+    resolved["rce_l2h_scale"] = float(
+        args.rce_l2h_scale
+        if args.rce_l2h_scale is not None
+        else resolved.get("rce_l2h_scale", 1.0)
+    )
+    resolved["rce_l2h_fusion"] = str(
+        args.rce_l2h_fusion or resolved.get("rce_l2h_fusion", "high_region_residual")
+    )
+    resolved["rce_l2h_aggregate"] = str(
+        args.rce_l2h_aggregate or resolved.get("rce_l2h_aggregate", "mean")
+    )
+    resolved["rce_l2h_score_mode"] = str(
+        args.rce_l2h_score_mode or resolved.get("rce_l2h_score_mode", "low_prompt_max")
+    )
+    resolved["rce_l2h_detach_low_scores"] = bool(
+        args.rce_l2h_detach_low_scores or resolved.get("rce_l2h_detach_low_scores", False)
+    )
+    resolved["rce_l2h_min_high_matches"] = int(
+        args.rce_l2h_min_high_matches
+        if args.rce_l2h_min_high_matches is not None
+        else resolved.get("rce_l2h_min_high_matches", 1)
+    )
+    resolved["rce_l2h_clip"] = float(
+        args.rce_l2h_clip
+        if args.rce_l2h_clip is not None
+        else resolved.get("rce_l2h_clip", 5.0)
+    )
 
     if not resolved["concept_prompt_path"]:
         warnings.append("concept_prompt_path missing; model init may fail")
@@ -494,6 +566,22 @@ def initiate_rce_v2_model(runtime_args: SimpleNamespace, ckpt_path: Path) -> RCE
     config.rce_ccra_norm = str(getattr(runtime_args, "rce_ccra_norm", "layernorm"))
     config.rce_ccra_dropout = float(getattr(runtime_args, "rce_ccra_dropout", 0.0))
     config.rce_ccra_clip = float(getattr(runtime_args, "rce_ccra_clip", 5.0))
+    config.rce_use_l2h_retrieval = bool(getattr(runtime_args, "rce_use_l2h_retrieval", False))
+    config.rce_l2h_mode = str(getattr(runtime_args, "rce_l2h_mode", "low_topk_coord_window"))
+    config.rce_l2h_low_topk = int(getattr(runtime_args, "rce_l2h_low_topk", 8))
+    config.rce_l2h_high_max_per_low = int(getattr(runtime_args, "rce_l2h_high_max_per_low", 16))
+    config.rce_l2h_scale_ratio = float(getattr(runtime_args, "rce_l2h_scale_ratio", 1.0))
+    config.rce_l2h_patch_footprint_ratio = float(
+        getattr(runtime_args, "rce_l2h_patch_footprint_ratio", 4.0)
+    )
+    config.rce_l2h_alpha_init = float(getattr(runtime_args, "rce_l2h_alpha_init", 0.0))
+    config.rce_l2h_scale = float(getattr(runtime_args, "rce_l2h_scale", 1.0))
+    config.rce_l2h_fusion = str(getattr(runtime_args, "rce_l2h_fusion", "high_region_residual"))
+    config.rce_l2h_aggregate = str(getattr(runtime_args, "rce_l2h_aggregate", "mean"))
+    config.rce_l2h_score_mode = str(getattr(runtime_args, "rce_l2h_score_mode", "low_prompt_max"))
+    config.rce_l2h_detach_low_scores = bool(getattr(runtime_args, "rce_l2h_detach_low_scores", False))
+    config.rce_l2h_min_high_matches = int(getattr(runtime_args, "rce_l2h_min_high_matches", 1))
+    config.rce_l2h_clip = float(getattr(runtime_args, "rce_l2h_clip", 5.0))
     config.scale_mode = str(getattr(runtime_args, "scale_mode", "dual"))
     config.finetune_text_encoder = bool(getattr(runtime_args, "finetune_text_encoder", False))
     config.enable_logit_breakdown_audit = True

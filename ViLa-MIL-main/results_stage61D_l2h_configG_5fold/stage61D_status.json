@@ -1,0 +1,67 @@
+{
+  "preflight": {
+    "status": "passed",
+    "ok": true,
+    "missing_files": [],
+    "checks": {
+      "original_rce_unchanged": true,
+      "no_l2h_params_when_off": true,
+      "l2h_off_equivalence": true,
+      "full_all_off_equivalence": true,
+      "config_g_buildable": true
+    },
+    "config_g_build": {
+      "ok": true,
+      "reason": null,
+      "missing_keys": [
+        "rce_l2h_alpha"
+      ],
+      "unexpected_keys": [],
+      "l2h_enabled": true,
+      "learned_alpha": 0.009999999776482582,
+      "low_topk": 16,
+      "high_max_per_low": 32,
+      "patch_footprint_ratio": 6.0
+    },
+    "step61c_fix_note": "将 L2H patch extent 估计从坐标差分 median 调整为 p95，以更贴近 Step61A 的 patch footprint 审计；原因是原实现会把检索窗口压缩成 stride 级别，导致 retrieved match count 系统性偏低。"
+  },
+  "run_status": "completed",
+  "checkpoint_folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "warnings": [],
+  "audit_status": {
+    "0": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage61D_l2h_configG_5fold/audits/fold_0"
+    },
+    "1": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage61D_l2h_configG_5fold/audits/fold_1"
+    },
+    "2": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage61D_l2h_configG_5fold/audits/fold_2"
+    },
+    "3": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage61D_l2h_configG_5fold/audits/fold_3"
+    },
+    "4": {
+      "ok": true,
+      "returncode": 0,
+      "audit_dir": "results_stage61D_l2h_configG_5fold/audits/fold_4"
+    }
+  },
+  "decision": "not_selected",
+  "next_step": "stop_l2h_and_enter_final_consolidation",
+  "run_dir": "/home/ljh/ViLMIL/ViLa-MIL-main/results_stage61D_l2h_configG_5fold/rce_v2_rcD_l2hG_5fold_e20_s1"
+}

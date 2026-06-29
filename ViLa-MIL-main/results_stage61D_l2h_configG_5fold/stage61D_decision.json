@@ -1,0 +1,7 @@
+{
+  "decision": "not_selected",
+  "next_step": "stop_l2h_and_enter_final_consolidation",
+  "reasons": [
+    "performance_not_competitive_or_signal_unstable"
+  ]
+}
