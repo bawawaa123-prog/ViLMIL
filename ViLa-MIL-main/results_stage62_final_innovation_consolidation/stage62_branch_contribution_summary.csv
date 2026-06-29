@@ -1,0 +1,6 @@
+model_id,interpretability_source,interpretability_is_formal_5fold,visual_ratio_mean,concept_ratio_mean,csg_ratio_mean,visual_ratio_gt_0_5_percent,full_acc,full_auc,concept_only_acc,concept_only_auc,visual_only_acc,visual_only_auc,full_minus_concept_acc,full_minus_concept_auc
+stage57C_rce_v2_baseline,step57B_single_fold_reference,False,0.71958,0.28042,4e-05,0.938144,0.907216,0.975734,0.907216,0.960582,0.902062,0.975971,0.0,0.015152
+step58C_residual_constrained_primary,results_stage58C_residual_constrained_configD_5fold,True,0.320575,0.679425,0.002286,0.157198,0.927691,0.964842,0.917366,0.961629,0.910117,0.962506,0.010325,0.003213
+step59C_dynamic_csg_variant,results_stage59C_dynamic_csg_configA_5fold,True,0.337585,0.662415,0.001467,0.183778,0.922504,0.969323,0.921473,0.965428,0.909081,0.963852,0.001031,0.003895
+step60D_ccra_variant,results_stage60D_ccra_configC_formal,True,0.357331,0.642669,0.002062,0.184958,0.922493,0.968637,0.925586,0.971223,0.910128,0.960088,-0.003093,-0.002586
+step61D_l2h_not_selected,results_stage61D_l2h_configG_5fold,True,0.281393,0.718607,0.001207,0.107537,0.921479,0.967921,0.919411,0.965738,0.914262,0.965463,0.002067,0.002182

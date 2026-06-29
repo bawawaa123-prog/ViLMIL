@@ -1,0 +1,50 @@
+{
+  "final_primary_model_id": "step58C_residual_constrained_primary",
+  "final_primary_source_dir": "results_stage58C_residual_constrained_configD_5fold",
+  "final_primary_reason": [
+    "Step58C is the only completed formal 5-fold innovation model that clearly improves ACC, F1, and BACC over the reproduced Stage57C baseline.",
+    "Its evidence composition shifts strongly away from visual residuals and toward concept evidence while the full branch remains stronger than concept_only.",
+    "Its AUC trade-off versus Stage57C is small enough to remain acceptable for the final main result."
+  ],
+  "final_primary_metrics": {
+    "AUC": 0.964842,
+    "ACC": 0.927691,
+    "F1": 0.919625,
+    "BACC": 0.9197,
+    "PR_AUC": 0.931551
+  },
+  "secondary_variants": [
+    {
+      "model_id": "step59C_dynamic_csg_variant",
+      "source_dir": "results_stage59C_dynamic_csg_configA_5fold",
+      "reason": "AUC/PR-AUC improved relative to Step58C and dynamic alpha stayed nonzero, but ACC/F1/BACC were weaker and the CSG logit delta stayed small."
+    },
+    {
+      "model_id": "step60D_ccra_variant",
+      "source_dir": "results_stage60D_ccra_configC_formal",
+      "reason": "CCRA stayed performance-competitive and produced stable nonzero concept-conditioned region changes, but the full branch was slightly weaker than concept_only."
+    }
+  ],
+  "rejected_variants": [
+    {
+      "model_id": "step61D_l2h_not_selected",
+      "source_dir": "results_stage61D_l2h_configG_5fold",
+      "reason": "Stable retrieval coverage was observed, but ACC/F1/BACC remained weaker than the selected primary model."
+    }
+  ],
+  "primary_selection_policy": "Select only among completed formal 5-fold models. Prefer the model that improves ACC/F1/BACC over the reproduced baseline, keeps AUC/PR-AUC within an acceptable trade-off range, maintains low visual_ratio/high concept_ratio, and avoids branch collapse or reliance on a weaker concept_only branch.",
+  "paper_main_claim": "Residual-constrained RCE shifts final evidence from visual residual toward concept evidence and improves hard classification metrics over the reproduced RCE-v2 baseline.",
+  "paper_secondary_claims": [
+    "Dynamic CSG introduces nonzero sample-adaptive graph updates, but its direct logit effect is small and should be positioned as a secondary variant rather than the main performance driver.",
+    "CCRA produces stable nonzero concept-conditioned region changes and serves as an interpretable balanced variant.",
+    "L2H retrieval is feasible at the coordinate level and yields stable retrieval coverage, but it is not selected because hard classification metrics are weaker than the chosen primary model."
+  ],
+  "claims_to_avoid": [
+    "Do not claim that Dynamic CSG is the dominant classification contributor.",
+    "Do not claim that CCRA clearly surpasses every baseline.",
+    "Do not present L2H retrieval as the final effective primary model.",
+    "Do not cherry-pick a single metric while hiding the ACC/AUC trade-off.",
+    "Do not claim that all innovation modules have been jointly validated as one unified best model."
+  ],
+  "next_recommended_action": "freeze_results_and_prepare_paper_assets"
+}

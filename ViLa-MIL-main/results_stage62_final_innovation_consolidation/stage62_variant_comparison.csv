@@ -1,0 +1,6 @@
+model_id,model_role,decision,module_type,AUC,ACC,F1,BACC,PR_AUC,visual_ratio_mean,concept_ratio_mean,module_alpha_mean,module_delta_abs_mean,selected_as_primary,selected_as_variant,variant_positioning,claim_strength
+stage57C_rce_v2_baseline,baseline_reference,reproduced_baseline,none,0.970213,0.922509,0.914456,0.917143,0.944399,0.71958,0.28042,,,False,False,baseline_reference,reference_only
+step58C_residual_constrained_primary,final_primary_model,candidate_primary,residual_constraint,0.964842,0.927691,0.919625,0.9197,0.931551,0.320575,0.679425,,,True,False,final_primary_model,strong_primary
+step59C_dynamic_csg_variant,secondary_variant,candidate_primary,dynamic_csg,0.969323,0.922504,0.913797,0.913596,0.941877,0.337585,0.662415,0.017729,4.6e-05,False,True,secondary_variant,conservative_variant
+step60D_ccra_variant,secondary_variant,secondary_preferred_over_config_d,ccra,0.968601,0.922493,0.915115,0.920087,0.937097,0.357331,0.642669,0.040617,0.457858,False,True,secondary_variant,moderate_variant
+step61D_l2h_not_selected,not_selected,not_selected,l2h_retrieval,0.967921,0.921479,0.911256,0.904859,0.938282,0.281393,0.718607,0.011931,,False,False,not_selected,exploratory_not_selected

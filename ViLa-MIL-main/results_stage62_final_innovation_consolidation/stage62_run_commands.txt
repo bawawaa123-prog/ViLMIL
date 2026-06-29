@@ -1,0 +1,4 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+python -m py_compile scripts/analysis/build_stage62_final_innovation_consolidation.py
+PYTHONPATH=/xiangmu/ViLMIL/ViLa-MIL-main python scripts/analysis/build_stage62_final_innovation_consolidation.py
+# No training commands are executed in Step62.

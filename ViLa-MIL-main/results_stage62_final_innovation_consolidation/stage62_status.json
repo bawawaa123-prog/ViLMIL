@@ -1,0 +1,33 @@
+{
+  "status": "completed",
+  "all_required_sources_found": true,
+  "missing_sources": [],
+  "parsed_models": [
+    "stage57C_rce_v2_baseline",
+    "step58C_residual_constrained_primary",
+    "step59C_dynamic_csg_variant",
+    "step60D_ccra_variant",
+    "step61D_l2h_not_selected"
+  ],
+  "generated_files": [
+    "stage62_summary.md",
+    "stage62_status.json",
+    "stage62_final_model_decision.json",
+    "stage62_main_results_table.csv",
+    "stage62_variant_comparison.csv",
+    "stage62_branch_contribution_summary.csv",
+    "stage62_interpretability_summary.csv",
+    "stage62_ablation_and_variant_table.csv",
+    "stage62_claims_to_make_and_avoid.md",
+    "stage62_paper_ready_results.md",
+    "stage62_run_commands.txt"
+  ],
+  "warnings": [
+    "Stage57C baseline branch/contribution fields are populated from Step57B single-fold audit as reference only; formal 5-fold baseline branch/contribution artifacts are not available."
+  ],
+  "no_training_run": true,
+  "original_rce_modified": false,
+  "rce_v2_modified": false,
+  "main_modified": false,
+  "core_utils_modified": false
+}
