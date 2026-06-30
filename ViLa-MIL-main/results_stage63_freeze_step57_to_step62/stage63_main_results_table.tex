@@ -1,0 +1,17 @@
+% Step63 frozen main results table
+\begin{table}[t]
+\centering
+\caption{Frozen Step57--Step61 formal 5-fold results. Step58C is the selected primary model.}
+\label{tab:stage63-main-results}
+\begin{tabular}{lccccc}
+\hline
+Model & AUC & ACC & F1 & BACC & PR-AUC \\
+\hline
+Stage57C RCE-v2 baseline & 0.970213 & 0.922509 & 0.914456 & 0.917143 & 0.944399 \\
+Step58C Residual-Constrained RCE (selected primary) & 0.964842 & \textbf{0.927691} & \textbf{0.919625} & \textbf{0.919700} & 0.931551 \\
+Step59C Dynamic CSG & 0.969323 & 0.922504 & 0.913797 & 0.913596 & 0.941877 \\
+Step60D CCRA config C & 0.968601 & 0.922493 & 0.915115 & 0.920087 & 0.937097 \\
+Step61D L2H Retrieval & 0.967921 & 0.921479 & 0.911256 & 0.904859 & 0.938282 \\
+\hline
+\end{tabular}
+\end{table}

@@ -1,0 +1,50 @@
+{
+  "current_git_branch": "dev-rce-innovation",
+  "current_git_commit_hash": "ba3de42fc7ea8a577a24805acc929d8d44386bf2",
+  "generated_timestamp": "2026-06-30T14:04:48+08:00",
+  "project_root": "/xiangmu/ViLMIL/ViLa-MIL-main",
+  "source_result_directories": [
+    "results_stage62_final_innovation_consolidation",
+    "results_stage57C_rce_v2_copy_reproduction",
+    "results_stage58C_residual_constrained_configD_5fold",
+    "results_stage59C_dynamic_csg_configA_5fold",
+    "results_stage60D_ccra_configC_formal",
+    "results_stage61D_l2h_configG_5fold"
+  ],
+  "final_primary_model": "Step58C Residual-Constrained RCE config D",
+  "secondary_variants": [
+    "Step59C Dynamic CSG config A",
+    "Step60D CCRA config C"
+  ],
+  "rejected_variants": [
+    "Step61D L2H Retrieval config G"
+  ],
+  "key_scripts": [
+    "scripts/analysis/build_stage57C_rce_v2_reproduction_summary.py",
+    "scripts/analysis/build_stage58C_residual_constrained_5fold_summary.py",
+    "scripts/analysis/build_stage59C_dynamic_csg_5fold_summary.py",
+    "scripts/analysis/build_stage60D_ccra_configC_formal_summary.py",
+    "scripts/analysis/build_stage61D_l2h_5fold_summary.py",
+    "scripts/analysis/build_stage62_final_innovation_consolidation.py",
+    "scripts/analysis/build_stage63_freeze_step57_to_step62.py"
+  ],
+  "no_training_run": true,
+  "protected_files_not_modified": [
+    {
+      "path": "main.py",
+      "modified_in_worktree": false
+    },
+    {
+      "path": "utils/core_utils.py",
+      "modified_in_worktree": false
+    },
+    {
+      "path": "models/model_RCE_MIL_BiomedCLIP.py",
+      "modified_in_worktree": false
+    },
+    {
+      "path": "models/model_RCE_MIL_BiomedCLIP_v2.py",
+      "modified_in_worktree": false
+    }
+  ]
+}

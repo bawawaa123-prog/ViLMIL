@@ -1,0 +1,6 @@
+stage_id,model_name,source_dir,model_role,AUC,ACC,F1,BACC,PR_AUC,selected_primary,selected_secondary,rejected,notes
+Stage57C,Stage57C RCE-v2 baseline,results_stage57C_rce_v2_copy_reproduction,baseline_reference,0.970213,0.922509,0.914456,0.917143,0.944399,False,False,False,
+Step58C,Step58C Residual-Constrained RCE,results_stage58C_residual_constrained_configD_5fold,final_primary_model,0.964842,0.927691,0.919625,0.919700,0.931551,True,False,False,
+Step59C,Step59C Dynamic CSG,results_stage59C_dynamic_csg_configA_5fold,secondary_variant,0.969323,0.922504,0.913797,0.913596,0.941877,False,True,False,
+Step60D,Step60D CCRA config C,results_stage60D_ccra_configC_formal,secondary_variant,0.968601,0.922493,0.915115,0.920087,0.937097,False,True,False,
+Step61D,Step61D L2H Retrieval,results_stage61D_l2h_configG_5fold,not_selected,0.967921,0.921479,0.911256,0.904859,0.938282,False,False,True,"Stable retrieval coverage was observed, but ACC/F1/BACC remained weaker than the selected primary model."

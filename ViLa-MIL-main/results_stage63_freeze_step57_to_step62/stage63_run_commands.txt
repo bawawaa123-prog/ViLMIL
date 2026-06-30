@@ -1,0 +1,10 @@
+cd /xiangmu/ViLMIL/ViLa-MIL-main
+python -m py_compile scripts/analysis/build_stage63_freeze_step57_to_step62.py
+python scripts/analysis/build_stage63_freeze_step57_to_step62.py
+
+# Suggested next git commands
+git add scripts/analysis/build_stage63_freeze_step57_to_step62.py results_stage63_freeze_step57_to_step62
+git commit -m "Step63: freeze Step57-Step62 RCE innovation results"
+git tag -a rce-step63-freeze-v1 -m "Freeze Step57-Step62 RCE innovation results"
+git push origin dev-rce-innovation
+git push origin rce-step63-freeze-v1
