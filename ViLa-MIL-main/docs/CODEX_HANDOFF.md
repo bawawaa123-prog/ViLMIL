@@ -3083,3 +3083,24 @@
   - manually review the generated paper package
   - decide target journal/conference
   - polish figures, tables, and representative evidence cases
+
+## Step63B: Project Structure Cleanup and Stage Result Archiving
+
+- Modified files:
+  - `.gitignore`
+  - `docs/CODEX_HANDOFF.md`
+  - `docs/PROJECT_STRUCTURE.md`
+  - `experiment_outputs/README.md`
+  - `experiment_outputs/stage_results_index.md`
+  - `scripts/maintenance/check_stage_result_layout.py`
+- Structural changes:
+  - moved root-level `results_stage*` directories into `experiment_outputs/stage_results/`
+  - kept historical artifacts intact without deleting stage outputs
+- Scope guardrails:
+  - this step only reorganized project structure
+  - no model code under `models/` was modified
+  - no training was run
+  - `main.py` was not modified
+  - `utils/core_utils.py` was not modified
+- Next expected output location:
+  - `experiment_outputs/stage_results/results_stage64A_performance_gap_audit/`
