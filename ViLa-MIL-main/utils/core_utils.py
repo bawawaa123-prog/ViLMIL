@@ -188,6 +188,24 @@ def train(datasets, cur, args):
 
         model = ViLa_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
 
+    elif args.model_type == 'ViLa_MIL_BiomedCLIP_AofeiClean':
+        print('🧪 Using Aofei clean BiomedCLIP-only ViLa-MIL baseline')
+        import ml_collections
+        from models.model_ViLa_MIL_BiomedCLIP_AofeiClean import ViLa_MIL_BiomedCLIP_AofeiClean
+
+        config = ml_collections.ConfigDict()
+        config.input_size = 512
+        config.hidden_size = 192
+        config.text_prompt = args.text_prompt
+        config.text_prompt_path = getattr(args, 'text_prompt_path', None)
+        config.class_names = getattr(args, 'class_names', None)
+        config.prototype_number = args.prototype_number
+        config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
+        config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
+        config.text_unfreeze_last_n = int(getattr(args, 'text_unfreeze_last_n', 2))
+
+        model = ViLa_MIL_BiomedCLIP_AofeiClean(config=config, num_classes=args.n_classes)
+
     elif args.model_type in {'RCE_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP_v2', 'DEG_MIL_BiomedCLIP'}:
         import ml_collections
         if args.model_type == 'RCE_MIL_BiomedCLIP':
@@ -341,11 +359,17 @@ def train(datasets, cur, args):
 
     # After BiomedCLIP loads successfully once, lock HF Hub into offline mode so later folds
     # won't fail due to transient SSL/proxy/network issues.
-    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP_v2', 'DEG_MIL_BiomedCLIP'}:
+    if args.model_type in {
+        'ViLa_MIL_BiomedCLIP',
+        'ViLa_MIL_BiomedCLIP_AofeiClean',
+        'RCE_MIL_BiomedCLIP',
+        'RCE_MIL_BiomedCLIP_v2',
+        'DEG_MIL_BiomedCLIP',
+    }:
         if os.environ.get('HF_HUB_OFFLINE', '0') != '1':
             _lock_hf_offline_for_remaining_folds()
 
-    if args.model_type == 'ViLa_MIL_BiomedCLIP':
+    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}:
         finetune_flag = bool(getattr(args, 'finetune_text_encoder', False))
         text_trainable = 0
         prompt_trainable = 0
@@ -376,7 +400,7 @@ def train(datasets, cur, args):
     optimizer = get_optim(model, args)
     print('Done!')
 
-    if args.model_type == 'ViLa_MIL_BiomedCLIP':
+    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}:
         try:
             groups = getattr(optimizer, 'param_groups', [])
             if groups:

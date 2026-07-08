@@ -42,6 +42,7 @@ parser.add_argument(
     choices=[
         "ViLa_MIL",
         "ViLa_MIL_BiomedCLIP",
+        "ViLa_MIL_BiomedCLIP_AofeiClean",
         "RCE_MIL_BiomedCLIP",
         "RCE_MIL_BiomedCLIP_v2",
         "DEG_MIL_BiomedCLIP",

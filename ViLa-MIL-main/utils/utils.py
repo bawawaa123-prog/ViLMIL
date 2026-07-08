@@ -99,7 +99,7 @@ def get_optim(model, args):
 
 	# BiomedCLIP: parameter groups (prompt / text / others)
 	use_param_groups = bool(
-		getattr(args, 'model_type', None) == 'ViLa_MIL_BiomedCLIP'
+		getattr(args, 'model_type', None) in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}
 		and hasattr(model, 'prompt_learner')
 		and hasattr(model, 'text_encoder')
 	)
@@ -232,4 +232,3 @@ def initialize_weights(module):
 		elif isinstance(m, nn.BatchNorm1d):
 			nn.init.constant_(m.weight, 1)
 			nn.init.constant_(m.bias, 0)
-
