@@ -16,8 +16,6 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from open_clip import create_model_from_pretrained, get_tokenizer
-
 from .model_utils import MultiheadAttention
 
 DEFAULT_BIOMEDCLIP_REPO = "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
@@ -27,14 +25,28 @@ DEFAULT_TEXT_REPO = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract"
 logger = logging.getLogger(__name__)
 
 
+def _shared_cache_candidates(repo_root):
+    try:
+        shared_root = repo_root.parents[2]
+    except IndexError:
+        return []
+
+    return [
+        shared_root / "ViLMIL" / "hf_cache",
+        shared_root / "ViLMIL" / "ViLa-MIL-main" / "hf_cache",
+    ]
+
+
 def _candidate_cache_dirs(explicit_cache_dir=None):
     repo_root = Path(__file__).resolve().parents[1]
     candidates = [
         explicit_cache_dir,
+        os.environ.get("HF_HOME"),
         os.environ.get("HUGGINGFACE_HUB_CACHE"),
         repo_root / "hf_cache",
         repo_root.parent / "hf_cache",
         repo_root / "model_cache",
+        *_shared_cache_candidates(repo_root),
     ]
 
     seen = set()
@@ -109,6 +121,8 @@ def _prepare_biomedclip_loading(model_path, cache_dir=None):
 
 
 _BOOTSTRAP_CACHE_DIR = _bootstrap_hf_environment()
+
+from open_clip import create_model_from_pretrained, get_tokenizer
 
 
 class BiomedCLIPTextEncoder(nn.Module):

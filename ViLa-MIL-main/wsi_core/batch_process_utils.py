@@ -59,10 +59,10 @@ def initialize_df(slides, seg_params, filter_params, vis_params, patch_params,
 
 	if use_heatmap_args:
 		# initiate empty x,y coordinates in case not provided
-		default_df_dict.update({'x1': np.empty((total)).fill(np.NaN), 
-			'x2': np.empty((total)).fill(np.NaN), 
-			'y1': np.empty((total)).fill(np.NaN), 
-			'y2': np.empty((total)).fill(np.NaN)})
+		default_df_dict.update({'x1': np.full((total), np.nan),
+			'x2': np.full((total), np.nan),
+			'y1': np.full((total), np.nan),
+			'y2': np.full((total), np.nan)})
 
 
 	if isinstance(slides, pd.DataFrame):
