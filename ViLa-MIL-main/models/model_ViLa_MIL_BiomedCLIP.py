@@ -10,15 +10,118 @@ import logging
 import math
 import os
 import warnings
+from pathlib import Path
 
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from open_clip import create_model_from_pretrained, get_tokenizer
-
 from .model_utils import MultiheadAttention
 from utils.prompt_utils import build_concept_prompt_bundle, build_concept_prompt_tensors, build_concept_text_features
+
+DEFAULT_BIOMEDCLIP_REPO = "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
+DEFAULT_BIOMEDCLIP_MODEL = f"hf-hub:{DEFAULT_BIOMEDCLIP_REPO}"
+DEFAULT_TEXT_REPO = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract"
+
+
+def _shared_cache_candidates(repo_root):
+    try:
+        shared_root = repo_root.parents[2]
+    except IndexError:
+        return []
+
+    return [
+        shared_root / "ViLMIL" / "hf_cache",
+        shared_root / "ViLMIL" / "ViLa-MIL-main" / "hf_cache",
+    ]
+
+
+def _candidate_cache_dirs(explicit_cache_dir=None):
+    repo_root = Path(__file__).resolve().parents[1]
+    candidates = [
+        explicit_cache_dir,
+        os.environ.get("HF_HOME"),
+        os.environ.get("HUGGINGFACE_HUB_CACHE"),
+        repo_root / "hf_cache",
+        repo_root.parent / "hf_cache",
+        repo_root / "model_cache",
+        *_shared_cache_candidates(repo_root),
+    ]
+
+    seen = set()
+    resolved = []
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate_path = Path(candidate).expanduser()
+        candidate_str = str(candidate_path)
+        if candidate_str in seen:
+            continue
+        seen.add(candidate_str)
+        resolved.append(candidate_path)
+    return resolved
+
+
+def _resolve_snapshot_dir(cache_dir, repo_id):
+    snapshots_dir = Path(cache_dir) / f"models--{repo_id.replace('/', '--')}" / "snapshots"
+    if not snapshots_dir.is_dir():
+        return None
+    snapshot_dirs = sorted(path for path in snapshots_dir.iterdir() if path.is_dir())
+    if not snapshot_dirs:
+        return None
+    return snapshot_dirs[-1]
+
+
+def _bootstrap_hf_environment():
+    for candidate_cache_dir in _candidate_cache_dirs():
+        if not candidate_cache_dir.exists():
+            continue
+
+        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
+        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
+        if not clip_snapshot:
+            continue
+
+        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
+        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
+        if text_snapshot:
+            os.environ.setdefault("HF_HUB_OFFLINE", "1")
+            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+        return str(candidate_cache_dir)
+
+    return None
+
+
+def _prepare_biomedclip_loading(model_path, cache_dir=None):
+    for candidate_cache_dir in _candidate_cache_dirs(cache_dir):
+        if not candidate_cache_dir.exists():
+            continue
+
+        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
+        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
+        if not clip_snapshot:
+            continue
+
+        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
+        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
+
+        offline_enabled = text_snapshot is not None
+        if offline_enabled:
+            os.environ.setdefault("HF_HUB_OFFLINE", "1")
+            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
+        resolved_model_path = model_path
+        if model_path == DEFAULT_BIOMEDCLIP_MODEL:
+            resolved_model_path = f"local-dir:{clip_snapshot}"
+
+        return resolved_model_path, str(candidate_cache_dir), offline_enabled
+
+    return model_path, cache_dir, False
+
+
+_BOOTSTRAP_CACHE_DIR = _bootstrap_hf_environment()
+
+from open_clip import create_model_from_pretrained, get_tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +357,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self,
         config,
         num_classes=2,
-        model_path="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+        model_path=DEFAULT_BIOMEDCLIP_MODEL,
     ):
         super().__init__()
         self.loss_ce = nn.CrossEntropyLoss()
@@ -268,16 +371,25 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
         self.attention_U = nn.Sequential(nn.Linear(self.L, self.D), nn.Sigmoid())
         self.attention_weights = nn.Linear(self.D, self.K)
 
-        print(f"🔬 Loading BiomedCLIP from: {model_path}")
+        resolved_model_path, resolved_cache_dir, offline_enabled = _prepare_biomedclip_loading(model_path)
+        print(f"🔬 Loading BiomedCLIP from: {resolved_model_path}")
+        if resolved_cache_dir:
+            print(f"📦 Using HuggingFace cache: {resolved_cache_dir}")
+        if offline_enabled:
+            print("📴 Offline cache mode enabled")
         try:
-            biomedclip_model, _ = create_model_from_pretrained(model_path)
-            tokenizer = get_tokenizer(model_path)
+            biomedclip_model, _ = create_model_from_pretrained(
+                resolved_model_path,
+                cache_dir=resolved_cache_dir,
+            )
+            tokenizer = get_tokenizer(resolved_model_path)
         except Exception as e:
             offline = os.environ.get("HF_HUB_OFFLINE", "0") == "1"
             msg = (
                 "[Error] Failed to load BiomedCLIP from HuggingFace Hub. "
                 "This is usually caused by transient network/proxy/SSL issues or missing local cache.\n"
-                f"- model_path: {model_path}\n"
+                f"- model_path: {resolved_model_path}\n"
+                f"- cache_dir: {resolved_cache_dir}\n"
                 f"- HF_HUB_OFFLINE={os.environ.get('HF_HUB_OFFLINE', '0')} (offline={offline})\n"
                 "Fix options:\n"
                 "1) Ensure the model is fully downloaded into cache (run a one-time warmup download).\n"
