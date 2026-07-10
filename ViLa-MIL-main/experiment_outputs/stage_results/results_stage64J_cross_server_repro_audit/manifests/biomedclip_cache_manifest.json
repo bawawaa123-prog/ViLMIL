@@ -1,0 +1,18 @@
+{
+  "all_model_snapshots": [
+    "/private/ljh-data/shared/ViLMIL/hf_cache/models--microsoft--BiomedCLIP-PubMedBERT_256-vit_base_patch16_224/snapshots/9f341de24bfb00180f1b847274256e9b65a3a32e"
+  ],
+  "candidate_cache_dirs": [
+    "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/hf_cache",
+    "/private/ljh-data/shared/Linux_school/ViLMIL/hf_cache",
+    "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/model_cache",
+    "/private/ljh-data/shared/ViLMIL/hf_cache",
+    "/private/ljh-data/shared/ViLMIL/ViLa-MIL-main/hf_cache"
+  ],
+  "model_name": "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+  "multiple_model_snapshots_present": false,
+  "selected_cache_dir": "/private/ljh-data/shared/ViLMIL/hf_cache",
+  "selected_snapshot_dir": "/private/ljh-data/shared/ViLMIL/hf_cache/models--microsoft--BiomedCLIP-PubMedBERT_256-vit_base_patch16_224/snapshots/9f341de24bfb00180f1b847274256e9b65a3a32e",
+  "selection_rule": "last lexicographically sorted snapshot under the first cache dir containing the model snapshot",
+  "text_repo": "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract"
+}

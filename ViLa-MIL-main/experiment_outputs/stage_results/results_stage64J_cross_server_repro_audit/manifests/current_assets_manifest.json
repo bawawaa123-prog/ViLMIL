@@ -1,0 +1,144 @@
+{
+  "data_root": "/private/ljh-data/shared/ViLMIL/ViLa-MIL-main/data/yiyuan",
+  "h5_counts": {
+    "20x": 968,
+    "5x": 968
+  },
+  "mode": "full",
+  "normal_files": [
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T11:23:41.168661",
+      "relative_path": "dataset_csv/all_data.csv",
+      "sha256": "f432b81135a8b2bdce9932dbd6ebdc7b8b5049e4c6d21a9468059fc5bd6e12d0",
+      "size_bytes": 37494
+    },
+    {
+      "line_count": 4,
+      "mtime": "2026-07-09T11:24:30.827475",
+      "relative_path": "text_prompt/adenocarcinoma_dual_scale_prompt.csv",
+      "sha256": "fb96a2fbc0b6444eec09c09df9742163296d7a207f489958ee9202309ab948d4",
+      "size_bytes": 1110
+    },
+    {
+      "line_count": 504,
+      "mtime": "2026-07-09T14:57:37.618821",
+      "relative_path": "dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json",
+      "sha256": "d8f4c0907eb847db402b662260a96b34bcabff90ec055d2e395623131b7bd856",
+      "size_bytes": 20207
+    },
+    {
+      "line_count": 581,
+      "mtime": "2026-07-09T14:58:12.863681",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_0.csv",
+      "sha256": "3fdd740d34c0c37be340a92eb1fdf4eba5dea9062e603a605d22b0ff930d621a",
+      "size_bytes": 11279
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:12.873681",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_0_bool.csv",
+      "sha256": "4638647902733d4f572226cd94ec671bdcd66168676fe467338e76a2b09fd58b",
+      "size_bytes": 26964
+    },
+    {
+      "line_count": 3,
+      "mtime": "2026-07-09T14:58:12.886681",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_0_descriptor.csv",
+      "sha256": "644fb8d57d27cebd64793b4f3184b5e3c6ebb01f11ec4974e11cce565dc38166",
+      "size_bytes": 71
+    },
+    {
+      "line_count": 581,
+      "mtime": "2026-07-09T14:58:12.901680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_1.csv",
+      "sha256": "f751e56f3490deb26f1e9feb872aa1ba938a9c6eea1efb12f70399523c002526",
+      "size_bytes": 11279
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:12.918680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_1_bool.csv",
+      "sha256": "dd159345a958f81f33e4d5742c499a1e93e3ddea735f34795be1b7ff468ec4d8",
+      "size_bytes": 26964
+    },
+    {
+      "line_count": 3,
+      "mtime": "2026-07-09T14:58:12.932680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_1_descriptor.csv",
+      "sha256": "0d2ff6dd8472bfc985cd946c972dd7eb8dfe116ac7858d6a106799a484bee9e6",
+      "size_bytes": 71
+    },
+    {
+      "line_count": 582,
+      "mtime": "2026-07-09T14:58:12.950680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_2.csv",
+      "sha256": "dc1c1362793a81a191e764aead7df5a3002af55b32604943cfc40a07bafbc283",
+      "size_bytes": 11282
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:12.964680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_2_bool.csv",
+      "sha256": "ad0c807a9384ab9469ad8a66337980cf1b46b961fe4c388765c7af6c17229a3e",
+      "size_bytes": 26964
+    },
+    {
+      "line_count": 3,
+      "mtime": "2026-07-09T14:58:12.977680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_2_descriptor.csv",
+      "sha256": "15ccf50f099a49b3b389ac61e631ddfe26467249781c1f449134d38d98fd7b5b",
+      "size_bytes": 71
+    },
+    {
+      "line_count": 583,
+      "mtime": "2026-07-09T14:58:12.990680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_3.csv",
+      "sha256": "a80228608ab0cbb9a1953418caae48af22f43baa000567edffa33ec91db07a73",
+      "size_bytes": 11285
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:13.004680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_3_bool.csv",
+      "sha256": "dcaecf922d4c1bc4218e44e8237ab835cef0ab06dec8d43d72cd898d84e73a39",
+      "size_bytes": 26964
+    },
+    {
+      "line_count": 3,
+      "mtime": "2026-07-09T14:58:13.041680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_3_descriptor.csv",
+      "sha256": "3ef3faca98ceca15354590ad7d649989fb749e6d5191df53662c694809b12ba9",
+      "size_bytes": 71
+    },
+    {
+      "line_count": 582,
+      "mtime": "2026-07-09T14:58:13.054680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_4.csv",
+      "sha256": "1c69fe35117094bf4a84a3f17e074e28bf142aba63833fc7cedf90d7c6b3cd74",
+      "size_bytes": 11282
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:13.070680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_4_bool.csv",
+      "sha256": "4f19c699225eebffcd0036e70d07a6a92dedd33ce73d76c110b2343f47610ff5",
+      "size_bytes": 26964
+    },
+    {
+      "line_count": 3,
+      "mtime": "2026-07-09T14:58:13.084680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/splits_4_descriptor.csv",
+      "sha256": "9477a07f2d1c058fde6313c8f81551ea80b4d336d9bd69e21fb968ed2fbfd94f",
+      "size_bytes": 71
+    },
+    {
+      "line_count": 969,
+      "mtime": "2026-07-09T14:58:13.098680",
+      "relative_path": "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100/strict_fold_assignments.csv",
+      "sha256": "f97096564fca8185ed35e09cecfef6d7513fed42cd340dd9d244717a6c4ca7c4",
+      "size_bytes": 38469
+    }
+  ],
+  "project_root": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main"
+}

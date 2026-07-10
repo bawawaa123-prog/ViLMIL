@@ -1,0 +1,1359 @@
+diff --git a/ViLa-MIL-main/main.py b/ViLa-MIL-main/main.py
+index a186511..488b363 100644
+--- a/ViLa-MIL-main/main.py
++++ b/ViLa-MIL-main/main.py
+@@ -42,6 +42,7 @@ parser.add_argument(
+     choices=[
+         "ViLa_MIL",
+         "ViLa_MIL_BiomedCLIP",
++        "ViLa_MIL_BiomedCLIP_AofeiClean",
+         "RCE_MIL_BiomedCLIP",
+         "RCE_MIL_BiomedCLIP_v2",
+         "DEG_MIL_BiomedCLIP",
+@@ -133,6 +134,62 @@ parser.add_argument(
+     default="sqrt",
+     help="normalization for the learnable cross-scale graph residual.",
+ )
++parser.add_argument("--rce_use_dynamic_csg", action="store_true", default=False)
++parser.add_argument(
++    "--rce_dynamic_csg_mode",
++    type=str,
++    choices=["evidence_outer"],
++    default="evidence_outer",
++)
++parser.add_argument("--rce_dynamic_csg_alpha_init", type=float, default=0.0)
++parser.add_argument("--rce_dynamic_csg_scale", type=float, default=1.0)
++parser.add_argument(
++    "--rce_dynamic_csg_norm",
++    type=str,
++    choices=["softmax", "l1", "none"],
++    default="softmax",
++)
++parser.add_argument("--rce_dynamic_csg_detach_evidence", action="store_true", default=False)
++parser.add_argument("--rce_dynamic_csg_clip", type=float, default=5.0)
++parser.add_argument("--rce_use_ccra", action="store_true", default=False)
++parser.add_argument(
++    "--rce_ccra_mode",
++    type=str,
++    choices=["concept_query_residual"],
++    default="concept_query_residual",
++)
++parser.add_argument("--rce_ccra_alpha_init", type=float, default=0.0)
++parser.add_argument("--rce_ccra_scale", type=float, default=1.0)
++parser.add_argument("--rce_ccra_num_queries", type=int, default=0)
++parser.add_argument(
++    "--rce_ccra_query_source",
++    type=str,
++    choices=["prompt_mean"],
++    default="prompt_mean",
++)
++parser.add_argument("--rce_ccra_detach_prompt", action="store_true", default=False)
++parser.add_argument(
++    "--rce_ccra_norm",
++    type=str,
++    choices=["layernorm", "none"],
++    default="layernorm",
++)
++parser.add_argument("--rce_ccra_dropout", type=float, default=0.0)
++parser.add_argument("--rce_ccra_clip", type=float, default=5.0)
++parser.add_argument("--rce_use_l2h_retrieval", action="store_true", default=False)
++parser.add_argument("--rce_l2h_mode", type=str, default="low_topk_coord_window")
++parser.add_argument("--rce_l2h_low_topk", type=int, default=8)
++parser.add_argument("--rce_l2h_high_max_per_low", type=int, default=16)
++parser.add_argument("--rce_l2h_scale_ratio", type=float, default=1.0)
++parser.add_argument("--rce_l2h_patch_footprint_ratio", type=float, default=4.0)
++parser.add_argument("--rce_l2h_alpha_init", type=float, default=0.0)
++parser.add_argument("--rce_l2h_scale", type=float, default=1.0)
++parser.add_argument("--rce_l2h_fusion", type=str, default="high_region_residual")
++parser.add_argument("--rce_l2h_aggregate", type=str, default="mean")
++parser.add_argument("--rce_l2h_score_mode", type=str, default="low_prompt_max")
++parser.add_argument("--rce_l2h_detach_low_scores", action="store_true", default=False)
++parser.add_argument("--rce_l2h_min_high_matches", type=int, default=1)
++parser.add_argument("--rce_l2h_clip", type=float, default=5.0)
+ parser.add_argument("--rce_use_hcrc", action="store_true", default=False)
+ parser.add_argument("--rce_hcrc_alpha_init", type=float, default=0.05)
+ parser.add_argument("--rce_hcrc_num_anchors", type=int, default=16)
+@@ -381,6 +438,20 @@ settings = {
+     "rce_use_cross_scale_graph": args.rce_use_cross_scale_graph,
+     "rce_cross_scale_graph_init": args.rce_cross_scale_graph_init,
+     "rce_cross_scale_graph_norm": args.rce_cross_scale_graph_norm,
++    "rce_use_l2h_retrieval": args.rce_use_l2h_retrieval,
++    "rce_l2h_mode": args.rce_l2h_mode,
++    "rce_l2h_low_topk": args.rce_l2h_low_topk,
++    "rce_l2h_high_max_per_low": args.rce_l2h_high_max_per_low,
++    "rce_l2h_scale_ratio": args.rce_l2h_scale_ratio,
++    "rce_l2h_patch_footprint_ratio": args.rce_l2h_patch_footprint_ratio,
++    "rce_l2h_alpha_init": args.rce_l2h_alpha_init,
++    "rce_l2h_scale": args.rce_l2h_scale,
++    "rce_l2h_fusion": args.rce_l2h_fusion,
++    "rce_l2h_aggregate": args.rce_l2h_aggregate,
++    "rce_l2h_score_mode": args.rce_l2h_score_mode,
++    "rce_l2h_detach_low_scores": args.rce_l2h_detach_low_scores,
++    "rce_l2h_min_high_matches": args.rce_l2h_min_high_matches,
++    "rce_l2h_clip": args.rce_l2h_clip,
+     "rce_use_hcrc": args.rce_use_hcrc,
+     "rce_hcrc_alpha_init": args.rce_hcrc_alpha_init,
+     "rce_hcrc_num_anchors": args.rce_hcrc_num_anchors,
+diff --git a/ViLa-MIL-main/models/model_RCE_MIL_BiomedCLIP_v2.py b/ViLa-MIL-main/models/model_RCE_MIL_BiomedCLIP_v2.py
+index 24eea60..9347f68 100644
+--- a/ViLa-MIL-main/models/model_RCE_MIL_BiomedCLIP_v2.py
++++ b/ViLa-MIL-main/models/model_RCE_MIL_BiomedCLIP_v2.py
+@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
+ import math
+ import logging
+ import os
++from pathlib import Path
+ 
+ import torch
+ import torch.nn as nn
+@@ -17,17 +18,119 @@ from .model_utils import MultiheadAttention
+ from .model_ViLa_MIL_BiomedCLIP import BiomedCLIPTextEncoder
+ from utils.prompt_utils import build_concept_prompt_bundle
+ 
+-from open_clip import create_model_from_pretrained, get_tokenizer
+-
+ logger = logging.getLogger(__name__)
+ 
++DEFAULT_BIOMEDCLIP_REPO = "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
++DEFAULT_BIOMEDCLIP_MODEL = f"hf-hub:{DEFAULT_BIOMEDCLIP_REPO}"
++DEFAULT_TEXT_REPO = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract"
++
++
++def _shared_cache_candidates(repo_root):
++    try:
++        shared_root = repo_root.parents[2]
++    except IndexError:
++        return []
++
++    return [
++        shared_root / "ViLMIL" / "hf_cache",
++        shared_root / "ViLMIL" / "ViLa-MIL-main" / "hf_cache",
++    ]
++
++
++def _candidate_cache_dirs(explicit_cache_dir=None):
++    repo_root = Path(__file__).resolve().parents[1]
++    candidates = [
++        explicit_cache_dir,
++        os.environ.get("HF_HOME"),
++        os.environ.get("HUGGINGFACE_HUB_CACHE"),
++        repo_root / "hf_cache",
++        repo_root.parent / "hf_cache",
++        repo_root / "model_cache",
++        *_shared_cache_candidates(repo_root),
++    ]
++
++    seen = set()
++    resolved = []
++    for candidate in candidates:
++        if not candidate:
++            continue
++        candidate_path = Path(candidate).expanduser()
++        candidate_str = str(candidate_path)
++        if candidate_str in seen:
++            continue
++        seen.add(candidate_str)
++        resolved.append(candidate_path)
++    return resolved
++
++
++def _resolve_snapshot_dir(cache_dir, repo_id):
++    snapshots_dir = Path(cache_dir) / f"models--{repo_id.replace('/', '--')}" / "snapshots"
++    if not snapshots_dir.is_dir():
++        return None
++    snapshot_dirs = sorted(path for path in snapshots_dir.iterdir() if path.is_dir())
++    if not snapshot_dirs:
++        return None
++    return snapshot_dirs[-1]
++
++
++def _bootstrap_hf_environment():
++    for candidate_cache_dir in _candidate_cache_dirs():
++        if not candidate_cache_dir.exists():
++            continue
++
++        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
++        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
++        if not clip_snapshot:
++            continue
++
++        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
++        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
++        if text_snapshot:
++            os.environ.setdefault("HF_HUB_OFFLINE", "1")
++            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
++        return str(candidate_cache_dir)
++
++    return None
++
++
++def _prepare_biomedclip_loading(model_path, cache_dir=None):
++    for candidate_cache_dir in _candidate_cache_dirs(cache_dir):
++        if not candidate_cache_dir.exists():
++            continue
++
++        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
++        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
++        if not clip_snapshot:
++            continue
++
++        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
++        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
++
++        offline_enabled = text_snapshot is not None
++        if offline_enabled:
++            os.environ.setdefault("HF_HUB_OFFLINE", "1")
++            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
++
++        resolved_model_path = model_path
++        if model_path == DEFAULT_BIOMEDCLIP_MODEL:
++            resolved_model_path = f"local-dir:{clip_snapshot}"
++
++        return resolved_model_path, str(candidate_cache_dir), offline_enabled
++
++    return model_path, cache_dir, False
++
++
++_BOOTSTRAP_CACHE_DIR = _bootstrap_hf_environment()
++
++from open_clip import create_model_from_pretrained, get_tokenizer
++
+ 
+ class RCE_MIL_BiomedCLIP(nn.Module):
+     def __init__(
+         self,
+         config,
+         num_classes=2,
+-        model_path="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
++        model_path=DEFAULT_BIOMEDCLIP_MODEL,
+     ):
+         super().__init__()
+         self.loss_ce = nn.CrossEntropyLoss()
+@@ -60,6 +163,43 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+         self.rce_use_cross_scale_graph = bool(getattr(config, "rce_use_cross_scale_graph", False))
+         self.rce_cross_scale_graph_init = float(getattr(config, "rce_cross_scale_graph_init", 0.05))
+         self.rce_cross_scale_graph_norm = str(getattr(config, "rce_cross_scale_graph_norm", "sqrt"))
++        self.rce_use_dynamic_csg = bool(getattr(config, "rce_use_dynamic_csg", False))
++        self.rce_dynamic_csg_mode = str(getattr(config, "rce_dynamic_csg_mode", "evidence_outer"))
++        self.rce_dynamic_csg_alpha_init = float(getattr(config, "rce_dynamic_csg_alpha_init", 0.0))
++        self.rce_dynamic_csg_scale = float(getattr(config, "rce_dynamic_csg_scale", 1.0))
++        self.rce_dynamic_csg_norm = str(getattr(config, "rce_dynamic_csg_norm", "softmax"))
++        self.rce_dynamic_csg_detach_evidence = bool(
++            getattr(config, "rce_dynamic_csg_detach_evidence", False)
++        )
++        self.rce_dynamic_csg_clip = float(getattr(config, "rce_dynamic_csg_clip", 5.0))
++        self.rce_use_ccra = bool(getattr(config, "rce_use_ccra", False))
++        self.rce_ccra_mode = str(getattr(config, "rce_ccra_mode", "concept_query_residual"))
++        self.rce_ccra_alpha_init = float(getattr(config, "rce_ccra_alpha_init", 0.0))
++        self.rce_ccra_scale = float(getattr(config, "rce_ccra_scale", 1.0))
++        self.rce_ccra_num_queries = int(getattr(config, "rce_ccra_num_queries", 0))
++        self.rce_ccra_query_source = str(getattr(config, "rce_ccra_query_source", "prompt_mean"))
++        self.rce_ccra_detach_prompt = bool(getattr(config, "rce_ccra_detach_prompt", False))
++        self.rce_ccra_norm = str(getattr(config, "rce_ccra_norm", "layernorm"))
++        self.rce_ccra_dropout = float(getattr(config, "rce_ccra_dropout", 0.0))
++        self.rce_ccra_clip = float(getattr(config, "rce_ccra_clip", 5.0))
++        self.rce_use_l2h_retrieval = bool(getattr(config, "rce_use_l2h_retrieval", False))
++        self.rce_l2h_mode = str(getattr(config, "rce_l2h_mode", "low_topk_coord_window"))
++        self.rce_l2h_low_topk = int(getattr(config, "rce_l2h_low_topk", 8))
++        self.rce_l2h_high_max_per_low = int(getattr(config, "rce_l2h_high_max_per_low", 16))
++        self.rce_l2h_scale_ratio = float(getattr(config, "rce_l2h_scale_ratio", 1.0))
++        self.rce_l2h_patch_footprint_ratio = float(
++            getattr(config, "rce_l2h_patch_footprint_ratio", 4.0)
++        )
++        self.rce_l2h_alpha_init = float(getattr(config, "rce_l2h_alpha_init", 0.0))
++        self.rce_l2h_scale = float(getattr(config, "rce_l2h_scale", 1.0))
++        self.rce_l2h_fusion = str(getattr(config, "rce_l2h_fusion", "high_region_residual"))
++        self.rce_l2h_aggregate = str(getattr(config, "rce_l2h_aggregate", "mean"))
++        self.rce_l2h_score_mode = str(getattr(config, "rce_l2h_score_mode", "low_prompt_max"))
++        self.rce_l2h_detach_low_scores = bool(
++            getattr(config, "rce_l2h_detach_low_scores", False)
++        )
++        self.rce_l2h_min_high_matches = int(getattr(config, "rce_l2h_min_high_matches", 1))
++        self.rce_l2h_clip = float(getattr(config, "rce_l2h_clip", 5.0))
+         self.enable_logit_breakdown_audit = bool(
+             getattr(config, "enable_logit_breakdown_audit", False)
+         )
+@@ -70,6 +210,24 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+             raise ValueError(
+                 f"Unsupported rce_cross_scale_graph_norm: {self.rce_cross_scale_graph_norm}"
+             )
++        if self.rce_dynamic_csg_mode not in {"evidence_outer"}:
++            raise ValueError(f"Unsupported rce_dynamic_csg_mode: {self.rce_dynamic_csg_mode}")
++        if self.rce_dynamic_csg_norm not in {"softmax", "l1", "none"}:
++            raise ValueError(f"Unsupported rce_dynamic_csg_norm: {self.rce_dynamic_csg_norm}")
++        if self.rce_ccra_mode not in {"concept_query_residual"}:
++            raise ValueError(f"Unsupported rce_ccra_mode: {self.rce_ccra_mode}")
++        if self.rce_ccra_query_source not in {"prompt_mean"}:
++            raise ValueError(f"Unsupported rce_ccra_query_source: {self.rce_ccra_query_source}")
++        if self.rce_ccra_norm not in {"layernorm", "none"}:
++            raise ValueError(f"Unsupported rce_ccra_norm: {self.rce_ccra_norm}")
++        if self.rce_l2h_mode not in {"low_topk_coord_window"}:
++            raise ValueError(f"Unsupported rce_l2h_mode: {self.rce_l2h_mode}")
++        if self.rce_l2h_fusion not in {"high_region_residual"}:
++            raise ValueError(f"Unsupported rce_l2h_fusion: {self.rce_l2h_fusion}")
++        if self.rce_l2h_aggregate not in {"mean"}:
++            raise ValueError(f"Unsupported rce_l2h_aggregate: {self.rce_l2h_aggregate}")
++        if self.rce_l2h_score_mode not in {"low_prompt_max"}:
++            raise ValueError(f"Unsupported rce_l2h_score_mode: {self.rce_l2h_score_mode}")
+         if self.rce_residual_constraint_type not in {"relu_l2"}:
+             raise ValueError(
+                 f"Unsupported rce_residual_constraint_type: {self.rce_residual_constraint_type}"
+@@ -85,16 +243,25 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+         if not self.concept_prompt_path:
+             raise ValueError("RCE_MIL_BiomedCLIP requires a non-empty config.concept_prompt_path")
+ 
+-        print(f"🔬 Loading BiomedCLIP from: {model_path}")
++        resolved_model_path, resolved_cache_dir, offline_enabled = _prepare_biomedclip_loading(model_path)
++        print(f"🔬 Loading BiomedCLIP from: {resolved_model_path}")
++        if resolved_cache_dir:
++            print(f"📦 Using HuggingFace cache: {resolved_cache_dir}")
++        if offline_enabled:
++            print("📴 Offline cache mode enabled")
+         try:
+-            biomedclip_model, _ = create_model_from_pretrained(model_path)
+-            tokenizer = get_tokenizer(model_path)
++            biomedclip_model, _ = create_model_from_pretrained(
++                resolved_model_path,
++                cache_dir=resolved_cache_dir,
++            )
++            tokenizer = get_tokenizer(resolved_model_path)
+         except Exception as e:
+             offline = os.environ.get("HF_HUB_OFFLINE", "0") == "1"
+             msg = (
+                 "[Error] Failed to load BiomedCLIP from HuggingFace Hub. "
+                 "This is usually caused by transient network/proxy/SSL issues or missing local cache.\n"
+-                f"- model_path: {model_path}\n"
++                f"- model_path: {resolved_model_path}\n"
++                f"- cache_dir: {resolved_cache_dir}\n"
+                 f"- HF_HUB_OFFLINE={os.environ.get('HF_HUB_OFFLINE', '0')} (offline={offline})\n"
+                 "Fix options:\n"
+                 "1) Ensure the model is fully downloaded into cache (run a one-time warmup download).\n"
+@@ -136,6 +303,14 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+ 
+         self.rce_cross_scale_graph_adj = None
+         self.rce_cross_scale_graph_alpha = None
++        self.rce_dynamic_csg_alpha = None
++        self.rce_ccra_alpha = None
++        self.rce_l2h_alpha = None
++        self.ccra_prompt_dropout = None
++        self.ccra_norm_low = None
++        self.ccra_norm_high = None
++        self.ccra_attention_low = None
++        self.ccra_attention_high = None
+ 
+         self.last_low_prompt_weights = None
+         self.last_high_prompt_weights = None
+@@ -153,8 +328,19 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+         self.last_cross_scale_logits = None
+         self.last_cross_scale_alpha = None
+         self.last_cross_scale_adj = None
++        self.last_dynamic_csg_breakdown = None
++        self.last_ccra_breakdown = None
+         self.last_logit_breakdown = None
+         self.last_loss_breakdown = None
++        self.last_l2h_retrieval_debug = None
++        self.last_low_patch_concept_scores = None
++        self.last_low_patch_topk_indices = None
++        self.last_low_patch_topk_scores = None
++        self.last_low_patch_coords = None
++        self.last_retrieved_high_patch_indices = None
++        self.last_retrieved_high_patch_coords = None
++        self.last_retrieved_high_patch_match_counts = None
++        self.last_retrieved_high_patch_mask = None
+ 
+         self._initialize_concept_prompt_pool(config)
+         if self.rce_use_cross_scale_graph and self.scale_mode != "dual":
+@@ -162,6 +348,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+                 "rce_use_cross_scale_graph=True but scale_mode=%s; cross-scale graph will be skipped.",
+                 self.scale_mode,
+             )
++        if self.rce_use_ccra:
++            self._initialize_ccra_modules()
++        if self.rce_use_l2h_retrieval:
++            self._initialize_l2h_modules()
+ 
+     def _initialize_concept_prompt_pool(self, config):
+         low_prompt_features, high_prompt_features, _, _, _, _ = build_concept_prompt_bundle(
+@@ -194,6 +384,10 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+             self.rce_cross_scale_graph_alpha = nn.Parameter(
+                 torch.tensor(self.rce_cross_scale_graph_init, dtype=torch.float32)
+             )
++            if self.rce_use_dynamic_csg:
++                self.rce_dynamic_csg_alpha = nn.Parameter(
++                    torch.tensor(self.rce_dynamic_csg_alpha_init, dtype=torch.float32)
++                )
+         print(
+             f"[ConceptPromptPool] enabled for RCE_MIL_BiomedCLIP | "
+             f"path={self.concept_prompt_path} | low_shape={tuple(low_prompt_features.shape)} | "
+@@ -238,18 +432,553 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+         logits_scale = torch.sum(prompt_weights * prompt_evidence, dim=-1)
+         return logits_scale, prompt_weights, prompt_evidence, sim
+ 
++    def _initialize_ccra_modules(self):
++        self.rce_ccra_alpha = nn.Parameter(
++            torch.tensor(self.rce_ccra_alpha_init, dtype=torch.float32)
++        )
++        self.ccra_prompt_dropout = nn.Dropout(p=float(self.rce_ccra_dropout))
++        if self.rce_ccra_norm == "layernorm":
++            self.ccra_norm_low = nn.LayerNorm(self.input_size)
++            self.ccra_norm_high = nn.LayerNorm(self.input_size)
++        self.ccra_attention_low = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
++        self.ccra_attention_high = MultiheadAttention(embed_dim=self.input_size, num_heads=1)
++
++    def _initialize_l2h_modules(self):
++        self.rce_l2h_alpha = nn.Parameter(
++            torch.tensor(self.rce_l2h_alpha_init, dtype=torch.float32)
++        )
++
++    @staticmethod
++    def _shape_list(tensor):
++        return list(tensor.shape) if tensor is not None else None
++
++    @staticmethod
++    def _coords_to_batch_first(coords):
++        if coords is None:
++            return None
++        if coords.dim() == 2:
++            coords = coords.unsqueeze(0)
++        elif coords.dim() != 3:
++            raise ValueError(f"Expected coords rank=2/3, got rank={coords.dim()}")
++        if coords.size(-1) > 2:
++            coords = coords[..., :2]
++        return coords.float()
++
++    @staticmethod
++    def _patch_features_to_batch_first(patch_features):
++        if patch_features.dim() == 2:
++            return patch_features.unsqueeze(0)
++        if patch_features.dim() == 3 and patch_features.size(0) == 1 and patch_features.size(1) != 1:
++            return patch_features
++        if patch_features.dim() == 3 and patch_features.size(1) == 1:
++            return patch_features.transpose(0, 1).contiguous()
++        if patch_features.dim() != 3:
++            raise ValueError(f"Expected patch features rank=2/3, got rank={patch_features.dim()}")
++        return patch_features
++
++    @staticmethod
++    def _estimate_patch_extent(coords):
++        if coords is None or coords.numel() == 0:
++            return None
++        if coords.dim() == 3:
++            coords = coords[0]
++        axis_extents = []
++        for axis in range(min(2, coords.size(-1))):
++            values = torch.unique(coords[:, axis].float())
++            if values.numel() <= 1:
++                continue
++            values = torch.sort(values).values
++            diffs = values[1:] - values[:-1]
++            diffs = diffs[diffs > 0]
++            if diffs.numel() > 0:
++                axis_extents.append(float(torch.quantile(diffs, 0.95).item()))
++        if not axis_extents:
++            return None
++        return max(axis_extents)
++
++    def _reset_l2h_exports(self):
++        self.last_l2h_retrieval_debug = None
++        self.last_low_patch_concept_scores = None
++        self.last_low_patch_topk_indices = None
++        self.last_low_patch_topk_scores = None
++        self.last_low_patch_coords = None
++        self.last_retrieved_high_patch_indices = None
++        self.last_retrieved_high_patch_coords = None
++        self.last_retrieved_high_patch_match_counts = None
++        self.last_retrieved_high_patch_mask = None
++
++    def _export_l2h_debug(
++        self,
++        debug,
++        low_patch_scores=None,
++        topk_indices=None,
++        topk_scores=None,
++        low_patch_coords=None,
++        retrieved_indices=None,
++        retrieved_coords=None,
++        retrieved_match_counts=None,
++        retrieved_mask=None,
++    ):
++        self.last_l2h_retrieval_debug = debug
++        self.last_low_patch_concept_scores = self._detach_cpu(low_patch_scores)
++        self.last_low_patch_topk_indices = self._detach_cpu(topk_indices)
++        self.last_low_patch_topk_scores = self._detach_cpu(topk_scores)
++        self.last_low_patch_coords = self._detach_cpu(low_patch_coords)
++        self.last_retrieved_high_patch_indices = self._detach_cpu(retrieved_indices)
++        self.last_retrieved_high_patch_coords = self._detach_cpu(retrieved_coords)
++        self.last_retrieved_high_patch_match_counts = self._detach_cpu(retrieved_match_counts)
++        self.last_retrieved_high_patch_mask = self._detach_cpu(retrieved_mask)
++
++    def _build_l2h_disabled_debug(self):
++        alpha_value = None
++        if self.rce_l2h_alpha is not None:
++            alpha_value = float(self.rce_l2h_alpha.detach().item())
++        return {
++            "l2h_enabled": False,
++            "l2h_mode": self.rce_l2h_mode,
++            "l2h_alpha": alpha_value,
++            "l2h_scale": float(self.rce_l2h_scale),
++            "l2h_score_mode": self.rce_l2h_score_mode,
++            "l2h_low_topk": int(self.rce_l2h_low_topk),
++            "l2h_high_max_per_low": int(self.rce_l2h_high_max_per_low),
++            "l2h_scale_ratio": float(self.rce_l2h_scale_ratio),
++            "l2h_patch_footprint_ratio": float(self.rce_l2h_patch_footprint_ratio),
++            "low_patch_concept_scores_shape": None,
++            "low_patch_features_shape": None,
++            "high_patch_features_shape": None,
++            "low_coords_shape": None,
++            "high_coords_shape": None,
++            "high_region_features_shape": None,
++            "retrieved_high_patch_features_shape": None,
++            "fused_high_region_features_shape": None,
++            "skipped_reason": "l2h_disabled",
++        }
++
++    def _apply_l2h_retrieval(
++        self,
++        low_patches,
++        high_patches,
++        low_prompt_features,
++        high_region_features,
++        low_coords,
++        high_coords,
++    ):
++        debug = {
++            "l2h_enabled": True,
++            "l2h_mode": self.rce_l2h_mode,
++            "l2h_alpha": None
++            if self.rce_l2h_alpha is None
++            else float(self.rce_l2h_alpha.detach().item()),
++            "l2h_scale": float(self.rce_l2h_scale),
++            "l2h_score_mode": self.rce_l2h_score_mode,
++            "l2h_low_topk": int(self.rce_l2h_low_topk),
++            "l2h_high_max_per_low": int(self.rce_l2h_high_max_per_low),
++            "l2h_scale_ratio": float(self.rce_l2h_scale_ratio),
++            "l2h_patch_footprint_ratio": float(self.rce_l2h_patch_footprint_ratio),
++            "low_patch_concept_scores_shape": None,
++            "low_patch_features_shape": self._shape_list(low_patches),
++            "high_patch_features_shape": self._shape_list(high_patches),
++            "low_coords_shape": self._shape_list(low_coords),
++            "high_coords_shape": self._shape_list(high_coords),
++            "high_region_features_shape": self._shape_list(high_region_features),
++            "retrieved_high_patch_features_shape": None,
++            "fused_high_region_features_shape": None,
++            "skipped_reason": None,
++        }
++
++        if low_coords is None or high_coords is None:
++            debug["skipped_reason"] = "missing_coords"
++            self._export_l2h_debug(debug)
++            return high_region_features
++
++        low_patch_tokens = self._patch_features_to_batch_first(low_patches)
++        high_patch_tokens = self._patch_features_to_batch_first(high_patches)
++        low_coords_bf = self._coords_to_batch_first(low_coords)
++        high_coords_bf = self._coords_to_batch_first(high_coords)
++
++        if low_patch_tokens.size(0) != low_coords_bf.size(0) or high_patch_tokens.size(0) != high_coords_bf.size(0):
++            debug["skipped_reason"] = "coord_batch_mismatch"
++            self._export_l2h_debug(debug)
++            return high_region_features
++        if low_patch_tokens.size(1) != low_coords_bf.size(1) or high_patch_tokens.size(1) != high_coords_bf.size(1):
++            debug["skipped_reason"] = "coord_patch_mismatch"
++            self._export_l2h_debug(debug)
++            return high_region_features
++
++        low_norm = F.normalize(low_patch_tokens.float(), dim=-1)
++        prompt_norm = F.normalize(low_prompt_features.float(), dim=-1)
++        low_patch_sim = torch.einsum("bnd,cpd->bncp", low_norm, prompt_norm)
++        low_patch_scores = low_patch_sim.amax(dim=(-1, -2))
++        if self.rce_l2h_detach_low_scores:
++            low_patch_scores_for_topk = low_patch_scores.detach()
++        else:
++            low_patch_scores_for_topk = low_patch_scores
++        debug["low_patch_concept_scores_shape"] = self._shape_list(low_patch_scores)
++
++        topk = min(max(int(self.rce_l2h_low_topk), 1), low_patch_scores_for_topk.size(1))
++        topk_scores, topk_indices = torch.topk(low_patch_scores_for_topk, k=topk, dim=1)
++        gather_index = topk_indices.unsqueeze(-1).expand(-1, -1, low_coords_bf.size(-1))
++        topk_low_coords = torch.gather(low_coords_bf, 1, gather_index)
++
++        high_extent = self._estimate_patch_extent(high_coords_bf)
++        low_extent = self._estimate_patch_extent(low_coords_bf)
++        if high_extent is None and low_extent is None:
++            debug["skipped_reason"] = "unable_to_estimate_patch_extent"
++            self._export_l2h_debug(
++                debug,
++                low_patch_scores=low_patch_scores,
++                topk_indices=topk_indices,
++                topk_scores=topk_scores,
++                low_patch_coords=topk_low_coords,
++            )
++            return high_region_features
++
++        if high_extent is None:
++            high_extent = low_extent / max(float(self.rce_l2h_patch_footprint_ratio), 1e-6)
++        if low_extent is None:
++            low_extent = high_extent * float(self.rce_l2h_patch_footprint_ratio)
++        query_side = max(
++            float(low_extent) / max(float(self.rce_l2h_scale_ratio), 1e-6),
++            float(high_extent) * float(self.rce_l2h_patch_footprint_ratio),
++        )
++        debug["estimated_low_patch_extent"] = float(low_extent)
++        debug["estimated_high_patch_extent"] = float(high_extent)
++        debug["query_window_side"] = float(query_side)
++
++        batch_size = high_patch_tokens.size(0)
++        max_per_low = max(int(self.rce_l2h_high_max_per_low), 1)
++        retrieved_indices = torch.full(
++            (batch_size, topk, max_per_low),
++            -1,
++            device=high_patch_tokens.device,
++            dtype=torch.long,
++        )
++        retrieved_coords = torch.zeros(
++            (batch_size, topk, max_per_low, high_coords_bf.size(-1)),
++            device=high_coords_bf.device,
++            dtype=high_coords_bf.dtype,
++        )
++        retrieved_mask = torch.zeros(
++            (batch_size, topk, max_per_low),
++            device=high_patch_tokens.device,
++            dtype=torch.bool,
++        )
++        retrieved_features = torch.zeros(
++            (batch_size, topk, max_per_low, high_patch_tokens.size(-1)),
++            device=high_patch_tokens.device,
++            dtype=high_patch_tokens.dtype,
++        )
++        retrieved_match_counts = torch.zeros(
++            (batch_size, topk),
++            device=high_patch_tokens.device,
++            dtype=torch.long,
++        )
++
++        scaled_topk_low_coords = topk_low_coords.float() * float(self.rce_l2h_scale_ratio)
++        for batch_idx in range(batch_size):
++            batch_high_coords = high_coords_bf[batch_idx]
++            batch_high_features = high_patch_tokens[batch_idx]
++            for low_idx in range(topk):
++                low_coord = scaled_topk_low_coords[batch_idx, low_idx]
++                within_x = (batch_high_coords[:, 0] >= low_coord[0]) & (
++                    batch_high_coords[:, 0] <= low_coord[0] + query_side
++                )
++                within_y = (batch_high_coords[:, 1] >= low_coord[1]) & (
++                    batch_high_coords[:, 1] <= low_coord[1] + query_side
++                )
++                match_indices = torch.nonzero(within_x & within_y, as_tuple=False).flatten()
++                if match_indices.numel() == 0:
++                    continue
++                distances = torch.norm(batch_high_coords[match_indices] - low_coord.unsqueeze(0), dim=-1)
++                sort_order = torch.argsort(distances)
++                match_indices = match_indices[sort_order]
++                if match_indices.numel() > max_per_low:
++                    match_indices = match_indices[:max_per_low]
++                if match_indices.numel() < int(self.rce_l2h_min_high_matches):
++                    continue
++                count = match_indices.numel()
++                retrieved_indices[batch_idx, low_idx, :count] = match_indices
++                retrieved_coords[batch_idx, low_idx, :count] = batch_high_coords[match_indices]
++                retrieved_features[batch_idx, low_idx, :count] = batch_high_features[match_indices]
++                retrieved_mask[batch_idx, low_idx, :count] = True
++                retrieved_match_counts[batch_idx, low_idx] = count
++
++        if not retrieved_mask.any():
++            debug["skipped_reason"] = "no_valid_high_matches"
++            debug["retrieved_high_patch_features_shape"] = self._shape_list(retrieved_features)
++            self._export_l2h_debug(
++                debug,
++                low_patch_scores=low_patch_scores,
++                topk_indices=topk_indices,
++                topk_scores=topk_scores,
++                low_patch_coords=topk_low_coords,
++                retrieved_indices=retrieved_indices,
++                retrieved_coords=retrieved_coords,
++                retrieved_match_counts=retrieved_match_counts,
++                retrieved_mask=retrieved_mask,
++            )
++            return high_region_features
++
++        debug["valid_low_patch_count"] = int((retrieved_match_counts > 0).sum().item())
++        debug["retrieved_high_patch_features_shape"] = self._shape_list(retrieved_features)
++        mask_float = retrieved_mask.unsqueeze(-1).float()
++        context_denom = mask_float.sum(dim=(1, 2)).clamp_min(1.0)
++        retrieved_high_context = (retrieved_features.float() * mask_float).sum(dim=(1, 2)) / context_denom
++
++        if self.rce_l2h_aggregate != "mean":
++            raise ValueError(f"Unsupported rce_l2h_aggregate: {self.rce_l2h_aggregate}")
++        if self.rce_l2h_fusion != "high_region_residual":
++            raise ValueError(f"Unsupported rce_l2h_fusion: {self.rce_l2h_fusion}")
++
++        residual = retrieved_high_context.unsqueeze(1)
++        residual = residual * (self.rce_l2h_alpha * float(self.rce_l2h_scale))
++        clip_value = max(float(self.rce_l2h_clip), 1e-6)
++        residual = residual.clamp(min=-clip_value, max=clip_value)
++        fused_high_region_features = high_region_features + residual
++        debug["fused_high_region_features_shape"] = self._shape_list(fused_high_region_features)
++
++        self._export_l2h_debug(
++            debug,
++            low_patch_scores=low_patch_scores,
++            topk_indices=topk_indices,
++            topk_scores=topk_scores,
++            low_patch_coords=topk_low_coords,
++            retrieved_indices=retrieved_indices,
++            retrieved_coords=retrieved_coords,
++            retrieved_match_counts=retrieved_match_counts,
++            retrieved_mask=retrieved_mask,
++        )
++        return fused_high_region_features
++
++    def _build_ccra_prompt_query(self, prompt_features, target_queries):
++        prompt_features = prompt_features.float()
++        if self.rce_ccra_detach_prompt:
++            prompt_features = prompt_features.detach()
++        if self.rce_ccra_query_source == "prompt_mean":
++            prompt_query = prompt_features.mean(dim=(0, 1), keepdim=True)
++        else:
++            raise ValueError(f"Unsupported rce_ccra_query_source: {self.rce_ccra_query_source}")
++        prompt_query = self.ccra_prompt_dropout(prompt_query)
++        if target_queries > 1:
++            prompt_query = prompt_query.expand(target_queries, -1, -1).contiguous()
++        return prompt_query
++
++    def _apply_ccra_to_scale(
++        self,
++        patch_features,
++        original_region_features,
++        prompt_features,
++        attention_layer,
++        norm_layer,
++    ):
++        if patch_features.dim() == 2:
++            patch_tokens = patch_features.unsqueeze(1)
++        elif patch_features.dim() == 3 and patch_features.size(0) == 1 and patch_features.size(1) != 1:
++            patch_tokens = patch_features.transpose(0, 1).contiguous()
++        elif patch_features.dim() == 3:
++            patch_tokens = patch_features
++        else:
++            raise ValueError(f"Expected patch features rank=2/3, got rank={patch_features.dim()}")
++
++        batch_size = patch_tokens.size(1)
++        target_queries = original_region_features.size(1)
++        if self.rce_ccra_num_queries > 0:
++            target_queries = int(self.rce_ccra_num_queries)
++        prompt_query = self._build_ccra_prompt_query(prompt_features.to(patch_tokens.device), target_queries)
++        prompt_query = prompt_query.expand(-1, batch_size, -1).contiguous()
++
++        ccra_region, _ = attention_layer(prompt_query, patch_tokens, patch_tokens)
++        ccra_region = ccra_region.permute(1, 0, 2).contiguous()
++        if ccra_region.size(1) != original_region_features.size(1):
++            if ccra_region.size(1) > original_region_features.size(1):
++                ccra_region = ccra_region[:, : original_region_features.size(1), :]
++            else:
++                repeat_factor = math.ceil(original_region_features.size(1) / ccra_region.size(1))
++                ccra_region = ccra_region.repeat(1, repeat_factor, 1)[:, : original_region_features.size(1), :]
++
++        scale_factor = self.rce_ccra_alpha * float(self.rce_ccra_scale)
++        clip_value = max(float(self.rce_ccra_clip), 1e-6)
++        ccra_delta = torch.clamp(scale_factor * ccra_region, min=-clip_value, max=clip_value)
++        fused_region = original_region_features + ccra_delta
++        if norm_layer is not None:
++            fused_region = norm_layer(fused_region)
++        return {
++            "prompt_query": prompt_query,
++            "ccra_region": ccra_region,
++            "ccra_delta": ccra_delta,
++            "fused_region": fused_region,
++        }
++
++    def _build_ccra_breakdown(
++        self,
++        low_patch_features,
++        high_patch_features,
++        low_prompt_features,
++        high_prompt_features,
++        low_original_region_features,
++        high_original_region_features,
++        low_ccra_payload,
++        high_ccra_payload,
++    ):
++        if not self.rce_use_ccra or low_ccra_payload is None or high_ccra_payload is None:
++            self.last_ccra_breakdown = {
++                "ccra_enabled": False,
++                "ccra_mode": self.rce_ccra_mode,
++                "ccra_alpha": None if self.rce_ccra_alpha is None else float(self.rce_ccra_alpha.detach().item()),
++                "ccra_scale": float(self.rce_ccra_scale),
++                "ccra_query_source": self.rce_ccra_query_source,
++                "ccra_norm": self.rce_ccra_norm,
++                "low_ccra_delta_abs_mean": None,
++                "high_ccra_delta_abs_mean": None,
++                "low_original_region_norm": None,
++                "high_original_region_norm": None,
++                "low_fused_region_norm": None,
++                "high_fused_region_norm": None,
++                "low_ccra_region_norm": None,
++                "high_ccra_region_norm": None,
++                "low_original_region_shape": None,
++                "high_original_region_shape": None,
++                "low_ccra_region_shape": None,
++                "high_ccra_region_shape": None,
++                "low_fused_region_shape": None,
++                "high_fused_region_shape": None,
++                "low_prompt_feature_shape": None,
++                "high_prompt_feature_shape": None,
++                "low_patch_feature_shape": None,
++                "high_patch_feature_shape": None,
++            }
++            return
++
++        def _norm_mean(tensor):
++            return float(torch.norm(tensor.float(), dim=-1).mean().detach().item())
++
++        def _shape_list(tensor):
++            return list(tensor.shape) if tensor is not None else None
++
++        self.last_ccra_breakdown = {
++            "ccra_enabled": True,
++            "ccra_mode": self.rce_ccra_mode,
++            "ccra_alpha": None if self.rce_ccra_alpha is None else float(self.rce_ccra_alpha.detach().item()),
++            "ccra_scale": float(self.rce_ccra_scale),
++            "ccra_query_source": self.rce_ccra_query_source,
++            "ccra_norm": self.rce_ccra_norm,
++            "low_ccra_delta_abs_mean": float(low_ccra_payload["ccra_delta"].abs().mean().detach().item()),
++            "high_ccra_delta_abs_mean": float(high_ccra_payload["ccra_delta"].abs().mean().detach().item()),
++            "low_original_region_norm": _norm_mean(low_original_region_features),
++            "high_original_region_norm": _norm_mean(high_original_region_features),
++            "low_fused_region_norm": _norm_mean(low_ccra_payload["fused_region"]),
++            "high_fused_region_norm": _norm_mean(high_ccra_payload["fused_region"]),
++            "low_ccra_region_norm": _norm_mean(low_ccra_payload["ccra_region"]),
++            "high_ccra_region_norm": _norm_mean(high_ccra_payload["ccra_region"]),
++            "low_original_region_shape": _shape_list(low_original_region_features),
++            "high_original_region_shape": _shape_list(high_original_region_features),
++            "low_ccra_region_shape": _shape_list(low_ccra_payload["ccra_region"]),
++            "high_ccra_region_shape": _shape_list(high_ccra_payload["ccra_region"]),
++            "low_fused_region_shape": _shape_list(low_ccra_payload["fused_region"]),
++            "high_fused_region_shape": _shape_list(high_ccra_payload["fused_region"]),
++            "low_prompt_feature_shape": _shape_list(low_prompt_features),
++            "high_prompt_feature_shape": _shape_list(high_prompt_features),
++            "low_patch_feature_shape": _shape_list(low_patch_features),
++            "high_patch_feature_shape": _shape_list(high_patch_features),
++        }
++
++    @staticmethod
++    def _tensor_stats(tensor):
++        if tensor is None:
++            return None, None
++        tensor = tensor.float()
++        return float(tensor.mean().detach().item()), float(tensor.std(unbiased=False).detach().item())
++
++    def _build_dynamic_csg_delta(self, low_prompt_evidence, high_prompt_evidence):
++        low_basis = low_prompt_evidence.float()
++        high_basis = high_prompt_evidence.float()
++        if self.rce_dynamic_csg_detach_evidence:
++            low_basis = low_basis.detach()
++            high_basis = high_basis.detach()
++
++        if self.rce_dynamic_csg_mode == "evidence_outer":
++            raw_delta = torch.einsum("bcl,bch->bclh", low_basis, high_basis)
++        else:
++            raise ValueError(f"Unsupported rce_dynamic_csg_mode: {self.rce_dynamic_csg_mode}")
++
++        scaled_delta = raw_delta * float(self.rce_dynamic_csg_scale)
++        if self.rce_dynamic_csg_norm == "softmax":
++            delta = F.softmax(scaled_delta.flatten(2), dim=-1).view_as(raw_delta)
++        elif self.rce_dynamic_csg_norm == "l1":
++            denom = scaled_delta.abs().flatten(2).sum(dim=-1, keepdim=True).clamp_min(1e-6)
++            delta = (scaled_delta.flatten(2) / denom).view_as(raw_delta)
++        else:
++            delta = scaled_delta
++
++        clip_value = max(float(self.rce_dynamic_csg_clip), 1e-6)
++        return delta.clamp(min=-clip_value, max=clip_value)
++
+     def _compute_cross_scale_logits(self, low_prompt_evidence, high_prompt_evidence):
+-        effective_adj = torch.tanh(self.rce_cross_scale_graph_adj)
+-        cross_scale_logits = torch.einsum(
++        static_adj = torch.tanh(self.rce_cross_scale_graph_adj)
++        static_cross_scale_logits = torch.einsum(
+             "bcl,clh,bch->bc",
+             low_prompt_evidence.float(),
+-            effective_adj,
++            static_adj,
+             high_prompt_evidence.float(),
+         )
++        effective_adj = static_adj
++        dynamic_cross_scale_logits = static_cross_scale_logits
++        dynamic_delta = None
++        dynamic_enabled = bool(
++            self.rce_use_cross_scale_graph
++            and self.rce_use_dynamic_csg
++            and self.rce_dynamic_csg_alpha is not None
++        )
++
++        if dynamic_enabled:
++            dynamic_delta = self._build_dynamic_csg_delta(low_prompt_evidence, high_prompt_evidence)
++            dynamic_adj = static_adj.unsqueeze(0) + self.rce_dynamic_csg_alpha * dynamic_delta
++            clip_value = max(float(self.rce_dynamic_csg_clip), 1e-6)
++            dynamic_adj = dynamic_adj.clamp(min=-clip_value, max=clip_value)
++            dynamic_cross_scale_logits = torch.einsum(
++                "bcl,bclh,bch->bc",
++                low_prompt_evidence.float(),
++                dynamic_adj,
++                high_prompt_evidence.float(),
++            )
++            effective_adj = dynamic_adj
++
+         if self.rce_cross_scale_graph_norm == "sqrt":
+             norm = math.sqrt(float(low_prompt_evidence.size(-1) * high_prompt_evidence.size(-1)))
+-            cross_scale_logits = cross_scale_logits / max(norm, 1.0)
+-        return cross_scale_logits, effective_adj
++            static_cross_scale_logits = static_cross_scale_logits / max(norm, 1.0)
++            dynamic_cross_scale_logits = dynamic_cross_scale_logits / max(norm, 1.0)
++
++        static_logits_mean, _ = self._tensor_stats(static_cross_scale_logits)
++        dynamic_logits_mean, _ = self._tensor_stats(dynamic_cross_scale_logits)
++        delta_mean, delta_std = self._tensor_stats(dynamic_delta)
++        adj_mean, adj_std = self._tensor_stats(effective_adj)
++        logits_delta = dynamic_cross_scale_logits - static_cross_scale_logits
++        logits_delta_mean, _ = self._tensor_stats(logits_delta if dynamic_enabled else None)
++        logits_delta_abs_mean = (
++            float(logits_delta.abs().mean().detach().item()) if dynamic_enabled else None
++        )
++
++        breakdown = {
++            "dynamic_csg_enabled": dynamic_enabled,
++            "dynamic_csg_alpha": None
++            if self.rce_dynamic_csg_alpha is None
++            else float(self.rce_dynamic_csg_alpha.detach().item()),
++            "dynamic_csg_mode": self.rce_dynamic_csg_mode,
++            "dynamic_csg_scale": float(self.rce_dynamic_csg_scale),
++            "dynamic_csg_norm": self.rce_dynamic_csg_norm,
++            "dynamic_csg_detach_evidence": bool(self.rce_dynamic_csg_detach_evidence),
++            "dynamic_csg_clip": float(self.rce_dynamic_csg_clip),
++            "dynamic_delta_mean": delta_mean,
++            "dynamic_delta_std": delta_std,
++            "dynamic_adj_mean": adj_mean,
++            "dynamic_adj_std": adj_std,
++            "static_csg_logits_mean": static_logits_mean,
++            "dynamic_csg_logits_mean": dynamic_logits_mean,
++            "csg_logits_delta_mean": logits_delta_mean,
++            "csg_logits_delta_abs_mean": logits_delta_abs_mean,
++        }
++        selected_logits = dynamic_cross_scale_logits if dynamic_enabled else static_cross_scale_logits
++        return selected_logits, effective_adj, breakdown
+ 
+     @staticmethod
+     def _detach_cpu(tensor):
+@@ -443,6 +1172,7 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+                 name: {key: self._detach_cpu(value) for key, value in payload.items()}
+                 for name, payload in margin_post.items()
+             },
++            "dynamic_csg": self.last_dynamic_csg_breakdown,
+         }
+ 
+     def set_logit_breakdown_audit(self, enabled=True):
+@@ -451,10 +1181,13 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+             self.last_logit_breakdown = None
+ 
+     def forward(self, x_s, coord_s, x_l, coords_l, label, slide_id=None):
+-        del coord_s, coords_l, slide_id
++        del slide_id
++        self._reset_l2h_exports()
+ 
+         low_patches = x_s.float()
+         high_patches = x_l.float()
++        low_prompt_features = self.low_prompt_features.to(x_s.device)
++        high_prompt_features = self.high_prompt_features.to(x_s.device)
+ 
+         low_region_features = self._aggregate_region_features(
+             low_patches,
+@@ -468,18 +1201,62 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+             self.region_attention_high,
+             self.norm_high,
+         )
++        low_original_region_features = low_region_features
++        high_original_region_features = high_region_features
++
++        if self.rce_use_l2h_retrieval:
++            high_region_features = self._apply_l2h_retrieval(
++                low_patches=low_patches,
++                high_patches=high_patches,
++                low_prompt_features=low_prompt_features,
++                high_region_features=high_region_features,
++                low_coords=coord_s,
++                high_coords=coords_l,
++            )
++        else:
++            self.last_l2h_retrieval_debug = self._build_l2h_disabled_debug()
++
++        low_ccra_payload = None
++        high_ccra_payload = None
++        if self.rce_use_ccra:
++            low_ccra_payload = self._apply_ccra_to_scale(
++                low_patches,
++                low_region_features,
++                low_prompt_features,
++                self.ccra_attention_low,
++                self.ccra_norm_low,
++            )
++            high_ccra_payload = self._apply_ccra_to_scale(
++                high_patches,
++                high_region_features,
++                high_prompt_features,
++                self.ccra_attention_high,
++                self.ccra_norm_high,
++            )
++            low_region_features = low_ccra_payload["fused_region"]
++            high_region_features = high_ccra_payload["fused_region"]
++        self._build_ccra_breakdown(
++            low_patch_features=low_patches,
++            high_patch_features=high_patches,
++            low_prompt_features=low_prompt_features,
++            high_prompt_features=high_prompt_features,
++            low_original_region_features=low_original_region_features,
++            high_original_region_features=high_original_region_features,
++            low_ccra_payload=low_ccra_payload,
++            high_ccra_payload=high_ccra_payload,
++        )
+ 
+         low_concept_prior = self.low_concept_prior if self.rce_use_concept_prior else None
+         high_concept_prior = self.high_concept_prior if self.rce_use_concept_prior else None
+ 
+         logits_low, low_prompt_weights, low_prompt_evidence, low_region_concept_sim = self._compute_scale_logits(
+             low_region_features,
+-            self.low_prompt_features.to(x_s.device),
++            low_prompt_features,
+             concept_prior=low_concept_prior,
+         )
+         logits_high, high_prompt_weights, high_prompt_evidence, high_region_concept_sim = self._compute_scale_logits(
+             high_region_features,
+-            self.high_prompt_features.to(x_s.device),
++            high_prompt_features,
+             concept_prior=high_concept_prior,
+         )
+ 
+@@ -532,17 +1309,33 @@ class RCE_MIL_BiomedCLIP(nn.Module):
+             self.last_visual_logits = None
+ 
+         if self.rce_use_cross_scale_graph and self.scale_mode == "dual":
+-            raw_cross_scale_logits, effective_adj = self._compute_cross_scale_logits(
++            raw_cross_scale_logits, effective_adj, dynamic_csg_breakdown = self._compute_cross_scale_logits(
+                 low_prompt_evidence,
+                 high_prompt_evidence,
+             )
+             alpha = self.rce_cross_scale_graph_alpha
+             weighted_cross_scale_logits = alpha * raw_cross_scale_logits
+             final_logits = final_logits + weighted_cross_scale_logits
++            self.last_dynamic_csg_breakdown = dynamic_csg_breakdown
+             self.last_cross_scale_logits = weighted_cross_scale_logits.detach().cpu()
+             self.last_cross_scale_alpha = alpha.detach().cpu()
+             self.last_cross_scale_adj = effective_adj.detach().cpu()
+         else:
++            self.last_dynamic_csg_breakdown = {
++                "dynamic_csg_enabled": False,
++                "dynamic_csg_alpha": None
++                if self.rce_dynamic_csg_alpha is None
++                else float(self.rce_dynamic_csg_alpha.detach().item()),
++                "dynamic_csg_mode": self.rce_dynamic_csg_mode,
++                "dynamic_delta_mean": None,
++                "dynamic_delta_std": None,
++                "dynamic_adj_mean": None,
++                "dynamic_adj_std": None,
++                "static_csg_logits_mean": None,
++                "dynamic_csg_logits_mean": None,
++                "csg_logits_delta_mean": None,
++                "csg_logits_delta_abs_mean": None,
++            }
+             self.last_cross_scale_logits = None
+             self.last_cross_scale_alpha = None
+             self.last_cross_scale_adj = None
+diff --git a/ViLa-MIL-main/models/model_ViLa_MIL_BiomedCLIP.py b/ViLa-MIL-main/models/model_ViLa_MIL_BiomedCLIP.py
+index 2e5a56a..8e68b36 100644
+--- a/ViLa-MIL-main/models/model_ViLa_MIL_BiomedCLIP.py
++++ b/ViLa-MIL-main/models/model_ViLa_MIL_BiomedCLIP.py
+@@ -10,16 +10,119 @@ import logging
+ import math
+ import os
+ import warnings
++from pathlib import Path
+ 
+ import torch
+ import torch.nn as nn
+ from torch.nn import functional as F
+ 
+-from open_clip import create_model_from_pretrained, get_tokenizer
+-
+ from .model_utils import MultiheadAttention
+ from utils.prompt_utils import build_concept_prompt_bundle, build_concept_prompt_tensors, build_concept_text_features
+ 
++DEFAULT_BIOMEDCLIP_REPO = "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
++DEFAULT_BIOMEDCLIP_MODEL = f"hf-hub:{DEFAULT_BIOMEDCLIP_REPO}"
++DEFAULT_TEXT_REPO = "microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract"
++
++
++def _shared_cache_candidates(repo_root):
++    try:
++        shared_root = repo_root.parents[2]
++    except IndexError:
++        return []
++
++    return [
++        shared_root / "ViLMIL" / "hf_cache",
++        shared_root / "ViLMIL" / "ViLa-MIL-main" / "hf_cache",
++    ]
++
++
++def _candidate_cache_dirs(explicit_cache_dir=None):
++    repo_root = Path(__file__).resolve().parents[1]
++    candidates = [
++        explicit_cache_dir,
++        os.environ.get("HF_HOME"),
++        os.environ.get("HUGGINGFACE_HUB_CACHE"),
++        repo_root / "hf_cache",
++        repo_root.parent / "hf_cache",
++        repo_root / "model_cache",
++        *_shared_cache_candidates(repo_root),
++    ]
++
++    seen = set()
++    resolved = []
++    for candidate in candidates:
++        if not candidate:
++            continue
++        candidate_path = Path(candidate).expanduser()
++        candidate_str = str(candidate_path)
++        if candidate_str in seen:
++            continue
++        seen.add(candidate_str)
++        resolved.append(candidate_path)
++    return resolved
++
++
++def _resolve_snapshot_dir(cache_dir, repo_id):
++    snapshots_dir = Path(cache_dir) / f"models--{repo_id.replace('/', '--')}" / "snapshots"
++    if not snapshots_dir.is_dir():
++        return None
++    snapshot_dirs = sorted(path for path in snapshots_dir.iterdir() if path.is_dir())
++    if not snapshot_dirs:
++        return None
++    return snapshot_dirs[-1]
++
++
++def _bootstrap_hf_environment():
++    for candidate_cache_dir in _candidate_cache_dirs():
++        if not candidate_cache_dir.exists():
++            continue
++
++        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
++        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
++        if not clip_snapshot:
++            continue
++
++        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
++        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
++        if text_snapshot:
++            os.environ.setdefault("HF_HUB_OFFLINE", "1")
++            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
++        return str(candidate_cache_dir)
++
++    return None
++
++
++def _prepare_biomedclip_loading(model_path, cache_dir=None):
++    for candidate_cache_dir in _candidate_cache_dirs(cache_dir):
++        if not candidate_cache_dir.exists():
++            continue
++
++        clip_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_BIOMEDCLIP_REPO)
++        text_snapshot = _resolve_snapshot_dir(candidate_cache_dir, DEFAULT_TEXT_REPO)
++        if not clip_snapshot:
++            continue
++
++        os.environ.setdefault("HF_HOME", str(candidate_cache_dir))
++        os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(candidate_cache_dir))
++
++        offline_enabled = text_snapshot is not None
++        if offline_enabled:
++            os.environ.setdefault("HF_HUB_OFFLINE", "1")
++            os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
++
++        resolved_model_path = model_path
++        if model_path == DEFAULT_BIOMEDCLIP_MODEL:
++            resolved_model_path = f"local-dir:{clip_snapshot}"
++
++        return resolved_model_path, str(candidate_cache_dir), offline_enabled
++
++    return model_path, cache_dir, False
++
++
++_BOOTSTRAP_CACHE_DIR = _bootstrap_hf_environment()
++
++from open_clip import create_model_from_pretrained, get_tokenizer
++
+ logger = logging.getLogger(__name__)
+ 
+ 
+@@ -254,7 +357,7 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
+         self,
+         config,
+         num_classes=2,
+-        model_path="hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
++        model_path=DEFAULT_BIOMEDCLIP_MODEL,
+     ):
+         super().__init__()
+         self.loss_ce = nn.CrossEntropyLoss()
+@@ -268,16 +371,25 @@ class ViLa_MIL_BiomedCLIP(nn.Module):
+         self.attention_U = nn.Sequential(nn.Linear(self.L, self.D), nn.Sigmoid())
+         self.attention_weights = nn.Linear(self.D, self.K)
+ 
+-        print(f"🔬 Loading BiomedCLIP from: {model_path}")
++        resolved_model_path, resolved_cache_dir, offline_enabled = _prepare_biomedclip_loading(model_path)
++        print(f"🔬 Loading BiomedCLIP from: {resolved_model_path}")
++        if resolved_cache_dir:
++            print(f"📦 Using HuggingFace cache: {resolved_cache_dir}")
++        if offline_enabled:
++            print("📴 Offline cache mode enabled")
+         try:
+-            biomedclip_model, _ = create_model_from_pretrained(model_path)
+-            tokenizer = get_tokenizer(model_path)
++            biomedclip_model, _ = create_model_from_pretrained(
++                resolved_model_path,
++                cache_dir=resolved_cache_dir,
++            )
++            tokenizer = get_tokenizer(resolved_model_path)
+         except Exception as e:
+             offline = os.environ.get("HF_HUB_OFFLINE", "0") == "1"
+             msg = (
+                 "[Error] Failed to load BiomedCLIP from HuggingFace Hub. "
+                 "This is usually caused by transient network/proxy/SSL issues or missing local cache.\n"
+-                f"- model_path: {model_path}\n"
++                f"- model_path: {resolved_model_path}\n"
++                f"- cache_dir: {resolved_cache_dir}\n"
+                 f"- HF_HUB_OFFLINE={os.environ.get('HF_HUB_OFFLINE', '0')} (offline={offline})\n"
+                 "Fix options:\n"
+                 "1) Ensure the model is fully downloaded into cache (run a one-time warmup download).\n"
+diff --git a/ViLa-MIL-main/utils/core_utils.py b/ViLa-MIL-main/utils/core_utils.py
+index cbbcaa3..3573a65 100644
+--- a/ViLa-MIL-main/utils/core_utils.py
++++ b/ViLa-MIL-main/utils/core_utils.py
+@@ -81,7 +81,7 @@ class EarlyStopping:
+         self.counter = 0
+         self.best_score = None
+         self.early_stop = False
+-        self.val_loss_min = np.Inf
++        self.val_loss_min = np.inf
+ 
+     def __call__(self, epoch, val_loss, model, ckpt_name = 'checkpoint.pt'):
+         # Use negative val_loss so that larger score is better
+@@ -188,6 +188,24 @@ def train(datasets, cur, args):
+ 
+         model = ViLa_MIL_BiomedCLIP(config=config, num_classes=args.n_classes)
+ 
++    elif args.model_type == 'ViLa_MIL_BiomedCLIP_AofeiClean':
++        print('🧪 Using Aofei clean BiomedCLIP-only ViLa-MIL baseline')
++        import ml_collections
++        from models.model_ViLa_MIL_BiomedCLIP_AofeiClean import ViLa_MIL_BiomedCLIP_AofeiClean
++
++        config = ml_collections.ConfigDict()
++        config.input_size = 512
++        config.hidden_size = 192
++        config.text_prompt = args.text_prompt
++        config.text_prompt_path = getattr(args, 'text_prompt_path', None)
++        config.class_names = getattr(args, 'class_names', None)
++        config.prototype_number = args.prototype_number
++        config.finetune_text_encoder = bool(getattr(args, 'finetune_text_encoder', False))
++        config.text_finetune_mode = str(getattr(args, 'text_finetune_mode', 'proj'))
++        config.text_unfreeze_last_n = int(getattr(args, 'text_unfreeze_last_n', 2))
++
++        model = ViLa_MIL_BiomedCLIP_AofeiClean(config=config, num_classes=args.n_classes)
++
+     elif args.model_type in {'RCE_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP_v2', 'DEG_MIL_BiomedCLIP'}:
+         import ml_collections
+         if args.model_type == 'RCE_MIL_BiomedCLIP':
+@@ -251,6 +269,39 @@ def train(datasets, cur, args):
+         config.rce_use_cross_scale_graph = bool(getattr(args, 'rce_use_cross_scale_graph', False))
+         config.rce_cross_scale_graph_init = float(getattr(args, 'rce_cross_scale_graph_init', 0.05))
+         config.rce_cross_scale_graph_norm = str(getattr(args, 'rce_cross_scale_graph_norm', 'sqrt'))
++        config.rce_use_dynamic_csg = bool(getattr(args, 'rce_use_dynamic_csg', False))
++        config.rce_dynamic_csg_mode = str(getattr(args, 'rce_dynamic_csg_mode', 'evidence_outer'))
++        config.rce_dynamic_csg_alpha_init = float(getattr(args, 'rce_dynamic_csg_alpha_init', 0.0))
++        config.rce_dynamic_csg_scale = float(getattr(args, 'rce_dynamic_csg_scale', 1.0))
++        config.rce_dynamic_csg_norm = str(getattr(args, 'rce_dynamic_csg_norm', 'softmax'))
++        config.rce_dynamic_csg_detach_evidence = bool(
++            getattr(args, 'rce_dynamic_csg_detach_evidence', False)
++        )
++        config.rce_dynamic_csg_clip = float(getattr(args, 'rce_dynamic_csg_clip', 5.0))
++        config.rce_use_ccra = bool(getattr(args, 'rce_use_ccra', False))
++        config.rce_ccra_mode = str(getattr(args, 'rce_ccra_mode', 'concept_query_residual'))
++        config.rce_ccra_alpha_init = float(getattr(args, 'rce_ccra_alpha_init', 0.0))
++        config.rce_ccra_scale = float(getattr(args, 'rce_ccra_scale', 1.0))
++        config.rce_ccra_num_queries = int(getattr(args, 'rce_ccra_num_queries', 0))
++        config.rce_ccra_query_source = str(getattr(args, 'rce_ccra_query_source', 'prompt_mean'))
++        config.rce_ccra_detach_prompt = bool(getattr(args, 'rce_ccra_detach_prompt', False))
++        config.rce_ccra_norm = str(getattr(args, 'rce_ccra_norm', 'layernorm'))
++        config.rce_ccra_dropout = float(getattr(args, 'rce_ccra_dropout', 0.0))
++        config.rce_ccra_clip = float(getattr(args, 'rce_ccra_clip', 5.0))
++        config.rce_use_l2h_retrieval = bool(getattr(args, 'rce_use_l2h_retrieval', False))
++        config.rce_l2h_mode = str(getattr(args, 'rce_l2h_mode', 'low_topk_coord_window'))
++        config.rce_l2h_low_topk = int(getattr(args, 'rce_l2h_low_topk', 8))
++        config.rce_l2h_high_max_per_low = int(getattr(args, 'rce_l2h_high_max_per_low', 16))
++        config.rce_l2h_scale_ratio = float(getattr(args, 'rce_l2h_scale_ratio', 1.0))
++        config.rce_l2h_patch_footprint_ratio = float(getattr(args, 'rce_l2h_patch_footprint_ratio', 4.0))
++        config.rce_l2h_alpha_init = float(getattr(args, 'rce_l2h_alpha_init', 0.0))
++        config.rce_l2h_scale = float(getattr(args, 'rce_l2h_scale', 1.0))
++        config.rce_l2h_fusion = str(getattr(args, 'rce_l2h_fusion', 'high_region_residual'))
++        config.rce_l2h_aggregate = str(getattr(args, 'rce_l2h_aggregate', 'mean'))
++        config.rce_l2h_score_mode = str(getattr(args, 'rce_l2h_score_mode', 'low_prompt_max'))
++        config.rce_l2h_detach_low_scores = bool(getattr(args, 'rce_l2h_detach_low_scores', False))
++        config.rce_l2h_min_high_matches = int(getattr(args, 'rce_l2h_min_high_matches', 1))
++        config.rce_l2h_clip = float(getattr(args, 'rce_l2h_clip', 5.0))
+         config.rce_use_hcrc = bool(getattr(args, 'rce_use_hcrc', False))
+         config.rce_hcrc_alpha_init = float(getattr(args, 'rce_hcrc_alpha_init', 0.05))
+         config.rce_hcrc_num_anchors = int(getattr(args, 'rce_hcrc_num_anchors', 16))
+@@ -308,11 +359,17 @@ def train(datasets, cur, args):
+ 
+     # After BiomedCLIP loads successfully once, lock HF Hub into offline mode so later folds
+     # won't fail due to transient SSL/proxy/network issues.
+-    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP', 'RCE_MIL_BiomedCLIP_v2', 'DEG_MIL_BiomedCLIP'}:
++    if args.model_type in {
++        'ViLa_MIL_BiomedCLIP',
++        'ViLa_MIL_BiomedCLIP_AofeiClean',
++        'RCE_MIL_BiomedCLIP',
++        'RCE_MIL_BiomedCLIP_v2',
++        'DEG_MIL_BiomedCLIP',
++    }:
+         if os.environ.get('HF_HUB_OFFLINE', '0') != '1':
+             _lock_hf_offline_for_remaining_folds()
+ 
+-    if args.model_type == 'ViLa_MIL_BiomedCLIP':
++    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}:
+         finetune_flag = bool(getattr(args, 'finetune_text_encoder', False))
+         text_trainable = 0
+         prompt_trainable = 0
+@@ -343,7 +400,7 @@ def train(datasets, cur, args):
+     optimizer = get_optim(model, args)
+     print('Done!')
+ 
+-    if args.model_type == 'ViLa_MIL_BiomedCLIP':
++    if args.model_type in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}:
+         try:
+             groups = getattr(optimizer, 'param_groups', [])
+             if groups:
+diff --git a/ViLa-MIL-main/utils/utils.py b/ViLa-MIL-main/utils/utils.py
+index cd3490c..36868c5 100644
+--- a/ViLa-MIL-main/utils/utils.py
++++ b/ViLa-MIL-main/utils/utils.py
+@@ -99,7 +99,7 @@ def get_optim(model, args):
+ 
+ 	# BiomedCLIP: parameter groups (prompt / text / others)
+ 	use_param_groups = bool(
+-		getattr(args, 'model_type', None) == 'ViLa_MIL_BiomedCLIP'
++		getattr(args, 'model_type', None) in {'ViLa_MIL_BiomedCLIP', 'ViLa_MIL_BiomedCLIP_AofeiClean'}
+ 		and hasattr(model, 'prompt_learner')
+ 		and hasattr(model, 'text_encoder')
+ 	)
+@@ -232,4 +232,3 @@ def initialize_weights(module):
+ 		elif isinstance(m, nn.BatchNorm1d):
+ 			nn.init.constant_(m.weight, 1)
+ 			nn.init.constant_(m.bias, 0)
+-

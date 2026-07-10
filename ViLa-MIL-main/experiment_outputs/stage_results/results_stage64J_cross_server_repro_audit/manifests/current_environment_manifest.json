@@ -1,0 +1,57 @@
+{
+  "conda_default_env": "vila_mil_overlay_rt",
+  "conda_prefix": "/opt/conda/envs/vila_mil_overlay_rt",
+  "cuda_available": true,
+  "cuda_device_count": 2,
+  "cuda_devices": [
+    "NVIDIA A30",
+    "NVIDIA A30"
+  ],
+  "cudnn_benchmark": false,
+  "cudnn_deterministic": false,
+  "cudnn_version": 90100,
+  "data_root": "/private/ljh-data/shared/ViLMIL/ViLa-MIL-main/data/yiyuan",
+  "env_vars": {
+    "CUBLAS_WORKSPACE_CONFIG": null,
+    "CUDA_VISIBLE_DEVICES": null,
+    "HF_HOME": null,
+    "HF_HUB_OFFLINE": null,
+    "HUGGINGFACE_HUB_CACHE": null,
+    "PYTHONHASHSEED": null,
+    "TRANSFORMERS_OFFLINE": null
+  },
+  "git_branch": "dev-rce-aofei-split-repro-206200",
+  "git_commit": "05403ec6246d93b81105568e7931d4ebb1a24b42",
+  "git_dirty": true,
+  "gpu_driver_from_nvidia_smi_available": true,
+  "h5py": "3.12.1",
+  "hostname": "dev-wenjinyu-nbnn4jl-wz8p-pod-0",
+  "huggingface_hub": "1.19.0",
+  "ml_collections": "1.1.0",
+  "numpy": "2.5.0",
+  "nvidia_smi_rc": 0,
+  "open_clip": "3.3.0",
+  "os": "Linux-5.4.0-100-generic-x86_64-with-glibc2.35",
+  "pandas": "2.2.3",
+  "pip_freeze_command_rc": 0,
+  "project_root": "/private/ljh-data/shared/Linux_school/ViLMIL",
+  "python_executable": "/opt/conda/envs/vila_mil_overlay_rt/bin/python",
+  "python_version": "3.12.6 | packaged by conda-forge | (main, Sep 22 2024, 14:16:49) [GCC 13.3.0]",
+  "scipy": "1.14.1",
+  "scipy_numpy_compatibility": {
+    "has_warning": false,
+    "installed_numpy_version": "2.5.0",
+    "numpy_satisfies_all_scipy_requirements": false,
+    "scipy_numpy_requirements": [
+      "<2.3,>=1.23.5"
+    ],
+    "warnings": []
+  },
+  "sklearn": "1.5.2",
+  "timestamp_utc": "2026-07-10T03:42:57.029014+00:00",
+  "tokenizers": "0.22.2",
+  "torch_cuda_version": "12.4",
+  "torch_deterministic_algorithms": false,
+  "torch_version": "2.4.1+cu124",
+  "transformers": "5.12.0"
+}

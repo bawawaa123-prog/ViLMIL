@@ -1,0 +1,232 @@
+# Stage64J Config Diff
+
+## Equal Parameters
+- `allow_legacy_scale_fusion_ckpt` = false
+- `class_names` = ["Adenocarcinoma", "NonAdenocarcinoma"]
+- `data_folder_l` = "features_biomedclip_20x"
+- `data_folder_s` = "features_biomedclip_5x"
+- `deg_concept_graph_alpha` = 0.05
+- `deg_concept_graph_topk` = 4
+- `deg_region_graph_alpha` = 0.1
+- `deg_region_graph_k` = 4
+- `deg_use_concept_graph` = false
+- `deg_use_region_graph` = false
+- `dynamic_gate_hidden_dim` = 256
+- `dynamic_gate_residual_mean` = false
+- `k_end` = 4
+- `k_start` = 0
+- `label_frac` = 1.0
+- `lr` = 0.0001
+- `max_epochs` = 20
+- `mode` = "transformer"
+- `model_type` = "RCE_MIL_BiomedCLIP_v2"
+- `n_classes` = 2
+- `num_splits` = 5
+- `opt` = "adam"
+- `patience` = 10
+- `peps_tau` = 0.1
+- `peps_topk` = 3
+- `prompt_dropout` = 0.0
+- `prompt_ensemble_mode` = "embedding_mean"
+- `rce_concept_aux_loss_weight` = 0.2
+- `rce_concept_prior_strength` = 1.0
+- `rce_cross_scale_graph_init` = 0.1
+- `rce_cross_scale_graph_norm` = "sqrt"
+- `rce_hcrc_alpha_init` = 0.05
+- `rce_hcrc_bbox_expand` = 8.0
+- `rce_hcrc_candidate_top_l` = 64
+- `rce_hcrc_child_strategy` = "bbox_containment"
+- `rce_hcrc_coord_mode` = "top_left"
+- `rce_hcrc_export_debug` = false
+- `rce_hcrc_margin_weight` = 0.5
+- `rce_hcrc_min_child_count` = 1
+- `rce_hcrc_nms_radius` = 512.0
+- `rce_hcrc_num_anchors` = 16
+- `rce_hcrc_num_high_children` = 16
+- `rce_hcrc_per_concept_top_m` = 4
+- `rce_hcrc_prompt_scale` = "high"
+- `rce_hcrc_prompt_topk` = 3
+- `rce_hcrc_proposal_radius` = 4096.0
+- `rce_hcrc_scale_ratio` = 1.0
+- `rce_hcrc_top_g_concepts` = 8
+- `rce_lh_consistency_lambda` = 0.0
+- `rce_lh_consistency_margin` = 0.0
+- `rce_logit_scale_init` = 10.0
+- `rce_prarc_conflict_prior_strength` = 0.2
+- `rce_prarc_detach_features` = false
+- `rce_prarc_export_debug` = false
+- `rce_prarc_feature_clip` = 10.0
+- `rce_prarc_gate_dropout` = 0.0
+- `rce_prarc_gate_entropy_lambda` = 0.0
+- `rce_prarc_gate_feature_set` = "v1"
+- `rce_prarc_gate_gain` = 1.0
+- `rce_prarc_gate_hidden_dim` = 16
+- `rce_prarc_gate_init` = 0.8
+- `rce_prarc_gate_last_weight_init` = 0.01
+- `rce_prarc_gate_variance_lambda` = 0.0
+- `rce_prarc_gate_version` = "v1"
+- `rce_prarc_include_optional_features` = false
+- `rce_prarc_use_conflict_prior` = false
+- `rce_prarc_use_gate_entropy_reg` = false
+- `rce_prarc_use_gate_variance_reg` = false
+- `rce_residual_constraint_lambda` = 0.03
+- `rce_residual_constraint_type` = "relu_l2"
+- `rce_residual_ratio_detach` = false
+- `rce_residual_ratio_eps` = 1e-06
+- `rce_residual_ratio_target` = 0.5
+- `rce_use_concept_aux_loss` = true
+- `rce_use_concept_prior` = true
+- `rce_use_cross_scale_graph` = true
+- `rce_use_hcrc` = false
+- `rce_use_logit_calibration` = true
+- `rce_use_low_high_consistency_loss` = false
+- `rce_use_prarc_gate` = false
+- `rce_use_residual_constraint` = true
+- `rce_use_visual_evidence_gate` = false
+- `rce_use_visual_residual` = true
+- `rce_visual_gate_init` = 1.0
+- `rce_visual_residual_init` = 0.05
+- `save_peps_weights` = false
+- `save_sap_peps_weights` = false
+- `scale_fusion_mode` = "sum"
+- `scale_gate_dropout` = 0.25
+- `scale_gate_hidden_dim` = 128
+- `scale_mode` = "dual"
+- `scale_residual_gamma` = 0.25
+- `seed` = 1
+- `spatial_lambda` = 1.0
+- `spatial_score_type` = "centroid_mean_dist"
+- `spatial_sigma` = 1.0
+- `split_dir` = "splits/adenocarcinoma/task_adenocarcinoma_strictcv_100"
+- `task` = "task_adenocarcinoma"
+- `use_concept_prompt_pool` = true
+- `use_drop_out` = false
+- `use_dynamic_prompt_gate` = false
+- `weighted_sample` = false
+
+## Different Parameters
+- `concept_prompt_path`: old="/xiangmu/ViLMIL/ViLa-MIL-main/dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json" | new="dataset_csv/private_lung_concept_prompt_pool_stage2_core12.json" | path_note=unresolved_path
+- `data_root_dir`: old="/xiangmu/data/VILMIL" | new="data/yiyuan" | path_note=unresolved_path
+- `experiment`: old="rce_v2_rcD_l003_t050_aux020_5fold_e20" | new="adenocarcinoma_rce_step58C_server_only_206200" | path_note=n/a
+- `results_dir`: old="results_stage58C_residual_constrained_configD_5fold" | new="experiment_outputs/stage_results/results_stage64I_rce_step58C_server_only_206200" | path_note=different_tree
+
+## Only In Old Config
+- None
+
+## Only In New Config
+- `rce_l2h_aggregate` = "mean"
+- `rce_l2h_alpha_init` = 0.0
+- `rce_l2h_clip` = 5.0
+- `rce_l2h_detach_low_scores` = false
+- `rce_l2h_fusion` = "high_region_residual"
+- `rce_l2h_high_max_per_low` = 16
+- `rce_l2h_low_topk` = 8
+- `rce_l2h_min_high_matches` = 1
+- `rce_l2h_mode` = "low_topk_coord_window"
+- `rce_l2h_patch_footprint_ratio` = 4.0
+- `rce_l2h_scale` = 1.0
+- `rce_l2h_scale_ratio` = 1.0
+- `rce_l2h_score_mode` = "low_prompt_max"
+- `rce_use_l2h_retrieval` = false
+
+## Path Parameters With Content Check
+- `results_dir`: old="results_stage58C_residual_constrained_configD_5fold" | new="experiment_outputs/stage_results/results_stage64I_rce_step58C_server_only_206200" | content=different_tree
+- `split_dir`: old="splits/adenocarcinoma/task_adenocarcinoma_strictcv_100" | new="splits/adenocarcinoma/task_adenocarcinoma_strictcv_100" | content=same_tree
+
+## Args Matching argparse Defaults
+- `allow_legacy_scale_fusion_ckpt`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_concept_graph_alpha`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_concept_graph_topk`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_region_graph_alpha`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_region_graph_k`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_use_concept_graph`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `deg_use_region_graph`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `dynamic_gate_hidden_dim`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `dynamic_gate_residual_mean`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `label_frac`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `lr`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `mode`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `opt`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `peps_tau`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `peps_topk`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `prompt_dropout`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `prompt_ensemble_mode`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `rce_concept_prior_strength`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `rce_cross_scale_graph_norm`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `rce_hcrc_alpha_init`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_bbox_expand`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_candidate_top_l`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_child_strategy`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_coord_mode`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_export_debug`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_margin_weight`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_min_child_count`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_nms_radius`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_num_anchors`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_num_high_children`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_per_concept_top_m`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_prompt_scale`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_prompt_topk`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_proposal_radius`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_scale_ratio`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_hcrc_top_g_concepts`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_aggregate`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_alpha_init`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_clip`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_detach_low_scores`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_fusion`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_high_max_per_low`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_low_topk`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_min_high_matches`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_mode`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_patch_footprint_ratio`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_scale`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_scale_ratio`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_l2h_score_mode`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_lh_consistency_lambda`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_lh_consistency_margin`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_logit_scale_init`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `rce_prarc_conflict_prior_strength`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_detach_features`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_export_debug`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_feature_clip`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_dropout`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_entropy_lambda`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_feature_set`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_gain`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_hidden_dim`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_init`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_last_weight_init`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_variance_lambda`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_gate_version`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_include_optional_features`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_use_conflict_prior`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_use_gate_entropy_reg`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_prarc_use_gate_variance_reg`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_residual_constraint_type`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_residual_ratio_detach`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_residual_ratio_eps`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_residual_ratio_target`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `rce_use_hcrc`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_use_l2h_retrieval`: old_matches_default=False | new_matches_default=True | old_explicit_stage58c=False
+- `rce_use_low_high_consistency_loss`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_use_prarc_gate`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_use_visual_evidence_gate`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `rce_visual_gate_init`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `save_peps_weights`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `save_sap_peps_weights`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `scale_fusion_mode`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `scale_gate_dropout`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `scale_gate_hidden_dim`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `scale_mode`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `scale_residual_gamma`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `seed`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=True
+- `spatial_lambda`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `spatial_score_type`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `spatial_sigma`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `use_dynamic_prompt_gate`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+- `weighted_sample`: old_matches_default=True | new_matches_default=True | old_explicit_stage58c=False
+
+## Notes
+- `old_explicit_in_stage58c_script` is derived from `scripts/experiments/run_stage58C_residual_constrained_configD_5fold.sh`.
+- No authoritative Step64I launch script was found in the result directory, so `new_matches_new_default` is an inference based on `main.py` defaults, not proof that the CLI omitted that argument.
