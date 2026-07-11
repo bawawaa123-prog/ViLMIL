@@ -1,0 +1,5 @@
+{
+  "historical_head_expected": "c1253e8b122f6c3e97188d2b482e89e4d29e54ed",
+  "step64J_commands_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64J_cross_server_repro_audit/commands",
+  "step64K_output_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics"
+}

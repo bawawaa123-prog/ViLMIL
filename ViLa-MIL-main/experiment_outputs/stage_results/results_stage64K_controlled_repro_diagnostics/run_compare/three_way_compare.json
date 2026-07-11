@@ -1,0 +1,864 @@
+{
+  "decision": {
+    "current_close_to_old": true,
+    "old_close_to_historical": false,
+    "root_cause_hint": "情况2：服务器环境、H5、BiomedCLIP cache provenance 或非确定性更可疑。",
+    "threshold_note": "辅助阈值参考：AUC <= 0.005, ACC <= 0.01。"
+  },
+  "fold2": {
+    "currentcode": {
+      "epoch_summary": {
+        "best_val_auc": 0.9948290045833824,
+        "best_val_auc_epoch": 8,
+        "best_val_loss": 0.1075985456463405,
+        "best_val_loss_epoch": 8,
+        "best_vs_last_val_auc_delta": 0.0009401809848396114,
+        "last_epoch": 20,
+        "last_train_loss": 0.039576029860272,
+        "last_val_acc": 0.9742268041237112,
+        "last_val_auc": 0.9938888235985428,
+        "last_val_f1": 0.9713990859501695,
+        "last_val_loss": 0.123141959674726
+      },
+      "files": {
+        "checkpoints": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/s_1_checkpoint.pt"
+        ],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/split_1_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/result_partial_1_1.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/splits_1.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/summary_partial_1_1.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.888375946969697,
+        "fold": 2,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_acc": 0.9742268041237112,
+        "val_auc": 0.9938888235985428
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2",
+      "metrics": {
+        "balanced_acc": 0.888375946969697,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_auc": 0.9938888235985428
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1/split_1_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 7,
+          "fp": 15,
+          "tn": 113,
+          "tp": 59
+        },
+        "positive_rate_pred": 0.38144329896907214,
+        "positive_rate_true": 0.3402061855670103,
+        "prob_max": 0.9999983310699463,
+        "prob_mean": 0.3708966869853893,
+        "prob_min": 1.4997947801020928e-05,
+        "prob_quantiles": {
+          "p10": 2.3944673921505454e-05,
+          "p25": 6.17444129602518e-05,
+          "p50": 0.005929073551669717,
+          "p75": 0.9777996093034744,
+          "p90": 0.9999678254127502
+        },
+        "prob_std": 0.45617606218720474,
+        "sample_count": 194
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold2/stage64K_currentcode_fold2_s1",
+      "summary_row": {
+        "Unnamed: 0": 0,
+        "balanced_acc": 0.888375946969697,
+        "folds": 1,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_auc": 0.9938888235985428
+      }
+    },
+    "fold_name": "Fold 2",
+    "historical": {
+      "epoch_summary": {
+        "best_val_auc": 0.9951815724526972,
+        "best_val_auc_epoch": 9,
+        "best_val_loss": 0.1299507639079595,
+        "best_val_loss_epoch": 18,
+        "best_vs_last_val_auc_delta": 0.0015277941003644102,
+        "last_epoch": 20,
+        "last_train_loss": 0.0368395584438734,
+        "last_val_acc": 0.9536082474226804,
+        "last_val_auc": 0.9936537783523328,
+        "last_val_f1": 0.94774176169525,
+        "last_val_loss": 0.1742536399449199
+      },
+      "files": {
+        "checkpoints": [],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_0_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_1_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_2_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_3_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_4_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/result.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_0.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_1.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_2.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_3.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_4.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/summary.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.8966619318181819,
+        "fold": 2,
+        "pr_auc": 0.9102771277013492,
+        "sensitivity": 0.8636363636363636,
+        "specificity": 0.9296875,
+        "test_acc": 0.9072164948453608,
+        "test_auc": 0.945904356060606,
+        "test_f1": 0.8966619318181819,
+        "val_acc": 0.9536082474226804,
+        "val_auc": 0.9936537783523328
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1",
+      "metrics": {
+        "balanced_acc": 0.8966619318181819,
+        "pr_auc": 0.9102771277013492,
+        "sensitivity": 0.8636363636363636,
+        "specificity": 0.9296875,
+        "test_acc": 0.9072164948453608,
+        "test_auc": 0.945904356060606,
+        "test_f1": 0.8966619318181819,
+        "val_auc": 0.9936537783523328
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_1_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 9,
+          "fp": 9,
+          "tn": 119,
+          "tp": 57
+        },
+        "positive_rate_pred": 0.3402061855670103,
+        "positive_rate_true": 0.3402061855670103,
+        "prob_max": 0.9999983310699463,
+        "prob_mean": 0.34457219420228846,
+        "prob_min": 6.158141331980005e-06,
+        "prob_quantiles": {
+          "p10": 1.6273507571895607e-05,
+          "p25": 4.985759733244777e-05,
+          "p50": 0.0016830399981699884,
+          "p75": 0.9891246557235718,
+          "p90": 0.9999618053436279
+        },
+        "prob_std": 0.4465655560616782,
+        "sample_count": 194
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1",
+      "summary_row": {
+        "Unnamed: 0": 1,
+        "balanced_acc": 0.8966619318181819,
+        "folds": 1,
+        "pr_auc": 0.9102771277013492,
+        "sensitivity": 0.8636363636363636,
+        "specificity": 0.9296875,
+        "test_acc": 0.9072164948453608,
+        "test_auc": 0.945904356060606,
+        "test_f1": 0.8966619318181819,
+        "val_auc": 0.9936537783523328
+      }
+    },
+    "metric_deltas": {
+      "historical_vs_current": {
+        "balanced_acc": {
+          "abs_diff": 0.008285984848484862,
+          "left": 0.8966619318181819,
+          "right": 0.888375946969697,
+          "signed_diff": -0.008285984848484862
+        },
+        "pr_auc": {
+          "abs_diff": 0.037382462815756856,
+          "left": 0.9102771277013492,
+          "right": 0.8728946648855923,
+          "signed_diff": -0.037382462815756856
+        },
+        "sensitivity": {
+          "abs_diff": 0.030303030303030276,
+          "left": 0.8636363636363636,
+          "right": 0.8939393939393939,
+          "signed_diff": 0.030303030303030276
+        },
+        "specificity": {
+          "abs_diff": 0.046875,
+          "left": 0.9296875,
+          "right": 0.8828125,
+          "signed_diff": -0.046875
+        },
+        "test_acc": {
+          "abs_diff": 0.020618556701030966,
+          "left": 0.9072164948453608,
+          "right": 0.8865979381443299,
+          "signed_diff": -0.020618556701030966
+        },
+        "test_auc": {
+          "abs_diff": 0.017992424242423977,
+          "left": 0.945904356060606,
+          "right": 0.927911931818182,
+          "signed_diff": -0.017992424242423977
+        },
+        "test_f1": {
+          "abs_diff": 0.019588199099287884,
+          "left": 0.8966619318181819,
+          "right": 0.877073732718894,
+          "signed_diff": -0.019588199099287884
+        },
+        "val_auc": {
+          "abs_diff": 0.00023504524620998613,
+          "left": 0.9936537783523328,
+          "right": 0.9938888235985428,
+          "signed_diff": 0.00023504524620998613
+        }
+      },
+      "historical_vs_old": {
+        "balanced_acc": {
+          "abs_diff": 0.008285984848484862,
+          "left": 0.8966619318181819,
+          "right": 0.888375946969697,
+          "signed_diff": -0.008285984848484862
+        },
+        "pr_auc": {
+          "abs_diff": 0.037382462815756856,
+          "left": 0.9102771277013492,
+          "right": 0.8728946648855923,
+          "signed_diff": -0.037382462815756856
+        },
+        "sensitivity": {
+          "abs_diff": 0.030303030303030276,
+          "left": 0.8636363636363636,
+          "right": 0.8939393939393939,
+          "signed_diff": 0.030303030303030276
+        },
+        "specificity": {
+          "abs_diff": 0.046875,
+          "left": 0.9296875,
+          "right": 0.8828125,
+          "signed_diff": -0.046875
+        },
+        "test_acc": {
+          "abs_diff": 0.020618556701030966,
+          "left": 0.9072164948453608,
+          "right": 0.8865979381443299,
+          "signed_diff": -0.020618556701030966
+        },
+        "test_auc": {
+          "abs_diff": 0.017992424242423977,
+          "left": 0.945904356060606,
+          "right": 0.927911931818182,
+          "signed_diff": -0.017992424242423977
+        },
+        "test_f1": {
+          "abs_diff": 0.019588199099287884,
+          "left": 0.8966619318181819,
+          "right": 0.877073732718894,
+          "signed_diff": -0.019588199099287884
+        },
+        "val_auc": {
+          "abs_diff": 0.00023504524620998613,
+          "left": 0.9936537783523328,
+          "right": 0.9938888235985428,
+          "signed_diff": 0.00023504524620998613
+        }
+      },
+      "old_vs_current": {
+        "balanced_acc": {
+          "abs_diff": 0.0,
+          "left": 0.888375946969697,
+          "right": 0.888375946969697,
+          "signed_diff": 0.0
+        },
+        "pr_auc": {
+          "abs_diff": 0.0,
+          "left": 0.8728946648855923,
+          "right": 0.8728946648855923,
+          "signed_diff": 0.0
+        },
+        "sensitivity": {
+          "abs_diff": 0.0,
+          "left": 0.8939393939393939,
+          "right": 0.8939393939393939,
+          "signed_diff": 0.0
+        },
+        "specificity": {
+          "abs_diff": 0.0,
+          "left": 0.8828125,
+          "right": 0.8828125,
+          "signed_diff": 0.0
+        },
+        "test_acc": {
+          "abs_diff": 0.0,
+          "left": 0.8865979381443299,
+          "right": 0.8865979381443299,
+          "signed_diff": 0.0
+        },
+        "test_auc": {
+          "abs_diff": 0.0,
+          "left": 0.927911931818182,
+          "right": 0.927911931818182,
+          "signed_diff": 0.0
+        },
+        "test_f1": {
+          "abs_diff": 0.0,
+          "left": 0.877073732718894,
+          "right": 0.877073732718894,
+          "signed_diff": 0.0
+        },
+        "val_auc": {
+          "abs_diff": 0.0,
+          "left": 0.9938888235985428,
+          "right": 0.9938888235985428,
+          "signed_diff": 0.0
+        }
+      }
+    },
+    "oldcode": {
+      "epoch_summary": {
+        "best_val_auc": 0.9948290045833824,
+        "best_val_auc_epoch": 8,
+        "best_val_loss": 0.1075985456463405,
+        "best_val_loss_epoch": 8,
+        "best_vs_last_val_auc_delta": 0.0009401809848396114,
+        "last_epoch": 20,
+        "last_train_loss": 0.039576029860272,
+        "last_val_acc": 0.9742268041237112,
+        "last_val_auc": 0.9938888235985428,
+        "last_val_f1": 0.9713990859501695,
+        "last_val_loss": 0.123141959674726
+      },
+      "files": {
+        "checkpoints": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/s_1_checkpoint.pt"
+        ],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/split_1_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/result_partial_1_1.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/splits_1.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/summary_partial_1_1.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.888375946969697,
+        "fold": 2,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_acc": 0.9742268041237112,
+        "val_auc": 0.9938888235985428
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2",
+      "metrics": {
+        "balanced_acc": 0.888375946969697,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_auc": 0.9938888235985428
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1/split_1_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 7,
+          "fp": 15,
+          "tn": 113,
+          "tp": 59
+        },
+        "positive_rate_pred": 0.38144329896907214,
+        "positive_rate_true": 0.3402061855670103,
+        "prob_max": 0.9999983310699463,
+        "prob_mean": 0.3708966869853893,
+        "prob_min": 1.4997947801020928e-05,
+        "prob_quantiles": {
+          "p10": 2.3944673921505454e-05,
+          "p25": 6.17444129602518e-05,
+          "p50": 0.005929073551669717,
+          "p75": 0.9777996093034744,
+          "p90": 0.9999678254127502
+        },
+        "prob_std": 0.45617606218720474,
+        "sample_count": 194
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold2/stage64K_oldcode_fold2_s1",
+      "summary_row": {
+        "Unnamed: 0": 0,
+        "balanced_acc": 0.888375946969697,
+        "folds": 1,
+        "pr_auc": 0.8728946648855923,
+        "sensitivity": 0.8939393939393939,
+        "specificity": 0.8828125,
+        "test_acc": 0.8865979381443299,
+        "test_auc": 0.927911931818182,
+        "test_f1": 0.877073732718894,
+        "val_auc": 0.9938888235985428
+      }
+    }
+  },
+  "fold5": {
+    "currentcode": {
+      "epoch_summary": {
+        "best_val_auc": 0.984966856060606,
+        "best_val_auc_epoch": 3,
+        "best_val_loss": 0.1948967345692601,
+        "best_val_loss_epoch": 5,
+        "best_vs_last_val_auc_delta": 0.010416666666666519,
+        "last_epoch": 20,
+        "last_train_loss": 0.0731337926834779,
+        "last_val_acc": 0.8865979381443299,
+        "last_val_auc": 0.9745501893939394,
+        "last_val_f1": 0.8785291438979963,
+        "last_val_loss": 0.4078075485996339
+      },
+      "files": {
+        "checkpoints": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/s_4_checkpoint.pt"
+        ],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/split_4_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/result_partial_4_4.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/splits_4.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/summary_partial_4_4.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.9103435934144596,
+        "fold": 5,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_acc": 0.8865979381443299,
+        "val_auc": 0.9745501893939394
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5",
+      "metrics": {
+        "balanced_acc": 0.9103435934144596,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_auc": 0.9745501893939394
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1/split_4_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 3,
+          "fp": 17,
+          "tn": 110,
+          "tp": 63
+        },
+        "positive_rate_pred": 0.41450777202072536,
+        "positive_rate_true": 0.34196891191709844,
+        "prob_max": 0.9999934434890747,
+        "prob_mean": 0.42287613410207714,
+        "prob_min": 0.00012289213191252202,
+        "prob_quantiles": {
+          "p10": 0.0008503928780555727,
+          "p25": 0.0026138094253838062,
+          "p50": 0.04783039912581444,
+          "p75": 0.9976363182067871,
+          "p90": 0.9999245643615723
+        },
+        "prob_std": 0.4690774253741767,
+        "sample_count": 193
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_currentcode_fold5/stage64K_currentcode_fold5_s1",
+      "summary_row": {
+        "Unnamed: 0": 0,
+        "balanced_acc": 0.9103435934144596,
+        "folds": 4,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_auc": 0.9745501893939394
+      }
+    },
+    "fold_name": "Fold 5",
+    "historical": {
+      "epoch_summary": {
+        "best_val_auc": 0.9846117424242424,
+        "best_val_auc_epoch": 2,
+        "best_val_loss": 0.1924325665507043,
+        "best_val_loss_epoch": 5,
+        "best_vs_last_val_auc_delta": 0.020123106060606077,
+        "last_epoch": 20,
+        "last_train_loss": 0.0944561116823569,
+        "last_val_acc": 0.9123711340206184,
+        "last_val_auc": 0.9644886363636364,
+        "last_val_f1": 0.903440199092373,
+        "last_val_loss": 0.4547204740989662
+      },
+      "files": {
+        "checkpoints": [],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_0_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_1_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_2_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_3_results.pkl",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_4_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/result.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_0.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_1.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_2.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_3.csv",
+          "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/splits_4.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/summary.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.937604390360296,
+        "fold": 5,
+        "pr_auc": 0.9044907032405958,
+        "sensitivity": 0.9696969696969696,
+        "specificity": 0.905511811023622,
+        "test_acc": 0.927461139896373,
+        "test_auc": 0.9621808637556668,
+        "test_f1": 0.9220157007619488,
+        "val_acc": 0.9123711340206184,
+        "val_auc": 0.9644886363636364
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1",
+      "metrics": {
+        "balanced_acc": 0.937604390360296,
+        "pr_auc": 0.9044907032405958,
+        "sensitivity": 0.9696969696969696,
+        "specificity": 0.905511811023622,
+        "test_acc": 0.927461139896373,
+        "test_auc": 0.9621808637556668,
+        "test_f1": 0.9220157007619488,
+        "val_auc": 0.9644886363636364
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1/split_4_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 2,
+          "fp": 12,
+          "tn": 115,
+          "tp": 64
+        },
+        "positive_rate_pred": 0.39378238341968913,
+        "positive_rate_true": 0.34196891191709844,
+        "prob_max": 0.9999945163726807,
+        "prob_mean": 0.3949591862928706,
+        "prob_min": 2.3636659534531645e-05,
+        "prob_quantiles": {
+          "p10": 0.00011668219085549937,
+          "p25": 0.0005843073595315218,
+          "p50": 0.005526384338736534,
+          "p75": 0.9967713952064514,
+          "p90": 0.9996976375579834
+        },
+        "prob_std": 0.47733945535250105,
+        "sample_count": 193
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL_step58C_c1253e8/ViLa-MIL-main/results_stage58C_residual_constrained_configD_5fold/rce_v2_rcD_l003_t050_aux020_5fold_e20_s1",
+      "summary_row": {
+        "Unnamed: 0": 4,
+        "balanced_acc": 0.937604390360296,
+        "folds": 4,
+        "pr_auc": 0.9044907032405958,
+        "sensitivity": 0.9696969696969696,
+        "specificity": 0.905511811023622,
+        "test_acc": 0.927461139896373,
+        "test_auc": 0.9621808637556668,
+        "test_f1": 0.9220157007619488,
+        "val_auc": 0.9644886363636364
+      }
+    },
+    "metric_deltas": {
+      "historical_vs_current": {
+        "balanced_acc": {
+          "abs_diff": 0.027260796945836385,
+          "left": 0.937604390360296,
+          "right": 0.9103435934144596,
+          "signed_diff": -0.027260796945836385
+        },
+        "pr_auc": {
+          "abs_diff": 0.03405415471184259,
+          "left": 0.9044907032405958,
+          "right": 0.9385448579524384,
+          "signed_diff": 0.03405415471184259
+        },
+        "sensitivity": {
+          "abs_diff": 0.015151515151515027,
+          "left": 0.9696969696969696,
+          "right": 0.9545454545454546,
+          "signed_diff": -0.015151515151515027
+        },
+        "specificity": {
+          "abs_diff": 0.03937007874015741,
+          "left": 0.905511811023622,
+          "right": 0.8661417322834646,
+          "signed_diff": -0.03937007874015741
+        },
+        "test_acc": {
+          "abs_diff": 0.031088082901554404,
+          "left": 0.927461139896373,
+          "right": 0.8963730569948186,
+          "signed_diff": -0.031088082901554404
+        },
+        "test_auc": {
+          "abs_diff": 0.0056072536387498095,
+          "left": 0.9621808637556668,
+          "right": 0.9677881173944166,
+          "signed_diff": 0.0056072536387498095
+        },
+        "test_f1": {
+          "abs_diff": 0.03217551811354702,
+          "left": 0.9220157007619488,
+          "right": 0.8898401826484018,
+          "signed_diff": -0.03217551811354702
+        },
+        "val_auc": {
+          "abs_diff": 0.010061553030303094,
+          "left": 0.9644886363636364,
+          "right": 0.9745501893939394,
+          "signed_diff": 0.010061553030303094
+        }
+      },
+      "historical_vs_old": {
+        "balanced_acc": {
+          "abs_diff": 0.027260796945836385,
+          "left": 0.937604390360296,
+          "right": 0.9103435934144596,
+          "signed_diff": -0.027260796945836385
+        },
+        "pr_auc": {
+          "abs_diff": 0.03405415471184259,
+          "left": 0.9044907032405958,
+          "right": 0.9385448579524384,
+          "signed_diff": 0.03405415471184259
+        },
+        "sensitivity": {
+          "abs_diff": 0.015151515151515027,
+          "left": 0.9696969696969696,
+          "right": 0.9545454545454546,
+          "signed_diff": -0.015151515151515027
+        },
+        "specificity": {
+          "abs_diff": 0.03937007874015741,
+          "left": 0.905511811023622,
+          "right": 0.8661417322834646,
+          "signed_diff": -0.03937007874015741
+        },
+        "test_acc": {
+          "abs_diff": 0.031088082901554404,
+          "left": 0.927461139896373,
+          "right": 0.8963730569948186,
+          "signed_diff": -0.031088082901554404
+        },
+        "test_auc": {
+          "abs_diff": 0.0056072536387498095,
+          "left": 0.9621808637556668,
+          "right": 0.9677881173944166,
+          "signed_diff": 0.0056072536387498095
+        },
+        "test_f1": {
+          "abs_diff": 0.03217551811354702,
+          "left": 0.9220157007619488,
+          "right": 0.8898401826484018,
+          "signed_diff": -0.03217551811354702
+        },
+        "val_auc": {
+          "abs_diff": 0.010061553030303094,
+          "left": 0.9644886363636364,
+          "right": 0.9745501893939394,
+          "signed_diff": 0.010061553030303094
+        }
+      },
+      "old_vs_current": {
+        "balanced_acc": {
+          "abs_diff": 0.0,
+          "left": 0.9103435934144596,
+          "right": 0.9103435934144596,
+          "signed_diff": 0.0
+        },
+        "pr_auc": {
+          "abs_diff": 0.0,
+          "left": 0.9385448579524384,
+          "right": 0.9385448579524384,
+          "signed_diff": 0.0
+        },
+        "sensitivity": {
+          "abs_diff": 0.0,
+          "left": 0.9545454545454546,
+          "right": 0.9545454545454546,
+          "signed_diff": 0.0
+        },
+        "specificity": {
+          "abs_diff": 0.0,
+          "left": 0.8661417322834646,
+          "right": 0.8661417322834646,
+          "signed_diff": 0.0
+        },
+        "test_acc": {
+          "abs_diff": 0.0,
+          "left": 0.8963730569948186,
+          "right": 0.8963730569948186,
+          "signed_diff": 0.0
+        },
+        "test_auc": {
+          "abs_diff": 0.0,
+          "left": 0.9677881173944166,
+          "right": 0.9677881173944166,
+          "signed_diff": 0.0
+        },
+        "test_f1": {
+          "abs_diff": 0.0,
+          "left": 0.8898401826484018,
+          "right": 0.8898401826484018,
+          "signed_diff": 0.0
+        },
+        "val_auc": {
+          "abs_diff": 0.0,
+          "left": 0.9745501893939394,
+          "right": 0.9745501893939394,
+          "signed_diff": 0.0
+        }
+      }
+    },
+    "oldcode": {
+      "epoch_summary": {
+        "best_val_auc": 0.984966856060606,
+        "best_val_auc_epoch": 3,
+        "best_val_loss": 0.1948967345692601,
+        "best_val_loss_epoch": 5,
+        "best_vs_last_val_auc_delta": 0.010416666666666519,
+        "last_epoch": 20,
+        "last_train_loss": 0.0731337926834779,
+        "last_val_acc": 0.8865979381443299,
+        "last_val_auc": 0.9745501893939394,
+        "last_val_f1": 0.8785291438979963,
+        "last_val_loss": 0.4078075485996339
+      },
+      "files": {
+        "checkpoints": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/s_4_checkpoint.pt"
+        ],
+        "epoch_details": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/epoch_details.csv",
+        "fold_summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/fold_summary.csv",
+        "pickles": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/split_4_results.pkl"
+        ],
+        "result": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/result_partial_4_4.csv",
+        "split_csvs": [
+          "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/splits_4.csv"
+        ],
+        "summary": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/summary_partial_4_4.csv"
+      },
+      "fold_summary_row": {
+        "balanced_acc": 0.9103435934144596,
+        "fold": 5,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_acc": 0.8865979381443299,
+        "val_auc": 0.9745501893939394
+      },
+      "input_path": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5",
+      "metrics": {
+        "balanced_acc": 0.9103435934144596,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_auc": 0.9745501893939394
+      },
+      "prediction_pickle": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1/split_4_results.pkl",
+      "prediction_summary": {
+        "confusion_matrix": {
+          "fn": 3,
+          "fp": 17,
+          "tn": 110,
+          "tp": 63
+        },
+        "positive_rate_pred": 0.41450777202072536,
+        "positive_rate_true": 0.34196891191709844,
+        "prob_max": 0.9999934434890747,
+        "prob_mean": 0.42287613410207714,
+        "prob_min": 0.00012289213191252202,
+        "prob_quantiles": {
+          "p10": 0.0008503928780555727,
+          "p25": 0.0026138094253838062,
+          "p50": 0.04783039912581444,
+          "p75": 0.9976363182067871,
+          "p90": 0.9999245643615723
+        },
+        "prob_std": 0.4690774253741767,
+        "sample_count": 193
+      },
+      "run_dir": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/runs/results_stage64K_oldcode_fold5/stage64K_oldcode_fold5_s1",
+      "summary_row": {
+        "Unnamed: 0": 0,
+        "balanced_acc": 0.9103435934144596,
+        "folds": 4,
+        "pr_auc": 0.9385448579524384,
+        "sensitivity": 0.9545454545454546,
+        "specificity": 0.8661417322834646,
+        "test_acc": 0.8963730569948186,
+        "test_auc": 0.9677881173944166,
+        "test_f1": 0.8898401826484018,
+        "val_auc": 0.9745501893939394
+      }
+    }
+  }
+}

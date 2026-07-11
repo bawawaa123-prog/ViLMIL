@@ -1,0 +1,12 @@
+pwd=/private
+hostname=dev-wenjinyu-nbnn4jl-wz8p-pod-0
+date=2026-07-11T10:47:26+08:00
+git_status_short:
+?? ViLa-MIL-main/experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/
+?? ViLa-MIL-main/tools/compare_stage64K_model_probes.py
+?? ViLa-MIL-main/tools/compare_stage64K_three_way_runs.py
+?? ViLa-MIL-main/tools/run_stage64K_model_probe.py
+?? ViLa-MIL-main/tools/stage64k_common.py
+git_branch=dev-rce-aofei-split-repro-206200
+git_head=13f7982f990966b1ebd4d408b662487522dc60b2
+git_log1=13f7982 Step64J: 跨服务器复现根因审计。

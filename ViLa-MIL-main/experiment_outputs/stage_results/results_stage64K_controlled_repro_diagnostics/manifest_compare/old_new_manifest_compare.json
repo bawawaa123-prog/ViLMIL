@@ -1,0 +1,7 @@
+{
+  "status": "not_available",
+  "compare_tool_run": false,
+  "reason": "No old-server manifest bundle was found under the local Step64J audit directory, so compare_stage64J_manifests.py was not executed.",
+  "searched_root": "/private/ljh-data/shared/Linux_school/ViLMIL/ViLa-MIL-main/experiment_outputs/stage_results/results_stage64J_cross_server_repro_audit",
+  "expected_hint": "See commands/how_to_compare_old_new_manifests.md in the Step64J audit directory for the required old-server collection flow."
+}

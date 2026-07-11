@@ -1,0 +1,6613 @@
+{
+  "biomedclip": {
+    "resolved_snapshot_path": {
+      "current": "/private/ljh-data/shared/ViLMIL/hf_cache/models--microsoft--BiomedCLIP-PubMedBERT_256-vit_base_patch16_224/snapshots/9f341de24bfb00180f1b847274256e9b65a3a32e",
+      "equal": true,
+      "old": "/private/ljh-data/shared/ViLMIL/hf_cache/models--microsoft--BiomedCLIP-PubMedBERT_256-vit_base_patch16_224/snapshots/9f341de24bfb00180f1b847274256e9b65a3a32e"
+    },
+    "snapshot_revision": {
+      "current": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+      "equal": true,
+      "old": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+    }
+  },
+  "conclusion": {
+    "biomedclip_weights_consistent": true,
+    "concept_embeddings_consistent": true,
+    "initial_logits_consistent": true,
+    "probabilities_consistent": true,
+    "text_embeddings_consistent": true,
+    "token_ids_consistent": true,
+    "trainable_parameters_consistent": true,
+    "training_pre_behavior_equivalent": true
+  },
+  "current_probe": "experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/equivalence_probe/current_probe.json",
+  "numeric_fields": {
+    "concept_high_embeddings": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "901931da412427dc145c7b1afe6a18620f49dd05600e8cfbd85581174a763896",
+      "current_shape": [
+        2,
+        12,
+        512
+      ],
+      "field": "concept_high_embeddings",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "901931da412427dc145c7b1afe6a18620f49dd05600e8cfbd85581174a763896",
+      "old_shape": [
+        2,
+        12,
+        512
+      ],
+      "shape_equal": true
+    },
+    "concept_low_embeddings": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "830da14cff68df6fd14e082239c5d104d7ee5e61c1686507657dcc8d366df9b8",
+      "current_shape": [
+        2,
+        12,
+        512
+      ],
+      "field": "concept_low_embeddings",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "830da14cff68df6fd14e082239c5d104d7ee5e61c1686507657dcc8d366df9b8",
+      "old_shape": [
+        2,
+        12,
+        512
+      ],
+      "shape_equal": true
+    },
+    "cross_scale_logits": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "cross_scale_logits",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    },
+    "final_logits": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "992236a945cb895a716d34749058ba26fe5e686ab554bf8035f8cc81c7bcba5b",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "final_logits",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "992236a945cb895a716d34749058ba26fe5e686ab554bf8035f8cc81c7bcba5b",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    },
+    "high_logits": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "d82e876e0d7a5c61f59f644f1cacb4991028c60804d48d8ed700421c3dc9b187",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "high_logits",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "d82e876e0d7a5c61f59f644f1cacb4991028c60804d48d8ed700421c3dc9b187",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    },
+    "low_logits": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "8885cc05b988121694cd4c866bdca09f4a3125a0608f7b38872a52bfe8a57472",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "low_logits",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "8885cc05b988121694cd4c866bdca09f4a3125a0608f7b38872a52bfe8a57472",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    },
+    "probabilities": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "714905d2711f64dcb0755da7177bfb65e0d54fd0f9355500d17743e536ed2ec2",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "probabilities",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "714905d2711f64dcb0755da7177bfb65e0d54fd0f9355500d17743e536ed2ec2",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    },
+    "text_prompt_high_embeddings": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "2705e56053c391a121b2ea79d9a4699ec94101494e3835af24a71add9d79635d",
+      "current_shape": [
+        2,
+        512
+      ],
+      "field": "text_prompt_high_embeddings",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "2705e56053c391a121b2ea79d9a4699ec94101494e3835af24a71add9d79635d",
+      "old_shape": [
+        2,
+        512
+      ],
+      "shape_equal": true
+    },
+    "text_prompt_high_token_ids": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "4c9aaca39aad1d75feb82fbd7858d674ab1be03973e3b6dc414b44425b403a7c",
+      "current_shape": [
+        2,
+        256
+      ],
+      "field": "text_prompt_high_token_ids",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "4c9aaca39aad1d75feb82fbd7858d674ab1be03973e3b6dc414b44425b403a7c",
+      "old_shape": [
+        2,
+        256
+      ],
+      "shape_equal": true
+    },
+    "text_prompt_low_embeddings": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "4c30e6ec06156edff7b999c2788a584a379dc08a2332e2143ae33bf4d5cd54e3",
+      "current_shape": [
+        2,
+        512
+      ],
+      "field": "text_prompt_low_embeddings",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "4c30e6ec06156edff7b999c2788a584a379dc08a2332e2143ae33bf4d5cd54e3",
+      "old_shape": [
+        2,
+        512
+      ],
+      "shape_equal": true
+    },
+    "text_prompt_low_token_ids": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "01f4e0e4cbe3c46b7df4dee9cdc00876a1db3163774ec64de4c1bd1a3ef98ae9",
+      "current_shape": [
+        2,
+        256
+      ],
+      "field": "text_prompt_low_token_ids",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "01f4e0e4cbe3c46b7df4dee9cdc00876a1db3163774ec64de4c1bd1a3ef98ae9",
+      "old_shape": [
+        2,
+        256
+      ],
+      "shape_equal": true
+    },
+    "visual_logits": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "aad50003f46ec1df8fa90c6ff111776a8f92108158251f57fc47c5909d8f8856",
+      "current_shape": [
+        1,
+        2
+      ],
+      "field": "visual_logits",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "aad50003f46ec1df8fa90c6ff111776a8f92108158251f57fc47c5909d8f8856",
+      "old_shape": [
+        1,
+        2
+      ],
+      "shape_equal": true
+    }
+  },
+  "old_probe": "experiment_outputs/stage_results/results_stage64K_controlled_repro_diagnostics/equivalence_probe/old_probe.json",
+  "state_dict": {
+    "aggregate_sha256": {
+      "current": "df6a0bb722f37a9a6ab8a5eb1d18a7aee45099f71af9dbad44aa4b484bae07d4",
+      "equal": true,
+      "old": "df6a0bb722f37a9a6ab8a5eb1d18a7aee45099f71af9dbad44aa4b484bae07d4"
+    }
+  },
+  "text_encoder_state_dict": {
+    "aggregate_sha256": {
+      "current": "d33392d7ff861bb34e875a49cd3c7f2011b3993eae6a0d8bd277fe9f6c912e82",
+      "equal": true,
+      "old": "d33392d7ff861bb34e875a49cd3c7f2011b3993eae6a0d8bd277fe9f6c912e82"
+    }
+  },
+  "token_ids": {
+    "concept_high_class_aggregate_sha256": {
+      "current": "6a5efa9bf32fee6eae8717d3465ee0f49679186c89ed6d78fa6405f0ebc33bf9",
+      "equal": true,
+      "old": "6a5efa9bf32fee6eae8717d3465ee0f49679186c89ed6d78fa6405f0ebc33bf9"
+    },
+    "concept_low_class_aggregate_sha256": {
+      "current": "c630b18fc2ebacf88e1a2fe91b3952accfd7076433041c608d3d842ec3aebc00",
+      "equal": true,
+      "old": "c630b18fc2ebacf88e1a2fe91b3952accfd7076433041c608d3d842ec3aebc00"
+    },
+    "text_prompt_high_token_ids": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "4c9aaca39aad1d75feb82fbd7858d674ab1be03973e3b6dc414b44425b403a7c",
+      "current_shape": [
+        2,
+        256
+      ],
+      "field": "text_prompt_high_token_ids",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "4c9aaca39aad1d75feb82fbd7858d674ab1be03973e3b6dc414b44425b403a7c",
+      "old_shape": [
+        2,
+        256
+      ],
+      "shape_equal": true
+    },
+    "text_prompt_low_token_ids": {
+      "allclose": true,
+      "available_both": true,
+      "current_sha256": "01f4e0e4cbe3c46b7df4dee9cdc00876a1db3163774ec64de4c1bd1a3ef98ae9",
+      "current_shape": [
+        2,
+        256
+      ],
+      "field": "text_prompt_low_token_ids",
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "old_sha256": "01f4e0e4cbe3c46b7df4dee9cdc00876a1db3163774ec64de4c1bd1a3ef98ae9",
+      "old_shape": [
+        2,
+        256
+      ],
+      "shape_equal": true
+    }
+  },
+  "trainable_parameters": {
+    "current_parameters": [
+      {
+        "dtype": "float32",
+        "name": "region_queries_low",
+        "numel": 8192,
+        "shape": [
+          16,
+          1,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_queries_high",
+        "numel": 8192,
+        "shape": [
+          16,
+          1,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_logit_scale",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_class_bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_visual_residual_alpha",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "low_concept_prior",
+        "numel": 24,
+        "shape": [
+          2,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_concept_prior",
+        "numel": 24,
+        "shape": [
+          2,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_cross_scale_graph_adj",
+        "numel": 288,
+        "shape": [
+          2,
+          12,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_cross_scale_graph_alpha",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.logit_scale",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.cls_token",
+        "numel": 768,
+        "shape": [
+          1,
+          1,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.pos_embed",
+        "numel": 151296,
+        "shape": [
+          1,
+          197,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.patch_embed.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          3,
+          16,
+          16
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.patch_embed.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.norm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.norm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.head.proj.weight",
+        "numel": 393216,
+        "shape": [
+          512,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.word_embeddings.weight",
+        "numel": 23440896,
+        "shape": [
+          30522,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.position_embeddings.weight",
+        "numel": 393216,
+        "shape": [
+          512,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.token_type_embeddings.weight",
+        "numel": 1536,
+        "shape": [
+          2,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.proj.0.weight",
+        "numel": 491520,
+        "shape": [
+          640,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.proj.2.weight",
+        "numel": 327680,
+        "shape": [
+          512,
+          640
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_low.weight",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_low.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_high.weight",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_high.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.in_proj_weight",
+        "numel": 786432,
+        "shape": [
+          1536,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.in_proj_bias",
+        "numel": 1536,
+        "shape": [
+          1536
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.out_proj.weight",
+        "numel": 262144,
+        "shape": [
+          512,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.out_proj.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.in_proj_weight",
+        "numel": 786432,
+        "shape": [
+          1536,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.in_proj_bias",
+        "numel": 1536,
+        "shape": [
+          1536
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.out_proj.weight",
+        "numel": 262144,
+        "shape": [
+          512,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.out_proj.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "low_visual_head.weight",
+        "numel": 1024,
+        "shape": [
+          2,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "low_visual_head.bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_visual_head.weight",
+        "numel": 1024,
+        "shape": [
+          2,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_visual_head.bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      }
+    ],
+    "current_total_numel": 198024794,
+    "equal": true,
+    "old_parameters": [
+      {
+        "dtype": "float32",
+        "name": "region_queries_low",
+        "numel": 8192,
+        "shape": [
+          16,
+          1,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_queries_high",
+        "numel": 8192,
+        "shape": [
+          16,
+          1,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_logit_scale",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_class_bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_visual_residual_alpha",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "low_concept_prior",
+        "numel": 24,
+        "shape": [
+          2,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_concept_prior",
+        "numel": 24,
+        "shape": [
+          2,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_cross_scale_graph_adj",
+        "numel": 288,
+        "shape": [
+          2,
+          12,
+          12
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "rce_cross_scale_graph_alpha",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.logit_scale",
+        "numel": 1,
+        "shape": []
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.cls_token",
+        "numel": 768,
+        "shape": [
+          1,
+          1,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.pos_embed",
+        "numel": 151296,
+        "shape": [
+          1,
+          197,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.patch_embed.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          3,
+          16,
+          16
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.patch_embed.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.0.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.1.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.2.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.3.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.4.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.5.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.6.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.7.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.8.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.9.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.10.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm1.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm1.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.qkv.weight",
+        "numel": 1769472,
+        "shape": [
+          2304,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.qkv.bias",
+        "numel": 2304,
+        "shape": [
+          2304
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.proj.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.attn.proj.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm2.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.norm2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc1.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc1.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc2.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.blocks.11.mlp.fc2.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.norm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.trunk.norm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.visual.head.proj.weight",
+        "numel": 393216,
+        "shape": [
+          512,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.word_embeddings.weight",
+        "numel": 23440896,
+        "shape": [
+          30522,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.position_embeddings.weight",
+        "numel": 393216,
+        "shape": [
+          512,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.token_type_embeddings.weight",
+        "numel": 1536,
+        "shape": [
+          2,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.embeddings.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.0.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.1.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.2.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.3.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.4.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.5.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.6.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.7.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.8.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.9.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.10.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.query.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.query.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.key.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.key.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.value.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.self.value.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.dense.weight",
+        "numel": 589824,
+        "shape": [
+          768,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.attention.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.intermediate.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          3072,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.intermediate.dense.bias",
+        "numel": 3072,
+        "shape": [
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.dense.weight",
+        "numel": 2359296,
+        "shape": [
+          768,
+          3072
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.dense.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.LayerNorm.weight",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.transformer.encoder.layer.11.output.LayerNorm.bias",
+        "numel": 768,
+        "shape": [
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.proj.0.weight",
+        "numel": 491520,
+        "shape": [
+          640,
+          768
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "text_encoder.model.text.proj.2.weight",
+        "numel": 327680,
+        "shape": [
+          512,
+          640
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_low.weight",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_low.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_high.weight",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "norm_high.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.in_proj_weight",
+        "numel": 786432,
+        "shape": [
+          1536,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.in_proj_bias",
+        "numel": 1536,
+        "shape": [
+          1536
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.out_proj.weight",
+        "numel": 262144,
+        "shape": [
+          512,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_low.out_proj.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.in_proj_weight",
+        "numel": 786432,
+        "shape": [
+          1536,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.in_proj_bias",
+        "numel": 1536,
+        "shape": [
+          1536
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.out_proj.weight",
+        "numel": 262144,
+        "shape": [
+          512,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "region_attention_high.out_proj.bias",
+        "numel": 512,
+        "shape": [
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "low_visual_head.weight",
+        "numel": 1024,
+        "shape": [
+          2,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "low_visual_head.bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_visual_head.weight",
+        "numel": 1024,
+        "shape": [
+          2,
+          512
+        ]
+      },
+      {
+        "dtype": "float32",
+        "name": "high_visual_head.bias",
+        "numel": 2,
+        "shape": [
+          2
+        ]
+      }
+    ],
+    "old_total_numel": 198024794
+  }
+}
